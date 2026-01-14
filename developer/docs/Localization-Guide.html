@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Localization Implementation Guide | Developer Docs </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Localization Implementation Guide | Developer Docs ">
+      
+      
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.2.31-rc/docs/developer/docs/Localization-Guide.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="K+B Office Add-ins">
+            K+B Office Add-ins
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="localization-implementation-guide">Localization Implementation Guide</h1>
+
+<p>This document describes the localization infrastructure implemented for the Office Add-ins project, providing guidelines for maintaining and extending localized content.</p>
+<h2 id="overview">Overview</h2>
+<p>The localization system is designed with the following principles:</p>
+<ul>
+<li><strong>Simplicity</strong>: Easy to use and maintain</li>
+<li><strong>Separation of Concerns</strong>: Domain errors separated from UI text</li>
+<li><strong>Testability</strong>: Tests validate error codes, not localized messages</li>
+<li><strong>Flexibility</strong>: Supports parameterized strings and multiple cultures</li>
+<li><strong>Maintainability</strong>: Clear structure for shared vs application-specific resources</li>
+</ul>
+<h2 id="architecture">Architecture</h2>
+<h3 id="core-components">Core Components</h3>
+<ol>
+<li><p><strong>ILocalizationService</strong> (<code>Core.Application.Abstractions.Localization</code>)</p>
+<ul>
+<li>Abstract interface for retrieving localized strings</li>
+<li>Supports parameterized strings and culture-specific lookups</li>
+<li>Keeps domain layer independent of localization infrastructure</li>
+</ul>
+</li>
+<li><p><strong>LocalizedDomainErrors</strong> (<code>Core.Application.Common</code>)</p>
+<ul>
+<li>Replaces static <code>DomainErrors</code> with localized versions</li>
+<li>Uses dependency injection to access localization service</li>
+<li>Maintains same API surface as original DomainErrors</li>
+</ul>
+</li>
+<li><p><strong>Resource Files</strong></p>
+<ul>
+<li><code>Infrastructure.Common/Localization/DomainErrors.resx</code> - Shared domain error messages</li>
+<li><code>WordAddIn/Localisation/Resources.resx</code> - Word-specific UI text and dialog messages</li>
+</ul>
+</li>
+<li><p><strong>WordLocalizationService</strong> (<code>WordAddIn.Common</code>)</p>
+<ul>
+<li>Combines domain errors and UI resources</li>
+<li>First checks domain errors, then UI resources</li>
+<li>Provides unified localization for Word Add-in</li>
+</ul>
+</li>
+</ol>
+<h2 id="resource-file-structure">Resource File Structure</h2>
+<h3 id="domain-errors-domainerrorsresx">Domain Errors (<code>DomainErrors.resx</code>)</h3>
+<p>Contains error messages for all domain operations, using error codes as keys:</p>
+<pre><code class="lang-xml">&lt;data name=&quot;Document.NotFound&quot; xml:space=&quot;preserve&quot;&gt;
+  &lt;value&gt;Document not found.&lt;/value&gt;
+&lt;/data&gt;
+&lt;data name=&quot;Document.OpenDocumentError&quot; xml:space=&quot;preserve&quot;&gt;
+  &lt;value&gt;Error Opening Document with Id: {0}&lt;/value&gt;
+&lt;/data&gt;
+</code></pre>
+<h3 id="ui-resources-resourcesresx">UI Resources (<code>Resources.resx</code>)</h3>
+<p>Contains user interface text, dialogs, and Ribbon labels:</p>
+<pre><code class="lang-xml">&lt;data name=&quot;UI.BrandTitle&quot; xml:space=&quot;preserve&quot;&gt;
+  &lt;value&gt;K+B Add-in&lt;/value&gt;
+&lt;/data&gt;
+&lt;data name=&quot;UI.SearchRestOfDocument&quot; xml:space=&quot;preserve&quot;&gt;
+  &lt;value&gt;Do you want to search the rest of the document?&lt;/value&gt;
+&lt;/data&gt;
+&lt;data name=&quot;Ribbon.Tab.KutanaBrochet&quot; xml:space=&quot;preserve&quot;&gt;
+  &lt;value&gt;K+B&lt;/value&gt;
+&lt;/data&gt;
+</code></pre>
+<h2 id="usage-patterns">Usage Patterns</h2>
+<h3 id="using-localized-domain-errors">Using Localized Domain Errors</h3>
+<pre><code class="lang-csharp">public class MyHandler : ICommandHandler&lt;MyCommand, Result&gt;
+{
+    private readonly LocalizedDomainErrors _errors;
+    
+    public MyHandler(LocalizedDomainErrors errors)
+    {
+        _errors = errors;
+    }
+    
+    public Result Handle(MyCommand command, CancellationToken cancellationToken)
+    {
+        // Simple error
+        if (condition)
+        {
+            return Result.Failure(_errors.Document.NotFound);
+        }
+        
+        // Parameterized error
+        var error = _errors.Document.OpenDocumentError(documentId);
+        return Result.Failure(error);
+    }
+}
+</code></pre>
+<h3 id="using-ui-localization">Using UI Localization</h3>
+<pre><code class="lang-csharp">public class UserNotifier : IUserNotifier
+{
+    private readonly ILocalizationService _localization;
+    
+    public UserNotifier(ILocalizationService localization)
+    {
+        _localization = localization;
+    }
+    
+    private string BrandedTitle(string title)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            return _localization.GetString(&quot;UI.BrandTitle&quot;);
+        }
+        
+        return _localization.GetString(&quot;UI.BrandTitleWithContext&quot;, title);
+    }
+}
+</code></pre>
+<h2 id="dependency-injection-setup">Dependency Injection Setup</h2>
+<p>In <code>ThisAddIn.cs</code>:</p>
+<pre><code class="lang-csharp">builder.Services
+    .AddLocalization(options =&gt; options.ResourcesPath = &quot;Localisation&quot;)
+    .AddSingleton&lt;ILocalizationService, WordLocalizationService&gt;()
+    .AddSingleton&lt;LocalizedDomainErrors&gt;()
+    .AddSingleton&lt;LocalizedErrorFactory&gt;();
+</code></pre>
+<h2 id="testing-guidelines">Testing Guidelines</h2>
+<h3 id="-correct-test-error-codes">✅ Correct: Test Error Codes</h3>
+<pre><code class="lang-csharp">[Test]
+public void Should_Return_Correct_Error_Code()
+{
+    // Act
+    var result = handler.Handle(command);
+    
+    // Assert
+    Assert.True(result.IsFailure);
+    Assert.Equal(&quot;Document.NotFound&quot;, result.Error.Code);
+}
+</code></pre>
+<h3 id="-incorrect-test-error-messages">❌ Incorrect: Test Error Messages</h3>
+<pre><code class="lang-csharp">[Test]
+public void Should_Return_Error_Message() // DON'T DO THIS
+{
+    // Act
+    var result = handler.Handle(command);
+    
+    // Assert
+    Assert.Equal(&quot;Document not found.&quot;, result.Error.Message); // Brittle!
+}
+</code></pre>
+<h3 id="testing-localization-services">Testing Localization Services</h3>
+<pre><code class="lang-csharp">[Test]
+public void Should_Use_Localization_Service()
+{
+    // Arrange
+    var mockLocalization = Substitute.For&lt;ILocalizationService&gt;();
+    mockLocalization.GetString(&quot;Document.NotFound&quot;).Returns(&quot;Custom message&quot;);
+    
+    // Act &amp; Assert
+    mockLocalization.Received(1).GetString(&quot;Document.NotFound&quot;);
+}
+</code></pre>
+<h2 id="adding-new-localized-content">Adding New Localized Content</h2>
+<h3 id="1-domain-errors">1. Domain Errors</h3>
+<ol>
+<li>Add error code and message to <code>DomainErrors.resx</code></li>
+<li>Add property to appropriate error class in <code>LocalizedDomainErrors.cs</code></li>
+<li>Test using error code, not message</li>
+</ol>
+<h3 id="2-ui-text">2. UI Text</h3>
+<ol>
+<li>Add key-value pair to <code>Resources.resx</code></li>
+<li>Update <code>Resources.Designer.cs</code> if needed</li>
+<li>Use through <code>ILocalizationService.GetString()</code></li>
+</ol>
+<h3 id="3-parameterized-strings">3. Parameterized Strings</h3>
+<p>Use <code>{0}</code>, <code>{1}</code>, etc. for parameters:</p>
+<pre><code class="lang-xml">&lt;data name=&quot;UI.ReplacementComplete&quot; xml:space=&quot;preserve&quot;&gt;
+  &lt;value&gt;Replaced {0} items in {1} seconds&lt;/value&gt;
+&lt;/data&gt;
+</code></pre>
+<pre><code class="lang-csharp">var message = _localization.GetString(&quot;UI.ReplacementComplete&quot;, count, elapsed);
+</code></pre>
+<h2 id="localization-for-other-office-applications">Localization for Other Office Applications</h2>
+<p>When adding Excel or PowerPoint add-ins:</p>
+<ol>
+<li>Create application-specific resource files (e.g., <code>ExcelAddIn/Localisation/Resources.resx</code>)</li>
+<li>Create application-specific localization service (e.g., <code>ExcelLocalizationService</code>)</li>
+<li>Register in dependency injection container</li>
+<li>Domain errors remain shared across all applications</li>
+</ol>
+<h2 id="culture-and-language-support">Culture and Language Support</h2>
+<h3 id="current-support">Current Support</h3>
+<ul>
+<li>Default culture (English)</li>
+<li>Automatic fallback to key if resource not found</li>
+<li>Support for culture-specific localization through <code>ILocalizationService</code></li>
+</ul>
+<h3 id="adding-new-languages">Adding New Languages</h3>
+<ol>
+<li>Create culture-specific resource files (e.g., <code>Resources.fr-FR.resx</code>)</li>
+<li>Translate all values, keeping keys identical</li>
+<li>.NET will automatically select appropriate culture based on user settings</li>
+</ol>
+<h3 id="encoding-and-character-support">Encoding and Character Support</h3>
+<ul>
+<li>Resource files use UTF-8 encoding</li>
+<li>Supports diacritics and special characters</li>
+<li>Automatic encoding handling by .NET resource system</li>
+</ul>
+<h2 id="best-practices">Best Practices</h2>
+<ol>
+<li><strong>Use Error Codes as Keys</strong>: This ensures consistency and makes mapping clear</li>
+<li><strong>Fallback Strategy</strong>: Always return the key if localization fails</li>
+<li><strong>Parameterized Strings</strong>: Use <code>String.Format</code> pattern for dynamic content</li>
+<li><strong>Test Error Codes</strong>: Never test localized messages in unit tests</li>
+<li><strong>Shared vs Specific</strong>: Keep domain errors shared, UI text application-specific</li>
+<li><strong>Resource Organization</strong>: Group related resources with prefixes (UI., Ribbon., Dialog.)</li>
+</ol>
+<h2 id="maintenance">Maintenance</h2>
+<h3 id="updating-messages">Updating Messages</h3>
+<ol>
+<li>Modify resource files (<code>.resx</code>)</li>
+<li>Update Designer files if adding new entries</li>
+<li>No code changes required for message text updates</li>
+</ol>
+<h3 id="adding-features">Adding Features</h3>
+<ol>
+<li>Define error codes in domain layer</li>
+<li>Add localized messages to resource files</li>
+<li>Use through <code>LocalizedDomainErrors</code> or <code>ILocalizationService</code></li>
+</ol>
+<h3 id="debugging">Debugging</h3>
+<ul>
+<li>If localization fails, the service returns the key as fallback</li>
+<li>Enable localization debugging through <code>IStringLocalizer</code> if needed</li>
+<li>Use culture-specific testing to verify correct resource loading</li>
+</ul>
+<h2 id="migration-from-hardcoded-strings">Migration from Hardcoded Strings</h2>
+<p>When updating existing code:</p>
+<ol>
+<li>Identify hardcoded strings</li>
+<li>Define appropriate resource keys</li>
+<li>Add to relevant resource file</li>
+<li>Update code to use localization service</li>
+<li>Update tests to validate error codes instead of messages</li>
+</ol>
+<p>This maintains backward compatibility while enabling localization.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.2.31-rc/docs/developer/docs/Localization-Guide.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

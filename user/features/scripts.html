@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Scripts - User Guide | User Docs </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Scripts - User Guide | User Docs ">
+      
+      <meta name="description" content="Learn how to use scripts to automate document formatting and text manipulation in Word.">
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.2.31-rc/docs/user/features/scripts.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="K+B Office Add-ins">
+            K+B Office Add-ins
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="scripts-user-guide">
+<h1 id="scripts">Scripts</h1>
+
+<p>Scripts allow you to automate multiple document editing operations with a single button click. Each script contains a sequence of commands that execute in order, helping you apply consistent formatting and maintain document standards efficiently.</p>
+<h2 id="what-are-scripts">What are Scripts?</h2>
+<p>Scripts are configurable automation tools that combine multiple editing commands into a single action. Rather than manually applying several formatting changes, you can create a script that applies all changes automatically to your selected text or entire document.</p>
+<h3 id="benefits">Benefits</h3>
+<ul>
+<li><strong>Time-Saving</strong>: Execute multiple formatting operations with one click</li>
+<li><strong>Consistency</strong>: Ensure uniform formatting across documents</li>
+<li><strong>Reduced Errors</strong>: Eliminate manual formatting mistakes</li>
+<li><strong>Customisable</strong>: Configure scripts to match your organisation's standards</li>
+<li><strong>Reusable</strong>: Create once, use repeatedly across documents</li>
+</ul>
+<h3 id="how-is-a-script-activated">How is a Script activated?</h3>
+<p>A Script can be activated via a button on the ribbon.</p>
+<p>Example ribbon button XML:</p>
+<pre><code class="lang-xml">&lt;button id=&quot;OperativeLevel1Heading&quot; 
+  image=&quot;Level 1 Heading&quot;
+  onAction=&quot;RunScript&quot; 
+  label=&quot;Level 1 Heading&quot; /&gt;
+</code></pre>
+<p><strong>Notice</strong> that the <code>onAction=&quot;RunScript&quot;</code> is being used. This is the command that is being run which will find the correct script to run using the <code>button id=&quot;OperativeLevel1Heading&quot;</code>.</p>
+<p>There is a JSON element <code>ScriptConfiguration</code> that needs to be set with the button mapping and the script instructions.</p>
+<pre><code class="lang-json">{
+  &quot;$schema&quot;: &quot;https://kutana-brochet.github.io/schemas/7.0/CoreConfiguration.schema.json&quot;,
+  &quot;ScriptConfiguration&quot;: {
+    &quot;Mappings&quot;: {
+      &quot;OperativeLevel1Heading&quot;: {
+        &quot;Script&quot;: &quot;StyleLevel1Heading&quot;,
+        &quot;EnabledWhen&quot;: &quot;OperativeGroupFullVisible&quot;,
+        &quot;VisibleWhen&quot;: &quot;OperativeGroupFullVisible&quot;
+      }
+    },
+    &quot;Scripts&quot;: {
+      &quot;StyleLevel1Heading&quot;: {
+        &quot;Comment&quot;: &quot;Applies Level 1 Heading Style&quot;,
+        &quot;Commands&quot;: [
+          {
+            &quot;$type&quot;: &quot;ApplyStyle&quot;,
+            &quot;Range&quot;: {
+              &quot;$type&quot;: &quot;Selection&quot;,
+              &quot;SubRange&quot;: &quot;All&quot;
+            },
+            &quot;Options&quot;: {
+              &quot;StyleName&quot;: &quot;Level 1 Heading&quot;
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+</code></pre>
+<p><strong>NB:</strong> The <code>&quot;Mappings&quot;:</code> element is descriped in more details in ?????</p>
+<p><strong>NB:</strong> The Mappings script name (text) in the line <code>&quot;Script&quot;: &quot;StyleLevel1Heading&quot;,</code> needs have a corresponding Scripts element with a matching name <code>&quot;StyleLevel1Heading&quot;: {</code>.</p>
+<h3 id="creating-a-script-element">Creating a Script element</h3>
+<p>A Script element is made up of three parts; a name and then two elements: Comment and Commands.</p>
+<ul>
+<li>Name - this needs to be unique and matches the Script name in the Mappings section of the JSON file</li>
+<li><code>&quot;Comment&quot;:</code> this element is only used for information by the person editting the JSON file as comments are not possible in JSON files.</li>
+<li><code>&quot;Commands&quot;:</code> this element is an array of Script commands that are run in sequence. There must be at least one script command eg to apply a style or a sequence of commands to perform a sequence of commands.</li>
+</ul>
+<pre><code class="lang-json">&quot;Scripts&quot;: {
+  &quot;StyleLevel1Heading&quot;: {
+    &quot;Comment&quot;: &quot;Applies Level 1 Heading Style&quot;,
+    &quot;Commands&quot;: [
+      {
+        &quot;$type&quot;: &quot;ApplyStyle&quot;,
+        &quot;Range&quot;: {
+          &quot;$type&quot;: &quot;Selection&quot;,
+           &quot;SubRange&quot;: &quot;All&quot;
+        },
+         &quot;Options&quot;: {
+          &quot;StyleName&quot;: &quot;Level 1 Heading&quot;
+        }
+      }
+    ]
+  }
+</code></pre>
+<h4 id="commands-elements">&quot;Commands&quot; elements</h4>
+<p>A Commands element is made up of three parts; a name and then two elements: Comment and Commands.</p>
+<ul>
+<li><code>&quot;$type&quot;</code> - this is the name of the script command. There are 12 types of command - Mandatory.</li>
+<li><code>&quot;Range&quot;:</code> - this holds the range that the script is going to affect within the current Word document. Some of the Command types do not require a Range option (Mandatory for some types).</li>
+<li><code>&quot;Options&quot;:</code> this element holds the different options available for the Command type. There is always at least one Options for all script commands.</li>
+</ul>
+<h2 id="available-script-commands-types">Available Script Commands types</h2>
+<p>Scripts support 13 types of commands that can be combined in any sequence:</p>
+<h3 id="formatting-commands-type">Formatting Commands &quot;$type&quot;</h3>
+<h4 id="1-apply-font-formatting-type-applyfontformatting">1. Apply Font Formatting (&quot;$type&quot;: &quot;ApplyFontFormatting&quot;)</h4>
+<p>Applies character-level formatting to text, including:</p>
+<ul>
+<li>Bold, italic, underline, doublestrikethrough, strikethrough</li>
+<li>CharacterCase</li>
+<li>Font colour and colour index</li>
+<li>All caps, small caps</li>
+<li>Superscript and subscript</li>
+<li>Text position</li>
+<li>Hidden text</li>
+</ul>
+<h4 id="2-apply-paragraph-formatting-type-applyparagraphformatting">2. Apply Paragraph Formatting (&quot;$type&quot;: &quot;ApplyParagraphFormatting&quot;)</h4>
+<p>Applies paragraph-level formatting, including:</p>
+<ul>
+<li>Alignment (left, right, centre, justify)</li>
+<li>Indentation (left, right, first line)</li>
+<li>Line spacing and spacing before/after</li>
+<li>KeepWithNext, KeepWithNext, PageBreakBefore</li>
+<li>OutlineLevel, NoLineNumber</li>
+<li>Tab stops</li>
+<li>WindowControl</li>
+</ul>
+<h4 id="3-apply-style-type-applystyle">3. Apply Style (&quot;$type&quot;: &quot;ApplyStyle&quot;)</h4>
+<p>Applies a named paragraph style to the selected text or range.</p>
+<p><strong>NB:</strong> There are three types of Style: Paragraph, Character and Linked (Paragraph and Character)</p>
+<h4 id="4-clear-manually-applied-font-formatting-type-clearfontformatting">4. Clear manually applied font formatting (&quot;$type&quot;: &quot;ClearFontFormatting&quot;)</h4>
+<p>Clears all manually applied font formatting to the selection or range - equivalent to Ctrl+Spacebar</p>
+<h4 id="5-clear-manually-applied-paragraph-formatting--type-clearparagraphformatting">5. Clear manually applied paragraph formatting  (&quot;$type&quot;: &quot;ClearParagraphFormatting&quot;)</h4>
+<p>Clears all manually applied paragraph formatting to the selection or range.</p>
+<h3 id="text-manipulation-commands">Text Manipulation Commands</h3>
+<h4 id="6-delete-characters-type-deletecharacters">6. Delete Characters (&quot;$type&quot;: &quot;DeleteCharacters&quot;)</h4>
+<p>Removes specified characters from the text. Useful for cleaning up unwanted characters or formatting marks.</p>
+<h4 id="7-delete-words-type-deletewords">7. Delete Words (&quot;$type&quot;: &quot;DeleteWords&quot;)</h4>
+<p>Removes specified characters from the text. Useful for cleaning up unwanted characters or formatting marks.</p>
+<h4 id="8-enforce-case-type-enforcecase">8. Enforce Case (&quot;$type&quot;: &quot;EnforceCase&quot;)</h4>
+<p>Converts text to a specific case:</p>
+<ul>
+<li>Uppercase (ALL CAPS)</li>
+<li>Lowercase (all lowercase)</li>
+<li>Title Case (First Letter Capital)</li>
+<li>Sentence case (First letter of sentence)</li>
+</ul>
+<h4 id="9-insert-field-type-insertfield">9. Insert Field (&quot;$type&quot;: &quot;InsertField&quot;)</h4>
+<p>Inserts a Word field (such as page numbers, dates, or document properties) at the specified location.</p>
+<h4 id="10-insert-word-type-insertword">10. Insert Word (&quot;$type&quot;: &quot;InsertWord&quot;)</h4>
+<p>Inserts specified text at the cursor position or within a range. Can optionally prevent duplicate insertions.</p>
+<h3 id="custom-document-property-manipulation-commands">Custom Document Property Manipulation Commands</h3>
+<h4 id="11-set-the-value-of-a-custom-document-property-type-setcustomproperty">11. Set the value of a Custom Document Property (&quot;$type&quot;: &quot;SetCustomProperty&quot;)</h4>
+<p>Used to set the value of a Custom Document Property. These can be used to show or hide buttons for groups on the ribbon. Use in tandem with UnsetCustomProperty</p>
+<h4 id="12-delete-a-custom-document-property-type-deletecustomproperty">12. Delete a Custom Document Property (&quot;$type&quot;: &quot;DeleteCustomProperty&quot;)</h4>
+<p>Used to unset the value of a Custom Document Property. These can be used to show or hide buttons for groups on the ribbon. Use in tandem with SetCustomProperty</p>
+<h3 id="vba-macro-commands">VBA Macro Commands</h3>
+<h4 id="13-run-vba-macro-type-runmacro">13. Run VBA Macro (&quot;$type&quot;: &quot;RunMacro&quot;)</h4>
+<p>Executes an existing VBA macro by name with optional parameters. This allows you to integrate existing VBA automation with your script configurations.</p>
+<p><strong>Use Cases:</strong></p>
+<ul>
+<li>Execute legacy VBA macros from ribbon buttons</li>
+<li>Run document-specific macros stored in templates</li>
+<li>Trigger complex automation that's already implemented in VBA</li>
+</ul>
+<h4 id="-delete-text--replace-text-not-yet-available">??. Delete Text / Replace Text???? (Not yet available)</h4>
+<p>Removes specified characters from the text. Useful for cleaning up unwanted characters or formatting marks.</p>
+<h2 id="using-scripts">Using Scripts</h2>
+<p>Scripts appear as buttons in your Word ribbon. The visibility and availability of scripts are controlled by configuration and can be customised per user or organisation.</p>
+<h3 id="executing-a-script">Executing a Script</h3>
+<ol>
+<li><strong>Select text</strong> (if the script applies to a selection) or position your cursor</li>
+<li><strong>Click the script button</strong> in the ribbon</li>
+<li>The script executes all commands in sequence</li>
+<li>Changes are applied to your document</li>
+</ol>
+<div class="TIP">
+<h5>Tip</h5>
+<p>Scripts respect Word's undo stack. If you need to reverse script changes, press Ctrl+Z immediately after execution.</p>
+</div>
+<h3 id="script-behaviour">Script Behaviour</h3>
+<ul>
+<li><p><strong>Sequential Execution</strong>: Commands execute in the order configured</p>
+</li>
+<li><p><strong>Range Application</strong>: Each command can target different ranges:</p>
+<ul>
+<li>Entire document (&quot;CommandRange&quot;: &quot;EntireDocument&quot;) - &quot;THIS DOES NOT EXIST IN THE SCHEMEA AT THE MOMENT SO NOT AVAILABLE&quot;</li>
+<li>Current selection (&quot;CommandRange&quot;: &quot;Selection&quot;)</li>
+<li>All paragraphs of selection (&quot;CommandRange&quot;: &quot;Paragraphs&quot;)</li>
+<li>First paragraph of selection (&quot;CommandRange&quot;: &quot;FirstParagraph&quot;)</li>
+<li>Last paragraph of selection (&quot;CommandRange&quot;: &quot;LastParagraph&quot;)</li>
+</ul>
+<p><strong>SubRange Application</strong>: the following Range options can also have a SubRange (&quot;CommandRange&quot;: &quot;Selection&quot;) and :</p>
+<ul>
+<li><p>Selection (&quot;CommandRange&quot;: &quot;Selection&quot;) with sub-ranges (first word, last word, all words, first sentence, last sentence, all sentences)</p>
+</li>
+<li><p>Current selection (&quot;CommandRange&quot;: &quot;Selection&quot;)</p>
+</li>
+</ul>
+</li>
+<li><p><strong>Error Handling</strong>: If a command fails, script execution stops, and you receive an error message</p>
+</li>
+</ul>
+<h2 id="configuration">Configuration</h2>
+<p>Scripts are configured through JSON files stored in your application data directory:</p>
+<ul>
+<li><strong>Shared Configuration</strong>: <code>%appdata%/kutana+brochet/Word/Config</code></li>
+<li><strong>User Configuration</strong>: <code>%localappdata%/kutana+brochet/Word/Config</code></li>
+</ul>
+<h3 id="json-schema">JSON Schema</h3>
+<p>The complete JSON Schema definition for script configuration:</p>
+<div class="WARNING">
+Warning
+<p>It looks like the sample you are looking for does not exist.</p>
+</div>
+<div class="TIP">
+<h5>Tip</h5>
+<p>Use this schema in your JSON editor for IntelliSense and validation. Most editors (VS Code, Visual Studio, etc.) support JSON Schema auto-completion when you add a <code>$schema</code> property:</p>
+<pre><code class="lang-json">{
+  &quot;$schema&quot;: &quot;path/to/ScriptConfiguration.schema.json&quot;,
+  &quot;Scripts&quot;: { ... }
+}
+</code></pre>
+</div>
+<h3 id="script-structure">Script Structure</h3>
+<p>Each script requires:</p>
+<ul>
+<li><strong>Name</strong>: Unique identifier for the script</li>
+<li><strong>Description</strong>: Plain-language explanation of what the script does</li>
+<li><strong>Commands</strong>: List of operations to perform</li>
+<li><strong>Mapping</strong>: Controls visibility and availability in the ribbon</li>
+</ul>
+<h3 id="configuration-example">Configuration Example</h3>
+<pre><code class="lang-json">{
+  &quot;Scripts&quot;: {
+    &quot;FormatLegalDocument&quot;: {
+      &quot;Comment&quot;: &quot;Applies standard legal document formatting&quot;,
+      &quot;Commands&quot;: [
+        {
+          &quot;$type&quot;: &quot;ApplyStyle&quot;,
+          &quot;CommandRange&quot;: &quot;AllParagraphs&quot;,
+          &quot;StyleName&quot;: &quot;Legal Body Text&quot;
+        },
+        {
+          &quot;$type&quot;: &quot;ApplyFontFormatting&quot;,
+          &quot;CommandRange&quot;: &quot;Selection&quot;,
+          &quot;SubRange&quot;: &quot;All&quot;,
+          &quot;Bold&quot;: 0,
+          &quot;Italic&quot;: 0
+        },
+        {
+          &quot;$type&quot;: &quot;DeleteCharacters&quot;,
+          &quot;CommandRange&quot;: &quot;EntireDocument&quot;,
+          &quot;SubRange&quot;: &quot;All&quot;,
+          &quot;Characters&quot;: &quot;  &quot;
+        }
+      ]
+    }
+  },
+  &quot;Mappings&quot;: {
+    &quot;formatLegalDoc&quot;: {
+      &quot;Script&quot;: &quot;FormatLegalDocument&quot;,
+      &quot;EnabledWhen&quot;: &quot;Always&quot;,
+      &quot;VisibleWhen&quot;: &quot;Always&quot;
+    }
+  }
+}
+</code></pre>
+<h3 id="configuration-options">Configuration Options</h3>
+<p><strong>EnabledWhen</strong></p>
+<ul>
+<li><code>Always</code>: Script is always available</li>
+<li>Custom rules expression (advanced)</li>
+</ul>
+<p><strong>VisibleWhen</strong></p>
+<ul>
+<li><code>Always</code>: Script button always visible in ribbon</li>
+<li>Custom rules expression (advanced)</li>
+</ul>
+<p><strong>CommandRange Options (Is the attribute mandatory ??? Check with Phill</strong></p>
+<ul>
+<li><code>EntireDocument</code>: Applies to whole document (&quot;CommandRange&quot;: &quot;EntireDocument&quot;)</li>
+<li><code>Selection</code>: Applies to currently selected text (&quot;CommandRange&quot;: &quot;Selection&quot;)</li>
+<li><code>Paragraphs</code>: Applies to every paragraph in the selection (&quot;CommandRange&quot;: &quot;Paragraphs&quot;)</li>
+<li><code>FirstParagraph</code>: Applies to first paragraph only in the selection (&quot;CommandRange&quot;: &quot;FirstParagraph&quot;)</li>
+<li><code>LastParagraph</code>: Applies to last paragraph only in the selection (&quot;CommandRange&quot;: &quot;LastParagraph&quot;)</li>
+</ul>
+<p><strong>SubRange Options</strong> (for granular control)</p>
+<ul>
+<li><code>All</code>: Entire range</li>
+<li><code>FirstWord</code>: First word only</li>
+<li><code>LastWord</code>: Last word only
+Available on InsertText only</li>
+<li><code>Start</code>: First word only</li>
+<li><code>End</code>: Last word only</li>
+</ul>
+<h2 id="command-types-reference">Command Types Reference</h2>
+<h3 id="1-applyfontformatting">1. ApplyFontFormatting</h3>
+<p><strong>Mandatory Properties</strong>:</p>
+<ul>
+<li><code>Ranges</code>:
+<ul>
+<li><code>$type</code>:  <code>EntireDocument</code>, <code>FirstParagraph</code>, <code>LastParagraph</code>, <code>Paragraphs</code>, <code>Selection</code></li>
+<li><code>SubRange</code>: <code>All</code>, <code>FirstWord</code>, <code>LastWord</code></li>
+</ul>
+</li>
+<li><code>Options</code>: There needs to be at least one option for the Script to do anything</li>
+</ul>
+<p><strong>NB:</strong> EntireDocument applies to the Main story in the document - it dose not include text in a textbox in the main story</p>
+<p><strong>NB:</strong> The (&quot;$type&quot;: &quot;ClearFontFormatting&quot;) can be used to remove all manual formatting prior to running font formatting commands</p>
+<pre><code class="lang-json">&quot;Comment&quot;: &quot;Testing Applying Bold&quot;,
+&quot;Commands&quot;: [
+  {
+    &quot;$type&quot;: &quot;ApplyFontFormatting&quot;,
+    &quot;Range&quot;: {
+      &quot;$type&quot;: &quot;Selection&quot;,
+      &quot;SubRange&quot;: &quot;All&quot;
+    },
+    &quot;Options&quot;: {
+      &quot;Bold&quot;: &quot;True&quot;
+    }
+  } 
+]
+</code></pre>
+<p><strong>Available Options</strong>: at least one must be used for the script to do anything:</p>
+<ul>
+<li><code>Bold</code>, <code>Italic</code>:  <code>False</code>, <code>Toggle</code>, <code>True</code></li>
+<li><code>CharacterCase</code>: <code>FullWidth</code>, <code>HalfWidth</code>, <code>LowerCase</code>, <code>NextCase</code>, <code>TitleSentence</code>, <code>TitleWord</code>, <code>ToggleCase</code>, <code>UpperCase</code></li>
+<li><code>AllCaps</code>, <code>SmallCaps</code>:  <code>False</code>, <code>Toggle</code>, <code>True</code></li>
+<li><code>Underline</code>: <code>None</code>, <code>Single</code>, <code>Double</code>, <code>Dotted</code>, etc.</li>
+<li><code>Colour</code>: Text string that can either be the RGB colour value enters as a text string eg <code>RGB(0,0,255)</code> or the hex value eg <code>#1234AB</code></li>
+<li><code>ColourIndex</code>: <code>0</code> - Not sure how this is used ?????</li>
+<li><code>Hidden</code>:  <code>False</code>, <code>Toggle</code>, <code>True</code></li>
+<li><code>Position</code>: Raise/lower text (in points)</li>
+<li><code>Subscript</code>, <code>Superscript</code>:  <code>False</code>, <code>Toggle</code>, <code>True</code></li>
+<li><code>StrikeThrough</code>, <code>DoubleStrikeThrough</code>:  <code>False</code>, <code>Toggle</code>, <code>True</code></li>
+</ul>
+<h3 id="2-applyparagraphformatting">2. ApplyParagraphFormatting</h3>
+<p><strong>Mandatory Properties</strong>:</p>
+<ul>
+<li><code>Ranges</code>:
+<ul>
+<li><code>$type</code>:  <code>EntireDocument</code>, <code>FirstParagraph</code>, <code>LastParagraph</code>, <code>Paragraphs</code>, <code>Selection</code></li>
+</ul>
+</li>
+<li><code>Options</code>: There needs to be at least one option for the Script to do anything</li>
+</ul>
+<p><strong>NB:</strong> There is no SubType option in the Range for ApplyParagraphFormatting as it applies to whole paragraphs.</p>
+<pre><code class="lang-json">&quot;Comment&quot;: &quot;Testing removing space after&quot;,
+&quot;Commands&quot;: [
+  {
+    &quot;$type&quot;: &quot;ApplyParagraphFormatting&quot;,
+    &quot;Range&quot;: {
+      &quot;$type&quot;: &quot;Selection&quot;
+    },
+    &quot;Options&quot;: {
+      &quot;SpaceAfter&quot;: 0 
+    }
+  } 
+]
+</code></pre>
+<p><strong>Available Options</strong> at least one must be used for the script to do anything:</p>
+<ul>
+<li><code>Alignment</code>:  <code>Center</code>, <code>Justified</code>, <code>Left</code>, <code>Right</code></li>
+<li><code>BaseLineAlignment</code>:  <code>Baseline</code>, <code>Center</code>, <code>FarEast50</code>, <code>Top</code></li>
+<li><code>CharacterUnitFirstLineIndent</code>, <code>CharacterUnitLeftIndent</code>, <code>CharacterUnitRightIndent</code>:  <code>0</code> value in points (always +ve?)</li>
+<li><code>FirstLineIndent</code>: <code>0</code> value in points (always +ve?)</li>
+<li><code>KeepTogether</code>, <code>KeepWithNext</code>:  <code>False</code>, <code>True</code>, <code>Undefined</code></li>
+<li><code>LeftIndent</code>:  <code>0</code> value in points (always +ve?)</li>
+<li><code>LineSpacing</code>:  <code>0</code> value in points (always +ve?)</li>
+<li><code>LineSpacingRule</code>:  <code>AtLeast</code>, <code>Double</code>, <code>Exactly</code>, <code>Multiple</code>, <code>OnePointFive</code>, <code>Single</code></li>
+<li><code>LineUnitAfter</code>, <code>LineUnitBefore</code>:  <code>0</code>  value in points (always +ve?)</li>
+<li><code>MirrorIndents</code>:  <code>False</code>, <code>True</code>, <code>Undefined</code></li>
+<li><code>NoLineNumber</code>:  <code>False</code>, <code>True</code>, <code>Undefined</code></li>
+<li><code>OutlineLevel</code>:  <code>BodyText</code>, <code>Level1</code>, <code>Level2</code>, . . . <code>Level9</code></li>
+<li><code>PageBreakBefore</code>:  <code>False</code>, <code>True</code>, <code>Undefined</code></li>
+<li><code>RightIndent</code>:  <code>0</code>  value in points (always +ve?)</li>
+<li><code>SpaceAfter</code>, <code>SpaceBefore</code>:  <code>0</code>  value in points (always +ve?)</li>
+<li><code>WidowControl</code>:  <code>False</code>, <code>True</code>, <code>Undefined</code></li>
+</ul>
+<h3 id="3-apply-selection-formatting">3. Apply Selection Formatting</h3>
+<ul>
+<li><code>$type</code>: <code>ApplySelectionFormatting</code>,</li>
+<li><code>CommandRanges</code>: <code>EntireDocument</code>, <code>FirstParagraph</code>, <code>LastParagraph</code>, <code>Paragraphs</code>, <code>Selection</code></li>
+<li><code>SubRange</code>: Not used - the default option is <code>All</code></li>
+<li><code>StyleName</code>: <style name></style></li></ul>
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.2.31-rc/docs/user/features/scripts.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

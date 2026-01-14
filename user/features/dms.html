@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>DMS | User Docs </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="DMS | User Docs ">
+      
+      
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.2.31-rc/docs/user/features/dms.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="K+B Office Add-ins">
+            K+B Office Add-ins
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="dms">DMS</h1>
+
+<p>The <code>DMS.json</code> file is for configuration of our Document Management System Integration.</p>
+<h2 id="schema">Schema</h2>
+<div class="WARNING">
+Warning
+<p>It looks like the sample you are looking for does not exist.</p>
+</div><h2 id="example">Example</h2>
+<div class="WARNING">
+Warning
+<p>It looks like the sample you are looking for does not exist.</p>
+</div><h2 id="how-to-switch-between-different-dms-options">How to switch between different DMS options</h2>
+<p>The K+B Word msi can integrate with different Document Management Systems (DMS).</p>
+<p>This is done using JSON configuration settings. For the DMS setting the JSON top level property <code>&quot;DocumentManagement&quot;:</code> is used.</p>
+<pre><code class="lang-Json">{
+  &quot;$schema&quot;: &quot;https://kutana-brochet.github.io/schemas/7.0/CoreConfiguration.schema.json&quot;,
+  &quot;DocumentManagement&quot;: {
+
+  }
+}
+</code></pre>
+<p><strong>NB:</strong> <code>&quot;Provider&quot;</code> is the proptery for defining the DMS type</p>
+<h2 id="available-documentmanagement-properties">Available <code>DocumentManagement</code> properties</h2>
+<ul>
+<li><code>CreateOptions</code>: this is used for debug testing</li>
+<li><code>PreProfileTemplates</code>: (array) this holds the list of Templates to be pre-profiled (Front-end profiling).
+Each item can have the following properties:
+<ul>
+<li><code>CloseOnCancel</code> (Optional)</li>
+<li><code>DocType</code> (Optional)</li>
+<li><code>Filter</code> (Mandatory)</li>
+</ul>
+</li>
+<li><code>Properties</code>: ???What is this&quot;</li>
+<li><code>PropertyMappings</code>: contains the following 3 properties allowing information to be saved into the Word document:
+<ul>
+<li><code>CustomProperties</code></li>
+<li><code>DocumentVariables</code></li>
+<li><code>DocumentProperties</code></li>
+</ul>
+</li>
+<li><code>Provider</code>: <code>iManage</code>, <code>NetDocuments</code> and <code>None</code></li>
+</ul>
+<h3 id="preprofiletemplates-properties"><code>&quot;PreProfileTemplates&quot;</code> properties</h3>
+<p>This propery is used for listing the Word templates that are to be pre-profiled (Front-end profile).</p>
+<ul>
+<li><code>Filter</code>: (Mandatory) this hold the name of the templates to be pre-profiled. It uses regular expressions.</li>
+<li><code>CloseOnCancel</code>: <code>true</code> or <code>false</code>
+If set to true and the Cancel button is pressed on the DMS SaveAs screen then the initially created document is CLOSED. The default setting is <code>false</code>.</li>
+<li><code>DocType</code>: used to pass to the DMS the document type to be set in the DMS SaveAs screen (currently only works in iManage - known bug in netDocs that information cannot be set in the SaveAs screen).</li>
+</ul>
+<p>**Example: **
+A template called Letter is pre-profiled and if the cancel button is pressed then the initial document is closed.
+Any template that starts with &quot;AB Company&quot; is pre-profiled and if the cancel button is pressed then the document is not closed and the rest of the process (Filesite-New) is continued.</p>
+<pre><code class="lang-Json">&quot;PreProfileTemplates&quot;: [
+  {
+    &quot;Filter&quot;: &quot;Letter&quot;,
+    &quot;CloseOnCancel&quot;: true
+  },
+  {
+    &quot;Filter&quot;: &quot;AB Company*&quot;,
+    &quot;CloseOnCancel&quot;: false
+  }
+],
+</code></pre>
+<h3 id="properties-properties"><code>&quot;Properties&quot;</code> properties</h3>
+<p>??WHAT IS THIS USED FOR ???</p>
+<h3 id="propertymappings-properties"><code>&quot;PropertyMappings&quot;</code> properties</h3>
+<p>This property is used for defining the DMS information that is written into the Word document as either: Custom Document Properties, Variables or Document Properties.</p>
+<p>The three different properties are: <code>CustomProperties</code>, <code>DocumentVariables</code> and <code>DocumentProperties</code>.</p>
+<p>Each of these properties contain a list of paired values:
+&quot;Name of variable&quot;: {{ DMSKeyName(s) and format }}</p>
+<pre><code class="lang-Json">&quot;DocumentVariables&quot;: {
+    &quot;DMSAuthor&quot;: &quot;{{ author.value }}&quot;,
+    &quot;DMSOurRef&quot;: &quot;{{ profileInfo.identifier }}v{{ profileInfo.version | string.to_int | object.format \&quot;d2\&quot; }}&quot;
+  },  
+</code></pre>
+<p>There can be multiple DMSKeyNames with additional joining text. The DMSKeyNames can be formatted using SCRIBAN formatting (<a href="https://github.com/scriban/scriban">https://github.com/scriban/scriban</a>).</p>
+<p><strong>Example:</strong> makes the document version into a 2 digit number but firstly converting the version string into an integer and then formatting this inro a 2 digit decimal number.</p>
+<pre><code class="lang-Json">&quot;DMSOurRef&quot;: &quot;{{ profileInfo.identifier }}v{{ profileInfo.version | string.to_int | object.format \&quot;d2\&quot; }}&quot;
+</code></pre>
+<h3 id="provider-properties"><code>&quot;Provider&quot;</code> properties</h3>
+<p>This property is used to set the current DMS system that is being used.</p>
+<p>There are three options:</p>
+<ul>
+<li><code>iManage</code>: set to this option when iManage integration is required</li>
+<li><code>NetDocuments</code>: set to this option when netDocs integration is required</li>
+<li><code>None</code>: (default) set to this option when no DMS integration is required</li>
+</ul>
+<pre><code class="lang-xml">{
+  &quot;DocumentManagement&quot;: {
+    &quot;Provider&quot;: &quot;NetDocuments&quot;,
+  }
+}
+</code></pre>
+<div class="tabGroup" id="tabgroup_1">
+<ul role="tablist">
+<li role="presentation">
+<a href="#tabpanel_1_vanilla" role="tab" aria-controls="tabpanel_1_vanilla" data-tab="vanilla" tabindex="0" aria-selected="true">Vanilla</a>
+</li>
+<li role="presentation">
+<a href="#tabpanel_1_imanage" role="tab" aria-controls="tabpanel_1_imanage" data-tab="imanage" tabindex="-1">iManage</a>
+</li>
+<li role="presentation">
+<a href="#tabpanel_1_netDocs" role="tab" aria-controls="tabpanel_1_netDocs" data-tab="netDocs" tabindex="-1">Net Docs</a>
+</li>
+</ul>
+<section id="tabpanel_1_vanilla" role="tabpanel" data-tab="vanilla">
+
+<p>Content for Vanilla...</p>
+</section>
+<section id="tabpanel_1_imanage" role="tabpanel" data-tab="imanage" aria-hidden="true" hidden="hidden">
+
+<p>Content for iManage...</p>
+</section>
+<section id="tabpanel_1_netDocs" role="tabpanel" data-tab="netDocs" aria-hidden="true" hidden="hidden">
+<h2 id="dmskeynames">DMSKeyNames</h2>
+<p>The following DMSKEYNames can be used inf the <code>&quot;PropertyMappings&quot;</code> properties for saving into the Word document.</p>
+<p><strong>Document Profile information</strong></p>
+<ul>
+<li><code>profileInfo.identifier</code> - Document number</li>
+<li><code>profileInfo.cabinet</code> -</li>
+<li><code>profileInfo.version</code> - Document version</li>
+<li><code>profileInfo.filename</code> - Document file name</li>
+<li><code>profileInfo.lastModified</code> - Date the document was last modified</li>
+<li><code>profileInfo.createdBy</code> - Full name of the typist</li>
+</ul>
+<p><strong>System information</strong>
+The other properties depend on how NetDocs is setup as will vary between different clients.</p>
+<p>View the New Document dialog box to look at the fields and values that need to be entered:
+<img width="957" height="606" alt="image" src="https://github.com/user-attachments/assets/b431fcd3-ec6c-4132-8c3a-ae070c17bba9"></p>
+<p>On the left part of the screen are the list of fields these names can be used. Each has two elements .value and .description.</p>
+<p><strong>Example:</strong></p>
+<ul>
+<li><code>author.value</code> eg EKT</li>
+<li><code>author.description</code> eg Emma Thompson</li>
+</ul>
+</section>
+</div>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.2.31-rc/docs/user/features/dms.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

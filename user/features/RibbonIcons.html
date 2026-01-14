@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>RibbonIcons | User Docs </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="RibbonIcons | User Docs ">
+      
+      
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.2.31-rc/docs/user/features/RibbonIcons.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="K+B Office Add-ins">
+            K+B Office Add-ins
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="ribbonicons">RibbonIcons</h1>
+
+<p><code>&quot;$schema&quot;: &quot;https://kutana-brochet.github.io/schemas/7.0/CoreConfiguration.schema.json&quot;</code></p>
+<h2 id="description">Description</h2>
+<p>The JSON element <code>&quot;RibbonIcons&quot;</code> is used for defining the icons that are auto-generated when Word loads.</p>
+<p>The is one elements of <code>&quot;RibbonIcons&quot;</code>:</p>
+<ol>
+<li><code>&quot;Icons&quot;</code></li>
+</ol>
+<h3 id="recommended-json-file-name">Recommended JSON file name</h3>
+<p>It is recommended that the JSON file holding this information is called <code>StyleButtonsConfig.json</code>.</p>
+<p>This section of the configuration can be divided between two separate files eg <code>StyleButtonsConfigA.json</code> and <code>StyleButtonsConfigB.json</code> and then will both be read and the information joined together. Remember if there is a <code>&quot;Icons&quot;</code> that is defined in both files the <code>&quot;RibbonIcons&quot;</code> in the filename that in later in the alapbetic list <code>StyleButtonsConfigB.json</code> will overwrite the other.</p>
+<h2 id="ribbonicons-1">&quot;RibbonIcons&quot;</h2>
+<p>This section is used for defining the icon image.</p>
+<p><strong>Example</strong></p>
+<p>Below is an example of two Mappings for the Party 1 and Background 1 styles buttons:</p>
+<p><strong>XML from the Ribbon.xml file:</strong></p>
+<pre><code class="lang-xml">&lt;box id=&quot;PartyBox1&quot; boxStyle=&quot;vertical&quot;&gt;
+    &lt;button id=&quot;PartyParties&quot;
+       image=&quot;Parties 1&quot; 
+       onAction=&quot;RunScript&quot; 
+       label=&quot;Parties&quot; 
+       showLabel=&quot;false&quot; 
+       getVisible=&quot;GetVisibleByScript&quot; 
+       getEnabled=&quot;GetEnabledByScript&quot; /&gt;
+    &lt;button id=&quot;PartyBackground&quot; 
+       image=&quot;Background 1&quot; 
+       onAction=&quot;RunScript&quot; 
+       label=&quot;Background&quot; 
+       showLabel=&quot;false&quot; 
+       getVisible=&quot;GetVisibleByScript&quot; 
+       getEnabled=&quot;GetEnabledByScript&quot; /&gt;
+&lt;/box&gt;	
+</code></pre>
+<p>JSON from the configuration file StyleButtonsConfig.json</p>
+<p><strong>Note:</strong> There are two settings for each icon the second being the same icon name except it has Dark appended to the name. This creates a black version of the same icons which is used when running Office in dark mode. Usually the ony difference between the two settings are the FontColour for example it is changed to White for dark mode.</p>
+<pre><code class="lang-json">{
+    &quot;RibbonIcons&quot;: {
+    &quot;Icons&quot;: [
+       {
+        &quot;Name&quot;: &quot;Parties 1&quot;,
+        &quot;Text&quot;: &quot;(1)&quot;,
+        &quot;Size&quot;: 32,
+        &quot;FontName&quot;: &quot;Arial&quot;,
+        &quot;FontSize&quot;: 25,
+        &quot;FontStyles&quot;: [
+          &quot;Regular&quot;
+        ],
+        &quot;FontColour&quot;: &quot;Green&quot;,
+        &quot;TextRenderingHint&quot;: &quot;AntiAlias&quot;,
+        &quot;XOffset&quot;: 0,
+        &quot;YOffset&quot;: 0,
+        &quot;Contrast&quot;: 30
+      },
+      {
+        &quot;Name&quot;: &quot;Parties 1Dark&quot;,
+        &quot;Text&quot;: &quot;(1)&quot;,
+        &quot;Size&quot;: 32,
+        &quot;FontName&quot;: &quot;Arial&quot;,
+        &quot;FontSize&quot;: 25,
+        &quot;FontStyles&quot;: [
+          &quot;Regular&quot;
+        ],
+        &quot;FontColour&quot;: &quot;White&quot;,
+        &quot;TextRenderingHint&quot;: &quot;AntiAlias&quot;,
+        &quot;XOffset&quot;: 0,
+        &quot;YOffset&quot;: 0,
+        &quot;Contrast&quot;: 30
+      },
+      {
+        &quot;Name&quot;: &quot;Background 1&quot;,
+        &quot;Text&quot;: &quot;(A)&quot;,
+        &quot;Size&quot;: 32,
+        &quot;FontName&quot;: &quot;Arial&quot;,
+        &quot;FontSize&quot;: 25,
+        &quot;FontStyles&quot;: [
+          &quot;Regular&quot;
+        ],
+        &quot;FontColour&quot;: &quot;Green&quot;,
+        &quot;TextRenderingHint&quot;: &quot;AntiAlias&quot;,
+        &quot;XOffset&quot;: 2,
+        &quot;YOffset&quot;: 0,
+        &quot;Contrast&quot;: 30
+      },
+      {
+        &quot;Name&quot;: &quot;Background 1Dark&quot;,
+        &quot;Text&quot;: &quot;P&quot;,
+        &quot;Size&quot;: 32,
+        &quot;FontName&quot;: &quot;Arial&quot;,
+        &quot;FontSize&quot;: 25,
+        &quot;FontStyles&quot;: [
+          &quot;Regular&quot;
+        ],
+        &quot;FontColour&quot;: &quot;White&quot;,
+        &quot;TextRenderingHint&quot;: &quot;AntiAlias&quot;,
+        &quot;XOffset&quot;: 23,
+        &quot;YOffset&quot;: 0,
+        &quot;Contrast&quot;: 30
+      },
+</code></pre>
+<p>The following 11 elements are available for a ribbon icon:</p>
+<ol>
+<li><p><code>&quot;Contrast&quot;</code> - not sure what this is but there are two setting 30 and 50. Think this is redundant!!</p>
+</li>
+<li><p><code>&quot;FontColour&quot;</code> - this is the list of colours that are available. The list of colour can be found in ????</p>
+<p><strong>How do we apply Hex colours</strong></p>
+</li>
+<li><p><code>&quot;FontName&quot;</code></p>
+</li>
+<li><p><code>&quot;FontSize&quot;</code></p>
+</li>
+<li><p><code>&quot;FontStyle&quot;</code></p>
+</li>
+<li><p><code>&quot;Name&quot;</code></p>
+</li>
+<li><p><code>&quot;Size&quot;</code></p>
+</li>
+<li><p><code>&quot;Text&quot;</code></p>
+</li>
+<li><p><code>&quot;TextRenderingHint&quot;</code></p>
+</li>
+<li><p><code>&quot;XOffset&quot;</code></p>
+</li>
+<li><p><code>&quot;YOffset&quot;</code></p>
+</li>
+</ol>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.2.31-rc/docs/user/features/RibbonIcons.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

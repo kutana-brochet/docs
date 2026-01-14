@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Outlook Address Book Integration - Implementation Summary | User Docs </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Outlook Address Book Integration - Implementation Summary | User Docs ">
+      
+      
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.2.31-rc/docs/user/configuration/outlook-implementation-summary.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="K+B Office Add-ins">
+            K+B Office Add-ins
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+
+      <div class="content">
+        <div class="actionbar">
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="outlook-address-book-integration---implementation-summary">Outlook Address Book Integration - Implementation Summary</h1>
+
+<h2 id="overview">Overview</h2>
+<p>I've successfully implemented the Outlook address book connection for your Office Add-in. The implementation allows you to fetch contacts from Microsoft Outlook address books and use them within Word documents for mail merge, data insertion, or other purposes.</p>
+<h2 id="changes-made">Changes Made</h2>
+<h3 id="1-updated-outlookprovidercs">1. Updated <code>OutlookProvider.cs</code></h3>
+<p><strong>Location</strong>: <code>src\Core\Infrastructure.Persistence\ExternalData\Providers\Outlook.cs</code></p>
+<p><strong>Key Implementation Details:</strong></p>
+<ul>
+<li><p><strong>COM Interop</strong>: Uses late binding (dynamic) to interact with Outlook's COM objects</p>
+</li>
+<li><p><strong>Multi-Framework Support</strong>: Conditional compilation for .NET Framework 4.8 and .NET 9</p>
+<ul>
+<li>.NET 4.8: Uses <code>Marshal.GetActiveObject</code> to connect to running Outlook instance</li>
+<li>.NET 9: Uses <code>Type.GetTypeFromProgID</code> and <code>Activator.CreateInstance</code></li>
+</ul>
+</li>
+<li><p><strong>Address Book Retrieval</strong>:</p>
+<ul>
+<li>Connects to Outlook via MAPI namespace</li>
+<li>Searches for the specified address book by name</li>
+<li>Retrieves all entries from the address book</li>
+</ul>
+</li>
+<li><p><strong>Data Extraction</strong>:</p>
+<ul>
+<li>Handles both Outlook Contacts and Exchange Users</li>
+<li>Extracts 10 fields: FullName, FirstName, LastName, EmailAddress, CompanyName, JobTitle, BusinessPhone, MobilePhone, BusinessAddress, Type</li>
+<li>Gracefully handles missing data (returns empty strings)</li>
+</ul>
+</li>
+<li><p><strong>COM Object Management</strong>:</p>
+<ul>
+<li>Properly releases all COM objects to prevent memory leaks</li>
+<li>Uses try-finally blocks to ensure cleanup</li>
+<li>Forces garbage collection after releasing COM objects</li>
+</ul>
+</li>
+<li><p><strong>Error Handling</strong>:</p>
+<ul>
+<li>Detailed error messages for common issues</li>
+<li>Handles: Outlook not installed, address book not found, access denied, COM exceptions</li>
+</ul>
+</li>
+</ul>
+<h2 id="configuration">Configuration</h2>
+<h3 id="required-configuration-properties">Required Configuration Properties</h3>
+<p>The <code>OutlookDto</code> class requires the following properties:</p>
+<pre><code class="lang-json">{
+  &quot;$connectionType&quot;: &quot;Outlook&quot;,
+  &quot;OutlookAddressbook&quot;: &quot;Contacts&quot;,          // Required: Name of the address book
+  &quot;ConnectionSettings&quot;: &quot;&quot;,                   // Reserved for future use
+  &quot;SQLQuery&quot;: &quot;&quot;,                            // Reserved for future filtering
+  &quot;Timeout&quot;: 30,                             // Optional: Timeout in seconds
+  &quot;FieldAliasOrder&quot;: {                       // Optional: Map column names
+    &quot;FullName&quot;: &quot;Contact Name&quot;,
+    &quot;EmailAddress&quot;: &quot;Email&quot;
+  },
+  &quot;UseLocalCache&quot;: false,                    // Optional: Enable caching
+  &quot;LocalCachePath&quot;: &quot;&quot;                       // Optional: Cache file location
+}
+</code></pre>
+<h3 id="configuration-examples">Configuration Examples</h3>
+<h4 id="1-basic-personal-contacts-configuration">1. Basic Personal Contacts Configuration</h4>
+<pre><code class="lang-json">{
+  &quot;DatasetProviderConfiguration&quot;: {
+    &quot;Datasets&quot;: {
+      &quot;MyContacts&quot;: {
+        &quot;$connectionType&quot;: &quot;Outlook&quot;,
+        &quot;OutlookAddressbook&quot;: &quot;Contacts&quot;,
+        &quot;ConnectionSettings&quot;: &quot;&quot;,
+        &quot;SQLQuery&quot;: &quot;&quot;,
+        &quot;Timeout&quot;: 30
+      }
+    }
+  }
+}
+</code></pre>
+<h4 id="2-global-address-list-exchange">2. Global Address List (Exchange)</h4>
+<pre><code class="lang-json">{
+  &quot;DatasetProviderConfiguration&quot;: {
+    &quot;Datasets&quot;: {
+      &quot;CompanyDirectory&quot;: {
+        &quot;$connectionType&quot;: &quot;Outlook&quot;,
+        &quot;OutlookAddressbook&quot;: &quot;Global Address List&quot;,
+        &quot;ConnectionSettings&quot;: &quot;&quot;,
+        &quot;SQLQuery&quot;: &quot;&quot;,
+        &quot;Timeout&quot;: 60,
+        &quot;UseLocalCache&quot;: true,
+        &quot;LocalCachePath&quot;: &quot;%temp%\\outlook_gal_cache&quot;
+      }
+    }
+  }
+}
+</code></pre>
+<h4 id="3-multiple-address-books-with-field-mapping">3. Multiple Address Books with Field Mapping</h4>
+<pre><code class="lang-json">{
+  &quot;DatasetProviderConfiguration&quot;: {
+    &quot;Datasets&quot;: {
+      &quot;Clients&quot;: {
+        &quot;$connectionType&quot;: &quot;Outlook&quot;,
+        &quot;OutlookAddressbook&quot;: &quot;Client Contacts&quot;,
+        &quot;ConnectionSettings&quot;: &quot;&quot;,
+        &quot;SQLQuery&quot;: &quot;&quot;,
+        &quot;FieldAliasOrder&quot;: {
+          &quot;FullName&quot;: &quot;Client Name&quot;,
+          &quot;EmailAddress&quot;: &quot;Email&quot;,
+          &quot;CompanyName&quot;: &quot;Organization&quot;,
+          &quot;BusinessPhone&quot;: &quot;Phone&quot;
+        }
+      },
+      &quot;Staff&quot;: {
+        &quot;$connectionType&quot;: &quot;Outlook&quot;,
+        &quot;OutlookAddressbook&quot;: &quot;Global Address List&quot;,
+        &quot;ConnectionSettings&quot;: &quot;&quot;,
+        &quot;SQLQuery&quot;: &quot;&quot;,
+        &quot;FieldAliasOrder&quot;: {
+          &quot;FullName&quot;: &quot;Employee&quot;,
+          &quot;EmailAddress&quot;: &quot;Company Email&quot;,
+          &quot;JobTitle&quot;: &quot;Position&quot;
+        }
+      }
+    }
+  }
+}
+</code></pre>
+<h2 id="data-structure">Data Structure</h2>
+<p>The Outlook provider returns a DataSet with the following columns:</p>
+<table>
+<thead>
+<tr>
+<th>Column Name</th>
+<th>Data Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FullName</td>
+<td>string</td>
+<td>Complete display name from address book</td>
+</tr>
+<tr>
+<td>FirstName</td>
+<td>string</td>
+<td>First name (when available from contact details)</td>
+</tr>
+<tr>
+<td>LastName</td>
+<td>string</td>
+<td>Last name (when available from contact details)</td>
+</tr>
+<tr>
+<td>EmailAddress</td>
+<td>string</td>
+<td>Primary email address</td>
+</tr>
+<tr>
+<td>CompanyName</td>
+<td>string</td>
+<td>Company/organization name</td>
+</tr>
+<tr>
+<td>JobTitle</td>
+<td>string</td>
+<td>Job title/position</td>
+</tr>
+<tr>
+<td>BusinessPhone</td>
+<td>string</td>
+<td>Business telephone number</td>
+</tr>
+<tr>
+<td>MobilePhone</td>
+<td>string</td>
+<td>Mobile phone number</td>
+</tr>
+<tr>
+<td>BusinessAddress</td>
+<td>string</td>
+<td>Business address</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>string</td>
+<td>Entry type identifier</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note</strong>: Not all fields may be populated for every contact, depending on what information is available in Outlook.</p>
+<h2 id="how-to-find-your-address-book-names">How to Find Your Address Book Names</h2>
+<ol>
+<li>Open Microsoft Outlook</li>
+<li>Click <strong>Home</strong> tab &gt; <strong>Address Book</strong> button (or press Ctrl+Shift+B)</li>
+<li>In the Address Book window, use the dropdown at the top</li>
+<li>The dropdown shows all available address book names - use these exact names in your configuration</li>
+</ol>
+<p>Common address book names:</p>
+<ul>
+<li><strong>Contacts</strong> - Your personal Outlook contacts</li>
+<li><strong>Global Address List</strong> - Company directory (Exchange/Microsoft 365)</li>
+<li><strong>Suggested Contacts</strong> - Auto-collected contacts</li>
+<li>Custom address books you've created</li>
+</ul>
+<h2 id="security-considerations">Security Considerations</h2>
+<h3 id="outlook-trust-center">Outlook Trust Center</h3>
+<p>Users may need to configure Outlook to allow programmatic access:</p>
+<ol>
+<li>Open Outlook</li>
+<li>Go to <strong>File</strong> &gt; <strong>Options</strong> &gt; <strong>Trust Center</strong> &gt; <strong>Trust Center Settings</strong></li>
+<li>Select <strong>Programmatic Access</strong></li>
+<li>Ensure appropriate settings allow programmatic access</li>
+<li>Users may need to approve access when first connecting (Outlook will prompt)</li>
+</ol>
+<h3 id="data-privacy">Data Privacy</h3>
+<ul>
+<li>Cached data is stored locally unencrypted - ensure secure storage locations</li>
+<li>Be mindful when using Global Address Lists - respect company data policies</li>
+<li>The add-in requires programmatic access to Outlook</li>
+</ul>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="microsoft-outlook-is-not-installed">&quot;Microsoft Outlook is not installed&quot;</h3>
+<ul>
+<li><strong>Solution</strong>: Install Microsoft Outlook on the system</li>
+</ul>
+<h3 id="address-book-x-not-found">&quot;Address book 'X' not found&quot;</h3>
+<ul>
+<li><strong>Solution</strong>: Check exact spelling (case-sensitive), use Address Book dialog in Outlook to verify name</li>
+</ul>
+<h3 id="access-denied-to-outlook">&quot;Access denied to Outlook&quot;</h3>
+<ul>
+<li><strong>Solution</strong>: Configure Trust Center settings, approve access when prompted</li>
+</ul>
+<h3 id="no-entries-found-in-address-book">&quot;No entries found in address book&quot;</h3>
+<ul>
+<li><strong>Solution</strong>: Verify the address book contains contacts and you have read permissions</li>
+</ul>
+<h3 id="performance-issues-with-large-address-books">Performance Issues with Large Address Books</h3>
+<ul>
+<li><strong>Solution</strong>:
+<ul>
+<li>Enable <code>UseLocalCache</code> in configuration</li>
+<li>Increase the <code>Timeout</code> value (e.g., to 60 or 120 seconds)</li>
+<li>For GAL, consider using during off-peak hours</li>
+</ul>
+</li>
+</ul>
+<h2 id="best-practices">Best Practices</h2>
+<ol>
+<li><strong>Descriptive Dataset Names</strong>: Use clear names like &quot;ClientContacts&quot;, &quot;StaffDirectory&quot;</li>
+<li><strong>Enable Caching for Large Lists</strong>: Use local cache for GAL or large contact lists to improve performance</li>
+<li><strong>Field Mapping</strong>: Use <code>FieldAliasOrder</code> to provide user-friendly column names</li>
+<li><strong>Appropriate Timeouts</strong>: Set timeout based on address book size:
+<ul>
+<li>Small (&lt; 100 contacts): 30 seconds (default)</li>
+<li>Medium (100-1000 contacts): 60 seconds</li>
+<li>Large (&gt; 1000 contacts or GAL): 120+ seconds</li>
+</ul>
+</li>
+<li><strong>Test with Small Address Books First</strong>: Verify configuration with personal contacts before using GAL</li>
+</ol>
+<h2 id="future-enhancements">Future Enhancements</h2>
+<p>The following features are reserved for future implementation:</p>
+<ul>
+<li><strong>SQLQuery Support</strong>: Filter contacts based on criteria (currently reserved but not implemented)</li>
+<li><strong>ConnectionSettings</strong>: Additional connection parameters (currently reserved)</li>
+<li><strong>Incremental Updates</strong>: Only fetch changed contacts</li>
+<li><strong>Custom Field Mapping</strong>: Support for custom Outlook contact fields</li>
+<li><strong>Multiple Profile Support</strong>: Specify which Outlook profile to use</li>
+</ul>
+<h2 id="documentation">Documentation</h2>
+<p>I've created comprehensive documentation:</p>
+<ol>
+<li><p><strong>Configuration Guide</strong>: <code>docs/user/configuration/outlook-configuration.md</code></p>
+<ul>
+<li>Complete user documentation with examples</li>
+<li>Troubleshooting guide</li>
+<li>Security considerations</li>
+<li>Step-by-step instructions</li>
+</ul>
+</li>
+<li><p><strong>Example Configuration</strong>: <code>docs/user/configuration/outlook-dataset-example.json</code></p>
+<ul>
+<li>Three complete examples:
+<ul>
+<li>Personal contacts</li>
+<li>Global Address List</li>
+<li>Custom address book</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="testing-recommendations">Testing Recommendations</h2>
+<ol>
+<li><strong>Unit Tests</strong>: Create tests for OutlookProvider.Create() validation</li>
+<li><strong>Integration Tests</strong>: Test against a test Outlook profile with known contacts</li>
+<li><strong>Performance Tests</strong>: Test with varying address book sizes to set appropriate timeouts</li>
+<li><strong>Error Handling Tests</strong>: Test error scenarios:
+<ul>
+<li>Outlook not running</li>
+<li>Invalid address book name</li>
+<li>Access denied</li>
+<li>Empty address book</li>
+</ul>
+</li>
+</ol>
+<h2 id="usage-example">Usage Example</h2>
+<p>After configuration, users can access Outlook contacts from your Word Add-in:</p>
+<pre><code class="lang-csharp">// In your application code
+var query = new GetDataset.Query(&quot;MyContacts&quot;);
+var result = queryDispatcher.Dispatch&lt;GetDataset.Query, DataSet&gt;(query);
+
+if (result.IsSuccess)
+{
+    var contacts = result.Value.Tables[0];
+    // Use the contacts data...
+}
+</code></pre>
+<h2 id="summary">Summary</h2>
+<p>The Outlook address book integration is now complete and ready for use. The implementation:</p>
+<p>✅ Connects to Microsoft Outlook via COM Interop<br>
+✅ Supports both .NET Framework 4.8 and .NET 9<br>
+✅ Retrieves contacts from any Outlook address book<br>
+✅ Properly manages COM objects to prevent memory leaks<br>
+✅ Provides comprehensive error handling<br>
+✅ Supports field mapping and caching for performance<br>
+✅ Includes complete user documentation</p>
+<p>Users can now configure the add-in to pull contact data directly from their Outlook address books for use in Word documents.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.2.31-rc/docs/user/configuration/outlook-implementation-summary.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

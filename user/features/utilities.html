@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Utilities | User Docs </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Utilities | User Docs ">
+      
+      
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.2.31-rc/docs/user/features/utilities.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="K+B Office Add-ins">
+            K+B Office Add-ins
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="utilities">Utilities</h1>
+
+<p>The Utilities group contains a set of tools designed to make document management and formatting more efficient and consistent. These tools help you maintain style standards, manage templates, and apply common settings with just a few clicks, ensuring that your documents remain professional and aligned with your organization's formatting rules.</p>
+<p><strong>NB:</strong> This is a standard Word idMso command</p>
+<h2 id="toggle-paragraph-marks-idmso-paragraphmarks">Toggle Paragraph Marks (idMso ParagraphMarks)</h2>
+<p>Known as &quot;Show/Hide ¶&quot; in native Word, the Toggle Paragraph Marks feature in Word, often represented by the ¶ symbol, is used to show or hide non-printing characters in your document. These characters are invisible when you print or view the document normally but can affect spacing, layout, and formatting.</p>
+<h3 id="what-it-shows">What it shows:</h3>
+<p>When you toggle it on, Word displays symbols for:</p>
+<ul>
+<li>Paragraph breaks (¶): Marks the end of a paragraph.</li>
+<li>Spaces (·): Small dots showing spaces between words.</li>
+<li>Tabs (→): Arrows showing where tab stops are used.</li>
+<li>Line breaks (↵): Indicates a manual line break without starting a new paragraph.</li>
+<li>Hidden text: Text formatted as hidden will also appear.</li>
+</ul>
+<h3 id="why-its-useful">Why it’s useful:</h3>
+<ul>
+<li>Troubleshooting formatting issues: If spacing looks off or alignment isn’t right, these markers help you see exactly what’s happening.</li>
+<li>Editing complex documents: Shows where extra spaces, tabs, or paragraph marks might be affecting layout.</li>
+<li>Consistent formatting: Ensures that elements like tables, lists, and indents are structured correctly.</li>
+</ul>
+<p>see more at <a href="https://support.microsoft.com/en-gb/office/show-or-hide-tab-marks-in-word-84a53213-5d02-404a-b022-09cae1a3958b">https://support.microsoft.com/en-gb/office/show-or-hide-tab-marks-in-word-84a53213-5d02-404a-b022-09cae1a3958b</a></p>
+<h3 id="ribbonxml">Ribbon.xml</h3>
+<pre><code class="lang-xml">    &lt;toggleButton idMso=&quot;ParagraphMarks&quot; /&gt;
+</code></pre>
+<h2 id="clear-text-formatting-command-cleartextformatting">Clear Text Formatting (Command ClearTextFormatting)</h2>
+<p>The Clear Text Formatting tool removes all manual character-level formatting from the selected text.</p>
+<p><strong>Note:</strong> This is equivalent to pressing the Control+Spacebar shortcut key on the keyboard - but there is no in-built ClearFontFormatting button in Word to add to the Quick Access Toolbar!</p>
+<p>This is useful when text has been copied from other sources or heavily edited and contains inconsistent font styling.</p>
+<ul>
+<li>Strips away character-specific formatting, such as:
+<ul>
+<li>Font type, size, and colour</li>
+</ul>
+</li>
+<li>Bold, italic, underline, strikethrough</li>
+<li>Highlighting and text effects</li>
+<li>Leaves the plain text content intact</li>
+</ul>
+<p>This is often used in conjuction with the <a href="#clear-paragraph-formatting">Clear Paragraph Formatting</a> tool.</p>
+<p><strong>Note:</strong> this does not remove colour applied using the &quot;Text Highlight Colour&quot; tool - this is by design (by Microsoft), Word considers it a display option.</p>
+<h3 id="usage">Usage</h3>
+<p>The tool only applies to the current selected text - if only part of a paragraph is selected then applies to the selected text ONLY.</p>
+<h3 id="ribbonxml-1">Ribbon.xml</h3>
+<pre><code class="lang-xml">&lt;button id=&quot;ClearTextFormatting&quot;
+        onAction=&quot;ClearTextFormatting&quot;
+        label=&quot;Clear Manual Text Formatting&quot;
+        showLabel=&quot;false&quot;
+        image=&quot;ClearTextMarking&quot;
+        screentip=&quot;Clear Manual Text Formatting&quot;
+        supertip=&quot;Clear additional manual text formatting. Any changes to the text other than that defined by the style will be removed.&quot; /&gt;
+
+</code></pre>
+<p>Note: that some older .xml files call a function RemoveTextFormatting - this will not work.</p>
+<h2 id="clear-paragraph-formatting-command-clearparagraphformatting">Clear Paragraph Formatting (Command ClearParagraphFormatting)</h2>
+<p>The Clear Paragraph Formatting tool removes all manual paragraph-level formatting from the selected text, restoring it to the formatting defined by the applied style.</p>
+<p><strong>Note:</strong> This is equivalent to pressing the Control+Q shortcut key on the keyboard - but there is no in-built ClearParagraphFormatting button in Word to add to the Quick Access Toolbar!</p>
+<p>This is useful when text has inconsistent or unwanted formatting applied using the Paragraph Formatting options in Word.</p>
+<ul>
+<li>Strips away paragraph-specific formatting, such as:
+<ul>
+<li>Indents (left, right, first line)</li>
+<li>Line spacing and spacing before/after paragraphs</li>
+<li>Alignment (left, right, center, justify)</li>
+<li>Tabs and paragraph-level borders/shading</li>
+</ul>
+</li>
+<li>Keeps the text content and character formatting (like bold or italic) intact</li>
+</ul>
+<p>This is often used in conjuction with the <a href="#clear-text-formatting">Clear Text Formatting</a> tool.</p>
+<h3 id="usage-1">Usage</h3>
+<p>The tool only applies to the current selection - if only part of a paragraph is selected then applies to the whole paragraph as this is paragraph formatting.</p>
+<h3 id="ribbonxml-2">Ribbon.xml</h3>
+<pre><code class="lang-xml">&lt;button id=&quot;ClearParagraphFormatting&quot;
+        onAction=&quot;ClearParagraphFormatting&quot;
+        label=&quot;Clear Paragraph Formatting&quot;
+        showLabel=&quot;false&quot;
+        image=&quot;ClearParagraphMarking&quot;
+        screentip=&quot;Clear Manual Paragraph Formatting&quot;
+        supertip=&quot;Clear additional manual paragraph formatting. Any changes to the paragraph other than that defined by the style will be removed.&quot; /&gt;
+</code></pre>
+<p>Note: that some older .xml files call a function RemoveTextFormattingAll - this will not work.</p>
+<h2 id="toggle-navigation-pane-idmso-documentmapreadingview">Toggle Navigation Pane (idMso DocumentMapReadingView)</h2>
+<p>The Navigation pane is a built-in tool in Microsoft Word that helps you quickly browse, search, and reorganise the content of your document. It’s especially useful in large or structured documents with headings.</p>
+<ul>
+<li>Headings View
+<ul>
+<li>Displays a list of all headings in the document, based on styles (Heading 1, Heading 2, etc.)</li>
+<li>Lets you jump directly to any section by clicking the heading</li>
+<li>Supports drag-and-drop to reorder sections, which moves both the heading and its associated content</li>
+</ul>
+</li>
+<li>Page Thumbnails View
+<ul>
+<li>Shows small thumbnail previews of each page</li>
+<li>Helps you visually navigate to specific pages quickly</li>
+</ul>
+</li>
+<li>Search (Results) View
+<ul>
+<li>Lets you search for words or phrases in the document</li>
+<li>Displays a list of all results; clicking a result jumps to its location</li>
+</ul>
+</li>
+</ul>
+<h3 id="usage-2">Usage</h3>
+<p>The tool only applies to the current selected document. This command needs to be used on a per document basis.</p>
+<h3 id="ribbonxml-3">Ribbon.xml</h3>
+<p><strong>Note:</strong> The icon has been changed to the standard one we use in the ribbon</p>
+<pre><code class="lang-xml">&lt;button idMso=&quot;DocumentMapReadingView&quot;
+   showLabel=&quot;false&quot;
+   imageMso=&quot;RmsNavigationBar&quot; /&gt;
+</code></pre>
+<h2 id="toggle-table-grid-lines">Toggle Table Grid Lines</h2>
+<p>The View Table Gridlines feature in Microsoft Word lets you see the structure of tables that don’t have visible borders.</p>
+<p>It shows dotted lines where table cell boundaries are, making it easier to work with the layout even if no borders are applied.</p>
+<h3 id="ribbonxml-4">Ribbon.xml</h3>
+<pre><code class="lang-xml">&lt;toggleButton idMso=&quot;TableShowGridlines&quot; showLabel=&quot;false&quot; /&gt;
+</code></pre>
+<h2 id="toggle-printdraft-view">Toggle Print/Draft View</h2>
+<p>Provides a convenient way to switch between <strong>Draft</strong> view and <strong>Print Layout</strong> view</p>
+<ul>
+<li><strong>Draft</strong> View in Microsoft Word is a document view designed to help you focus on writing and editing text content without being distracted by complex layout elements. It prioritizes speed and simplicity over precise page appearance. It also clearly displays the Paragraph styles used.</li>
+<li><strong>Print Layout</strong> view in Microsoft Word shows your document exactly as it will appear on the printed page.
+It is the default and most commonly used view, designed for working on the visual formatting and layout of your document.</li>
+</ul>
+<h3 id="ribbonxml-5">Ribbon.xml</h3>
+<pre><code class="lang-xml">&lt;button id=&quot;TogglePrintDraft&quot;
+        onAction=&quot;TogglePrintDraftView&quot;
+        label=&quot;Draft/Print view&quot;
+        showLabel=&quot;false&quot;
+        imageMso=&quot;Zoom100&quot;
+        screentip=&quot;Toggle Print/Draft View&quot;
+        supertip=&quot;Toggle between Print View and Draft View.&quot; /&gt;
+</code></pre>
+<h2 id="delete-double-paragraphs">Delete Double Paragraphs</h2>
+<p>Removes unnecessary empty paragraphs (blank lines) from your document, improving structure and readability. By doing so, paragraph styles can function as intended, ensuring consistent formatting throughout the document in line with company branding.</p>
+<p>WHY THIS SHOULD BE &quot;EXTRA&quot; RETURNS
+ALC - Also add command details</p>
+<h4 id="usage-3">Usage</h4>
+<p>The tool first processes the selected text and then prompts you to check the rest of the document. If it reaches the end, it will ask whether you want to start from the beginning. After completing the operation, it reports the total number of replacements made.</p>
+<h3 id="ribbonxml-6">Ribbon.xml</h3>
+<pre><code class="lang-xml">&lt;button id=&quot;deleteDoubleParagraphsButton&quot;
+        onAction=&quot;DeleteDoubleParagraphs&quot;
+        screentip=&quot;Delete Double Paragraphs&quot; 
+        label=&quot;Delete Double Paragraphs&quot;
+        showLabel=&quot;false&quot;
+        image=&quot;DoubleParaDelete&quot; /&gt;    
+</code></pre>
+<h2 id="delete-double-spaces">Delete Double Spaces</h2>
+<p>Removes unnecessary spaces from your document, this ensures consistent spacing, improves readability and helps maintain a professional layout.</p>
+<h4 id="usage-4">Usage</h4>
+<p>The tool first processes the selected text and then prompts you to check the rest of the document. If it reaches the end, it will ask whether you want to start from the beginning. After completing the operation, it reports the total number of replacements made.</p>
+<h3 id="ribbonxml-7">Ribbon.xml</h3>
+<pre><code class="lang-xml"> &lt;button id=&quot;deleteDoubleSpacesButton&quot;
+         onAction=&quot;DeleteDoubleSpaces&quot;
+         label=&quot;Delete Double Spaces&quot;
+         showLabel=&quot;false&quot;
+         screentip=&quot;Delete Double Spaces&quot;
+         image=&quot;DeleteDoubleSpaces&quot; /&gt;
+</code></pre>
+<h2 id="smart-quotes">Smart Quotes</h2>
+<p>The Smart Quotes tool helps you manage quotation marks consistently throughout your document.</p>
+<ol>
+<li><strong>Toggle Smart Quotes</strong>
+<ul>
+<li>A toggle button to turn Word’s Smart Quotes feature on or off globally.</li>
+<li>When enabled, Word automatically converts straight quotes (&quot;) to typographic (curly) quotes (“”) as you type.</li>
+</ul>
+</li>
+<li><strong>Convert to Smart Quotes</strong>
+<ul>
+<li>Converts all quotation marks in the selected text to Smart Quotes.</li>
+<li>Useful for cleaning up pasted text or documents created with straight quotes.</li>
+</ul>
+</li>
+<li><strong>Convert to Straight Quotes</strong>
+<ul>
+<li>Converts all quotation marks in the selected text to straight quotes (&quot;).</li>
+<li>Useful for coding, data entry, or formatting for plain text environments.</li>
+</ul>
+</li>
+</ol>
+<h4 id="usage-5">Usage</h4>
+<p>The tool first processes the selected text and then prompts you to check the rest of the document. If it reaches the end, it will ask whether you want to start from the beginning. After completing the operation, it reports the total number of replacements made.</p>
+<h3 id="ribbonxml-8">Ribbon.xml</h3>
+<pre><code class="lang-xml">&lt;splitButton id=&quot;SmartQuotesSplit&quot;
+             size=&quot;normal&quot;
+             showLabel=&quot;false&quot;&gt;
+      &lt;toggleButton id=&quot;SmartQuotesToggle&quot;
+                    onAction=&quot;ToggleSmartQuotes&quot;
+                    label=&quot;Smart Quotes&quot;
+                    showLabel=&quot;false&quot;
+                    image=&quot;Quotes&quot;
+                    screentip=&quot;Toggle Smart Quotes&quot;
+                    supertip=&quot;Toggle the use of smart quotes in the document.&quot; /&gt;
+      &lt;menu id=&quot;SmartQuotesMenu&quot;&gt;
+          &lt;button id=&quot;SmartQuotes&quot;
+                  onAction=&quot;SmartQuotes&quot;
+                  label=&quot;Smart Quotes&quot;
+                  showLabel=&quot;false&quot;
+                  screentip=&quot;Switch from straight quotes to Smart quotes.&quot;    
+                  image=&quot;CurlyQuotes&quot; /&gt;
+          &lt;button id=&quot;StraightQuotes&quot;
+                  onAction=&quot;StraightQuotes&quot;
+                  label=&quot;Straight Quotes&quot;
+                  showLabel=&quot;false&quot;
+                  screentip=&quot;Switch from Smart quotes to Straight quotes.&quot;
+                  image=&quot;StraightQuotes&quot; /&gt;
+
+      &lt;/menu&gt;
+  &lt;/splitButton&gt;
+</code></pre>
+<h2 id="reset-styles">Reset Styles</h2>
+<p>The Reset Styles tool in restores all styles in your document to match the original styles defined in the template it was based on.</p>
+<p>This ensures consistent formatting and helps maintain adherence to company or template standards.</p>
+<h3 id="ribbonxml-9">Ribbon.xml</h3>
+<pre><code class="lang-xml">&lt;button id=&quot;ResetStyles&quot; 
+        onAction=&quot;ResetStyles&quot;
+        label=&quot;Reset Styles&quot;
+        showLabel=&quot;false&quot;
+        visible=&quot;true&quot;
+        imageMso=&quot;StylesDialogClassic&quot;
+        screentip=&quot;Reset Paragraph Styles to default settings&quot; /&gt;
+</code></pre>
+<h2 id="attachtemplate">AttachTemplate</h2>
+<p>The Attach Template tool lets you review and modify the template attached to the current document. It provides options to redefine the default template and optionally reset the document’s styles to match that template.</p>
+<h3 id="example-dialog-box">Example dialog box</h3>
+<img width="793" height="449" alt="image" src="https://github.com/user-attachments/assets/7470a2eb-cae3-487a-8d84-6d36d2c5e83a">
+<p><strong>Currently attached template:</strong> - displays the name of the template that is currently attached the to the selected document.</p>
+<p><strong>Default template to attach:</strong> - the contents (the template name) of the custom document property <strong>TemplatePropertyName</strong>  is displayed. The property <strong>TemplatePropertyName</strong> contains the Custom Document Property name that this information is saved into if not set then the default <em>K+BTemplate</em> is used. This setting is used by the command <strong>AttachTemplateOnOpen</strong> which checks the correct template is attached to the document on the DocumentOpen event.</p>
+<p><strong>List of available templates:</strong>
+This list the available templates. See <strong>How the templates to be displayed are found</strong> below for the file location and the templates that are listed.</p>
+<p>The templates that are listed show three further bits of information:</p>
+<ol>
+<li><strong>Version</strong> - this is picked up from the Custom Document properties of the document. This will use the following sequence of custom document properties read in the following order: K+BVersion, BrochetVersion, TemplafyVersion (need to double check that this name)</li>
+<li><strong>Date</strong> - this is picked up from the Custom Document properties of the document. This will use the following sequence of custom document properties read in the following order: K+BDate, BrochetDate, TemplafyDate (need to double check that this name)</li>
+<li><strong>Additional information</strong> - this is picked up from the Comments field on the document properties (<strong>NOTE</strong>: not K+BComments)</li>
+</ol>
+<p><strong>Highlighted template in the List of avilable templates:</strong>
+Highlights the template name which is currently attached to the document (e.g., Normal.dotm).</p>
+<p><strong>NOTE</strong>: Git# 225 - this request is to where the Version and Date is read: eg for Version reads in the following order and stops as soon as information is found:K+BVersion -&gt; BrochetVersion -&gt; TemplafyVersion.
+<strong>NOTE</strong>: Git# 227 - Request for a loading symbol when AttachedTemplates have been pressed and before the dialog box comes up.
+<strong>NOTE</strong>: Git# 230 - The documents attached template is highlighted in the list but is not visible is low down in the list - need to scroll the list to make it visible
+<strong>NOTE</strong>: Git# 231 - Using on a Word template - should not display an attached template - should not allow the Reset Styles option</p>
+<h3 id="how-the-templates-to-be-displayed-are-found">How the templates to be displayed are found</h3>
+<p>See the Scheme below. The following options can be set</p>
+<p><strong>SearchForTemplateName</strong> - default setting is <em>Normal.dotm</em>.
+This is the template name that is looked for in the following locations:</p>
+<ol>
+<li>User Templates then</li>
+<li>Workgroup Template.
+Once found this is the templates location that is used to source all the templates listed in the listbox on the dialog box.</li>
+</ol>
+<p>If the template name is not found in either of the subdirectories then the default setting is used (<em>Normal.dotm</em>)</p>
+<h3 id="which-templates-are-displayed-in-the-listbox">Which templates are displayed in the listbox</h3>
+<p>See the Scheme below. The following options can be set</p>
+<p><strong>IncludeFilter</strong> - default setting is &quot;^.*\.dot[mx]<span class="math">\(&quot;. This uses regular expressions to determine the templates to be listed. Example: &quot;^Test.*\\.dot[mx]\)</span> will only list templates which start with the text &quot;Test&quot; eg Testing 1.dotx, Testing 2.dotx.</p>
+<p><strong>ExcludeFilter</strong> - default setting is &quot;&quot;. This uses regular expressions to determine the templates to be excluded from the list. All temporary Word template files (ones that start with ~ are excluded as default).</p>
+<h3 id="key-user-features">Key User Features</h3>
+<pre><code>User selects one template that is to be attached to the selected document (highlighted in the list)
+User ticks/unticks the **Reset default template name** option
+User ticks/unticks the **Reset document styles** option
+</code></pre>
+<h3 id="on-pressing-ok">ON PRESSING OK</h3>
+<pre><code>**Always on pressing OK** sets the selected document to have the selected template as the attached template.
+**Reset default template name** if ticked saves the selected template name into the custom document property defined by the property &quot;TemplatePropertyName&quot;. The default setting is &quot;K+BTemplate&quot;.
+**Reset document styles** if ticked resets all styles in the document to match the attached template.
+</code></pre>
+<h3 id="default-config-json">Default config JSON</h3>
+<pre><code>&quot;AttachTemplateConfiguration&quot;: {
+        &quot;SearchForTemplateName&quot;: &quot;Normal.dotm&quot;,
+        &quot;IncludeFilter&quot;: &quot;^.*\\.dot[mx]$&quot;,
+        &quot;ExcludeFilter&quot;: &quot;&quot;,
+        &quot;TemplatePropertyName&quot;: &quot;K+BTemplate&quot;
+    }
+</code></pre>
+<h3 id="property-options">PROPERTY OPTIONS</h3>
+<ol>
+<li><strong>&quot;SearchForTemplateName&quot;</strong> - this is the name of the template the code searches for to determine which templates location to use eg User Templates or Workgroup Templates.</li>
+<li><strong>&quot;IncludeFilter&quot;</strong> - this is a regular expression that will list the templates to be displayed in the listbox.</li>
+<li><strong>&quot;ExcludeFilter&quot;</strong> - this is a regular expression that will list the templates <strong>NOT</strong> to be displayed in the listbox.</li>
+<li><strong>&quot;TemplatePropertyName&quot;</strong> - this is the name of the custom document property that holds the default template name. This information is used on the ??? option which makes sure the correct template is attached to the document. This is useful for Templafy clients or when a document is sent outside the firm and is returned with the document attached to Normal.dotm.</li>
+</ol>
+<h3 id="ribbonxml-10">Ribbon.xml</h3>
+<pre><code class="lang-xml">&lt;button id=&quot;AttachTemplate&quot;
+        onAction=&quot;AttachTemplate&quot;
+        label=&quot;Check Template&quot;
+        showLabel=&quot;false&quot;
+        visible=&quot;true&quot;
+        screentip=&quot;Check Template attached to Current Document&quot;
+        supertip=&quot;Displays a dialog box showing the Word template that is currently attached to the document.&quot;
+        imageMso=&quot;AttachMenu&quot; /&gt;
+</code></pre>
+<h3 id="configuration">Configuration</h3>
+<h4 id="schema">Schema</h4>
+<div class="WARNING">
+Warning
+<p>It looks like the sample you are looking for does not exist.</p>
+</div><h4 id="example">Example</h4>
+<div class="WARNING">
+Warning
+<p>It looks like the sample you are looking for does not exist.</p>
+</div><h2 id="attachtemplateonopen">AttachTemplateOnOpen</h2>
+<p>This is a command that is run on the Doucment Open Event.</p>
+<p>If the configuration setting <strong>AttachTemplateOnOpen</strong> is set to True then when a Document is opened the value in the Custom Document Property <em>K+BTemplate</em> is used as the Word template name to attach.</p>
+<p>The name of the custom doucment property can be changed by setting the configuration setting</p>
+<h3 id="default-config-json-1">Default config JSON</h3>
+<pre><code>&quot;AttachTemplateConfiguration&quot;: {
+        &quot;AttachTemplateOnOpen&quot;: false,
+        &quot;TemplatePropertyName&quot;: &quot;K+BTemplate&quot;
+    }
+</code></pre>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.2.31-rc/docs/user/features/utilities.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
