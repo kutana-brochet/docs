@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Square Brackets - User Guide | User Docs </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Square Brackets - User Guide | User Docs ">
+      
+      <meta name="description" content="Learn how to navigate, add, and manage square bracket pairs in your Word documents for legal drafting and document automation.">
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.3.7-rc/docs/user/features/square-brackets.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="K+B Office Add-ins">
+            K+B Office Add-ins
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="square-brackets-user-guide">
+<h1 id="square-brackets">Square Brackets</h1>
+
+<p>The Square Brackets group provides tools for working with bracket pairs <code>[...]</code> in legal documents. These tools help you quickly navigate between placeholders, add bracketed sections, and manage bracketed content during document drafting and review.</p>
+<p>Square brackets are commonly used in legal documents to mark:</p>
+<ul>
+<li>Optional clauses or alternative text</li>
+<li>Placeholder content to be filled in</li>
+<li>Sections requiring review or client input</li>
+<li>Draft content that may be removed</li>
+</ul>
+<h2 id="features">Features</h2>
+<p>The Square Brackets group includes six ribbon buttons organised into three functional areas:</p>
+<h3 id="navigation">Navigation</h3>
+<ul>
+<li><strong>Find Next</strong> - Jump to the next square bracket pair</li>
+<li><strong>Find Previous</strong> - Jump to the previous square bracket pair</li>
+</ul>
+<h3 id="adding-brackets">Adding Brackets</h3>
+<ul>
+<li><strong>Add Brackets</strong> - Wrap the selected text in square brackets</li>
+<li><strong>Insert Blob</strong> - Insert a special marker between brackets (e.g., <code>[X]</code> or <code>[●]</code>)</li>
+</ul>
+<h3 id="removing-brackets">Removing Brackets</h3>
+<ul>
+<li><strong>Delete Brackets</strong> - Remove the brackets but keep the content</li>
+<li><strong>Delete All</strong> - Remove both the brackets and their content</li>
+</ul>
+<h2 id="how-it-works">How It Works</h2>
+<h3 id="find-next--find-previous">Find Next / Find Previous</h3>
+<p>Navigate through all square bracket pairs in your document sequentially.</p>
+<ol>
+<li>Click <strong>Find Next</strong> or <strong>Find Previous</strong> on the ribbon</li>
+<li>The add-in locates the next/previous bracket pair from your current cursor position</li>
+<li>The bracket pair is highlighted with the content selected</li>
+<li>At the end of the document, you'll be prompted to restart from the beginning (or vice versa)</li>
+</ol>
+<p><strong>NB:</strong> If no bracket pairs exist in the document, you'll see a notification message.</p>
+<p><strong>Special handling for placeholder content controls:</strong></p>
+<ul>
+<li>If your cursor is inside a placeholder content control that displays brackets, the find operation will treat it as a bracket pair</li>
+<li>This allows consistent navigation across both text brackets and content control placeholders</li>
+</ul>
+<h3 id="add-brackets">Add Brackets</h3>
+<p>Wrap your selected text in square brackets.</p>
+<ol>
+<li>Select the text you want to bracket</li>
+<li>Click <strong>Add Brackets</strong> on the ribbon</li>
+<li>Square brackets are added around your selection: <code>Hello World</code> → <code>[Hello World]</code></li>
+<li>The selection is expanded to include the newly added brackets</li>
+</ol>
+<p><strong>NB:</strong> Works on any text selection, including:</p>
+<ul>
+<li>Single words</li>
+<li>Multiple paragraphs</li>
+<li>Text that already contains brackets (creates nested brackets: <code>[already [bracketed]]</code>)</li>
+<li>Empty selection (inserts <code>[]</code> at cursor position)</li>
+</ul>
+<h3 id="insert-blob">Insert Blob</h3>
+<p>Insert a special marker between square brackets, commonly used to mark a position for later completion.</p>
+<ol>
+<li>Select the text you want to replace (or click where you want to insert)</li>
+<li>Click <strong>Insert Blob</strong> on the ribbon</li>
+<li>The selection is replaced with your configured blob text between brackets</li>
+</ol>
+<p><strong>Default behaviour:</strong></p>
+<ul>
+<li>With no configuration: Inserts <code>[]</code> with a Wingdings character</li>
+<li>With configured text: Inserts <code>[X]</code> (or your configured marker)</li>
+</ul>
+<p><strong>NB:</strong> The blob character typically uses special formatting (e.g., Wingdings font) to create a visual marker like <code>[●]</code> that stands out in the document.</p>
+<h3 id="delete-brackets">Delete Brackets</h3>
+<p>Remove the square brackets but preserve the content inside.</p>
+<ol>
+<li>Select a bracket pair (must include both <code>[</code> and <code>]</code>)</li>
+<li>Click <strong>Delete Brackets</strong> on the ribbon</li>
+<li>The brackets are removed: <code>[Hello World]</code> → <code>Hello World</code></li>
+<li>The cursor is positioned where the opening bracket was</li>
+</ol>
+<p><strong>Requirements:</strong></p>
+<ul>
+<li>Selection must start with <code>[</code> and end with <code>]</code></li>
+<li>If the selection is invalid, you'll see a notification message</li>
+<li>The document remains unchanged if selection criteria aren't met</li>
+</ul>
+<h3 id="delete-all">Delete All</h3>
+<p>Remove both the square brackets and their content.</p>
+<ol>
+<li>Select a bracket pair (must include both <code>[</code> and <code>]</code>)</li>
+<li>Click <strong>Delete All</strong> on the ribbon</li>
+<li>The entire bracketed section is removed: <code>Hello [World] Test</code> → <code>Hello  Test</code></li>
+<li>The cursor is positioned where the opening bracket was</li>
+</ol>
+<p><strong>Requirements:</strong></p>
+<ul>
+<li>Selection must start with <code>[</code> and end with <code>]</code></li>
+<li>If the selection is invalid, you'll see a notification message</li>
+<li>The document remains unchanged if selection criteria aren't met</li>
+</ul>
+<h2 id="ribbonxml">Ribbon.xml</h2>
+<pre><code class="lang-xml">&lt;group id=&quot;SquareBracketsGroup&quot; getVisible=&quot;GetVisibleById&quot; label=&quot;[...]&quot;&gt;
+    &lt;box id=&quot;boxSB&quot; boxStyle=&quot;horizontal&quot;&gt;
+        &lt;button id=&quot;FindPreviousSquareBrackets&quot;
+                onAction=&quot;FindPreviousSquareBrackets&quot;
+                label=&quot;Previous&quot;
+                showLabel=&quot;false&quot;
+                image=&quot;BracketsPrevious&quot;
+                screentip=&quot;Find Previous Square Brackets&quot;
+                supertip=&quot;Navigate to the previous pair of square brackets in the document.&quot; /&gt;
+        &lt;button id=&quot;FindNextSquareBrackets&quot;
+                onAction=&quot;FindNextSquareBrackets&quot;
+                label=&quot;Next&quot;
+                showLabel=&quot;false&quot;
+                image=&quot;BracketsNext&quot;
+                screentip=&quot;Find Next Square Brackets&quot;
+                supertip=&quot;Navigate to the next pair of square brackets in the document.&quot; /&gt;
+    &lt;/box&gt;
+    &lt;box id=&quot;boxAdd&quot; boxStyle=&quot;horizontal&quot;&gt;
+        &lt;button id=&quot;AddSquareBrackets&quot;
+                onAction=&quot;AddSquareBrackets&quot;
+                label=&quot;Add&quot;
+                showLabel=&quot;false&quot;
+                image=&quot;BracketsPlus&quot;
+                screentip=&quot;Add Square Brackets&quot;
+                supertip=&quot;Add square brackets around the selected text.&quot; /&gt;
+        &lt;button id=&quot;InsertBlob&quot;
+                onAction=&quot;InsertBlob&quot;
+                label=&quot;Blob&quot;
+                showLabel=&quot;false&quot;
+                image=&quot;Blob&quot;
+                screentip=&quot;Insert Blob&quot;
+                supertip=&quot;Insert a special marker between square brackets at the current position.&quot; /&gt;
+    &lt;/box&gt;
+    &lt;box id=&quot;boxDelete&quot; boxStyle=&quot;horizontal&quot;&gt;
+        &lt;button id=&quot;DeleteSquareBrackets&quot;
+                onAction=&quot;DeleteSquareBrackets&quot;
+                label=&quot;Delete&quot;
+                showLabel=&quot;false&quot;
+                image=&quot;deleteBrackets&quot;
+                screentip=&quot;Delete Square Brackets&quot;
+                supertip=&quot;Remove the square brackets but keep the content inside.&quot; /&gt;
+        &lt;button id=&quot;DeleteAllSquareBrackets&quot;
+                onAction=&quot;DeleteSquareBracketsIncludingContent&quot;
+                label=&quot;Delete All&quot;
+                showLabel=&quot;false&quot;
+                image=&quot;deleteAll&quot;
+                screentip=&quot;Delete Brackets and Content&quot;
+                supertip=&quot;Remove both the square brackets and their content.&quot; /&gt;
+    &lt;/box&gt;
+&lt;/group&gt;
+</code></pre>
+<p><strong>NB:</strong> The <code>id</code> attributes can be customised as needed. The <code>onAction</code> attribute values must match the method names in <code>ProductRibbon.cs</code>.</p>
+<p>The optional <code>getVisible</code> and <code>getEnabled</code> attributes use <a href="ribbon-item-rules.html">Ribbon Item Rules</a> to control whether buttons appear and whether they are clickable.</p>
+<h2 id="configuration">Configuration</h2>
+<p>Square Brackets functionality can be customised via the <code>SquareBracketsConfiguration</code> section of your JSON configuration file.</p>
+<pre><code class="lang-json">{
+  &quot;$schema&quot;: &quot;https://kutana-brochet.github.io/schemas/7.0/CoreConfiguration.schema.json&quot;,
+  &quot;SquareBracketsConfiguration&quot;: {
+    &quot;Delimiter&quot;: {
+      &quot;Open&quot;: &quot;[&quot;,
+      &quot;Close&quot;: &quot;]&quot;
+    },
+    &quot;Blob&quot;: {
+      &quot;Text&quot;: &quot;X&quot;,
+      &quot;FontName&quot;: &quot;Wingdings&quot;,
+      &quot;FontSize&quot;: 10
+    }
+  }
+}
+</code></pre>
+<h3 id="delimiter-properties">Delimiter Properties</h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Open</code></td>
+<td>No</td>
+<td><code>[</code></td>
+<td>The opening delimiter character</td>
+</tr>
+<tr>
+<td><code>Close</code></td>
+<td>No</td>
+<td><code>]</code></td>
+<td>The closing delimiter character</td>
+</tr>
+</tbody>
+</table>
+<p><strong>NB:</strong> While you can customise the delimiter characters (e.g., to use curly braces <code>{}</code>), changing them affects all Square Brackets operations. Most legal workflows use the default square brackets.</p>
+<h3 id="blob-properties">Blob Properties</h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Text</code></td>
+<td>No</td>
+<td>Empty string</td>
+<td>The text to insert between brackets. If empty, uses Wingdings character</td>
+</tr>
+<tr>
+<td><code>FontName</code></td>
+<td>No</td>
+<td><code>Wingdings</code></td>
+<td>Font name for the blob character</td>
+</tr>
+<tr>
+<td><code>FontSize</code></td>
+<td>No</td>
+<td><code>10</code></td>
+<td>Font size for the blob character</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Common blob text values:</strong></p>
+<ul>
+<li><code>X</code> - Simple letter X marker</li>
+<li>Empty string - Uses Wingdings font for special character</li>
+<li><code>●</code> - Bullet point (if font supports it)</li>
+<li><code>TODO</code> - Text reminder</li>
+</ul>
+<h3 id="schema">Schema</h3>
+<p>See <a href="../../../output/schemas/CoreConfiguration.schema.json"><code>CoreConfiguration.schema.json</code></a> for the full configuration schema. Add <code>&quot;$schema&quot;: &quot;path/to/CoreConfiguration.schema.json&quot;</code> to your JSON file for IntelliSense and validation.</p>
+<h3 id="example">Example</h3>
+<div class="WARNING">
+Warning
+<p>It looks like the sample you are looking for does not exist.</p>
+</div><h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="find-commands-do-nothing">Find commands do nothing</h3>
+<p><strong>Problem</strong>: Clicking Find Next/Previous has no effect.</p>
+<p><strong>Solutions</strong>:</p>
+<ol>
+<li>Verify square brackets exist in the document</li>
+<li>Check that you're using the correct bracket characters <code>[</code> and <code>]</code></li>
+<li>Ensure the add-in has a valid licence</li>
+</ol>
+<h3 id="delete-commands-show-invalid-selection">Delete commands show &quot;invalid selection&quot;</h3>
+<p><strong>Problem</strong>: Delete Brackets or Delete All shows a notification about invalid selection.</p>
+<p><strong>Solutions</strong>:</p>
+<ol>
+<li>Ensure your selection starts with <code>[</code> and ends with <code>]</code></li>
+<li>Select the entire bracket pair, not just the content inside</li>
+<li>Avoid selecting text before the opening bracket or after the closing bracket</li>
+</ol>
+<p><strong>Quick selection tip</strong>: Use Find Next/Previous to automatically select valid bracket pairs, then apply Delete operations.</p>
+<h3 id="insert-blob-shows-unexpected-character">Insert Blob shows unexpected character</h3>
+<p><strong>Problem</strong>: Insert Blob creates a different character than expected.</p>
+<p><strong>Solutions</strong>:</p>
+<ol>
+<li>Check your <code>Blob.Text</code> configuration setting</li>
+<li>Verify the <code>Blob.FontName</code> is installed on your system</li>
+<li>Try using a standard font (e.g., <code>Arial</code>) with explicit text (e.g., <code>X</code>)</li>
+</ol>
+<h3 id="add-brackets-inserts-at-wrong-position">Add Brackets inserts at wrong position</h3>
+<p><strong>Problem</strong>: Add Brackets doesn't wrap the intended text.</p>
+<p><strong>Solutions</strong>:</p>
+<ol>
+<li>Ensure you have text selected before clicking Add Brackets</li>
+<li>If inserting at a specific position, click to place your cursor first</li>
+<li>Verify no content controls or fields are interfering with the selection</li>
+</ol>
+<h2 id="use-cases">Use Cases</h2>
+<h3 id="legal-drafting">Legal Drafting</h3>
+<p><strong>Scenario</strong>: Marking optional clauses during contract drafting.</p>
+<ol>
+<li>Select the optional clause text</li>
+<li>Click <strong>Add Brackets</strong> to mark it as <code>[optional clause]</code></li>
+<li>Use <strong>Find Next/Previous</strong> during review to navigate between all optional sections</li>
+<li>Use <strong>Delete Brackets</strong> to keep finalised clauses or <strong>Delete All</strong> to remove rejected ones</li>
+</ol>
+<h3 id="document-review">Document Review</h3>
+<p><strong>Scenario</strong>: Marking placeholders for client input.</p>
+<ol>
+<li>Place cursor where information is needed</li>
+<li>Click <strong>Insert Blob</strong> to add <code>[X]</code> or <code>[●]</code> as a visual marker</li>
+<li>Send to client with instructions to replace bracketed markers</li>
+<li>Use <strong>Find Next</strong> to quickly locate and verify all inputs upon return</li>
+</ol>
+<h3 id="template-preparation">Template Preparation</h3>
+<p><strong>Scenario</strong>: Creating document templates with multiple placeholders.</p>
+<ol>
+<li>Draft the template with descriptive placeholder text</li>
+<li>Select each placeholder section and click <strong>Add Brackets</strong></li>
+<li>Use <strong>Find Next/Previous</strong> to review all bracketed sections</li>
+<li>Save as a template for future use</li>
+</ol>
+<h3 id="document-finalisation">Document Finalisation</h3>
+<p><strong>Scenario</strong>: Cleaning up a document before final delivery.</p>
+<ol>
+<li>Use <strong>Find Next</strong> to locate all remaining square brackets</li>
+<li>For sections to keep: Use <strong>Delete Brackets</strong> to remove markers</li>
+<li>For sections to remove: Use <strong>Delete All</strong> to delete entirely</li>
+<li>Continue until no brackets remain</li>
+</ol>
+<h2 id="see-also">See Also</h2>
+<ul>
+<li><a href="content-controls.html">Content Controls</a> - Alternative method for managing placeholders</li>
+<li><a href="ribbon-item-rules.html">Ribbon Item Rules</a> - Control button visibility based on document state</li>
+<li><a href="utilities.html">Utilities</a> - Other document editing tools</li>
+<li><a href="xref:square-brackets-developer-guide">Developer Guide</a> - Technical implementation details</li>
+</ul>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.3.7-rc/docs/user/features/square-brackets.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

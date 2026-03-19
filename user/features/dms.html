@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.2.56/docs/user/features/dms.md/#L1">
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.3.7-rc/docs/user/features/dms.md/#L1">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -166,6 +166,41 @@ Any template that starts with &quot;AB Company&quot; is pre-profiled and if the 
 <p><strong>Example:</strong> makes the document version into a 2 digit number but firstly converting the version string into an integer and then formatting this inro a 2 digit decimal number.</p>
 <pre><code class="lang-Json">&quot;DMSOurRef&quot;: &quot;{{ profileInfo.identifier }}v{{ profileInfo.version | string.to_int | object.format \&quot;d2\&quot; }}&quot;
 </code></pre>
+<h4 id="case-sensitivity">Case sensitivity</h4>
+<p>The <strong>top-level</strong> DMS key name (the first part before any <code>.</code>) is <strong>case-insensitive</strong> — <code>{{ Matter }}</code>, <code>{{ matter }}</code> and <code>{{ MATTER }}</code> all resolve to the same attribute.</p>
+<p>However, <strong>nested property names</strong> (after the <code>.</code>) are <strong>case-sensitive</strong> and must match exactly:</p>
+<table>
+<thead>
+<tr>
+<th>Template</th>
+<th>Resolves?</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>{{ author.value }}</code></td>
+<td>Yes</td>
+<td>Exact case match on property</td>
+</tr>
+<tr>
+<td><code>{{ AUTHOR.value }}</code></td>
+<td>Yes</td>
+<td>Top-level is case-insensitive</td>
+</tr>
+<tr>
+<td><code>{{ author.VALUE }}</code></td>
+<td><strong>No</strong></td>
+<td>Nested property name must match exact case</td>
+</tr>
+<tr>
+<td><code>{{ author.Value }}</code></td>
+<td><strong>No</strong></td>
+<td><code>Value</code> does not match <code>value</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Tip:</strong> When a DMS returns a simple flat value (e.g. <code>Matter = &quot;12345&quot;</code>), use <code>{{ Matter }}</code> directly. Only use dot notation (e.g. <code>{{ matter.value }}</code>) when the DMS returns nested data, such as when <code>WithAdditionalData</code> is enabled.</p>
 <h3 id="provider-properties"><code>&quot;Provider&quot;</code> properties</h3>
 <p>This property is used to set the current DMS system that is being used.</p>
 <p>There are three options:</p>
@@ -198,7 +233,34 @@ Any template that starts with &quot;AB Company&quot; is pre-profiled and if the 
 </section>
 <section id="tabpanel_1_imanage" role="tabpanel" data-tab="imanage" aria-hidden="true" hidden="hidden">
 
-<p>Content for iManage...</p>
+<p>The iManage integration requires the Kutana+Brochet iManage Office Extension to be installed.</p>
+<h2 id="imanage-office-extension">iManage Office Extension</h2>
+<p>There are two Work 10 iManage version:</p>
+<ol>
+<li>On Prem - Kutana+Brochet will provide the client with a zip file for them to install into their iManage Control Center</li>
+<li>iCloud - the client will enable the Kutana+Brochet ??? application in the iManage iCloud control center</li>
+</ol>
+<h3 id="installation-requirements-for-the-imanage-office-extension">Installation requirements for the iManage Office Extension</h3>
+<p>The Office Extension acquires the Keygen license status from the Word COMS add-in. It needs a valid Keygen license for any code to run.</p>
+<p>For the Office Extension to find the Kutana+Brochet COMs Addin it needs to know the name of the add-in. The default name it looks for is BrochetWordMainAddin (this was the name of the old Word Add-in).</p>
+<p>The new Word Add-in have been renamed to KutanaBrochet.WordAddIn and therefore the following registry key needs to be set with this new name:</p>
+<pre><code class="lang-xml"> 	Computer\HKEY_CURRENT_USER\SOFTWARE\Brochet\Word\AddinName
+ 	value = KutanaBrochet.WordAddIn
+</code></pre>
+<p><strong>NB:</strong> This key is not being set by the Word msi install and needs to be set manually as part of the installation.</p>
+<h3 id="configuration-file-location">Configuration file location</h3>
+<p>The configuration files (DesktopExtensionConfig.json) can be saved into several different locations. The K+B iManage Office Extension will look for these files in the following places, in the order they are listed:</p>
+<p><strong>Location defined by a Registry setting</strong></p>
+<p>Key:	<code>Computer\HKEY_CURRENT_USER\SOFTWARE\Brochet\iManageDesktopExtension</code></p>
+<p>Or</p>
+<p>Key:	<code>Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Brochet\iManageDesktopExtension</code></p>
+<p>Value:	<code>ConfigPath</code> {needs to hold the full path and file name – the filename can be changed from the default file name}</p>
+<p>or</p>
+<p>Value:	<code>ConfigFolder</code> {Path ONLY as a string – the file name must be the default file name DesktopExtensionConfig.json}</p>
+<p><strong>NB:</strong> First read from <code>HKEY_CURRENT_USER</code> then <code>HKEY_LOCAL_MACHINE</code>.</p>
+<p><strong>NB:</strong> First version (version 36) of the iCloud K+B iManage Office Extension ONLY looks in the Registry for the configuration file ie it doesn't look for the file in the alternative location.</p>
+<p><strong>NB:</strong> First version (version 36) of the iCloud K+B iManage Office Extension Also will not expand <code>%appdata%</code> or <code>%username%</code>.</p>
+<p><strong>NB:</strong> Unlike the NetDocs integration the configuration for mapping the iManage data back into the Word document is done in this separate configuration file.</p>
 </section>
 <section id="tabpanel_1_netDocs" role="tabpanel" data-tab="netDocs" aria-hidden="true" hidden="hidden">
 <h2 id="dmskeynames">DMSKeyNames</h2>
@@ -228,7 +290,7 @@ The other properties depend on how NetDocs is setup as will vary between differe
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.2.56/docs/user/features/dms.md/#L1" class="edit-link">Edit this page</a>
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.3.7-rc/docs/user/features/dms.md/#L1" class="edit-link">Edit this page</a>
         </div>
 
         <div class="next-article d-print-none border-top" id="nextArticle"></div>

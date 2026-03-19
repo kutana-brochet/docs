@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Ribbon Item Rules - Developer Guide | Developer Docs </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Ribbon Item Rules - Developer Guide | Developer Docs ">
+      
+      <meta name="description" content="Technical implementation guide for the rules-based ribbon item visibility and enabled state subsystem.">
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.3.7-rc/docs/developer/docs/ribbon-item-rules.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="K+B Office Add-ins">
+            K+B Office Add-ins
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="ribbon-item-rules-developer-guide">
+<h1 id="ribbon-item-rules---developer-guide">Ribbon Item Rules - Developer Guide</h1>
+
+<p>Technical implementation guide for the rules-based system that controls ribbon item visibility and enabled state. This system runs in parallel with the existing script-based visibility (GetVisibleByScript/GetEnabledByScript) but targets non-script ribbon elements such as dynamic menus and groups.</p>
+<h2 id="architecture-overview">Architecture Overview</h2>
+<pre><code>Ribbon invalidated (startup, config change, document event)
+  |
+  v
+Office calls getVisible/getEnabled callback on each ribbon element
+  |
+  v
+ProductRibbon.GetVisibleById(control) / GetEnabledById(control)
+  |
+  v
+GetVisible.Query(control.Id) / GetEnabled.Query(control.Id)
+  |
+  v
+ItemRuleRepository.GetIsVisible(id) / GetIsEnabled(id)
+  |-- Iterates RulesConfiguration.RibbonItemRules in order
+  |-- First glob pattern match wins
+  |-- &quot;Always&quot; or empty → true
+  |-- Otherwise → delegates to IApplicationRulesEngine.IsVisible/IsEnabled(workflowName)
+  |
+  v
+Maybe&lt;bool&gt; → Handler applies default (visible=true, enabled=false)
+  |
+  v
+bool returned to Office
+</code></pre>
+<h3 id="design-decisions">Design Decisions</h3>
+<ol>
+<li><strong>Defaults</strong>: Visible defaults to <code>true</code> (items don't vanish), Enabled defaults to <code>false</code> (items are greyed-out until explicitly enabled). This prevents users from clicking unconfigured items.</li>
+<li><strong>Glob patterns</strong>: Uses <a href="https://github.com/dazinator/DotNet.Glob">DotNet.Glob</a> for pattern matching. Chosen over regex for simplicity and familiarity.</li>
+<li><strong>First-match-wins</strong>: Rules are evaluated in declaration order. This allows specific overrides before catch-all patterns.</li>
+<li><strong>Maybe<bool> return</bool></strong>: The repository returns <code>Maybe&lt;bool&gt;.None</code> when no rule matches, allowing each handler to apply its own default.</li>
+</ol>
+<h2 id="layer-structure">Layer Structure</h2>
+<h3 id="application-layer-coreapplicationrules">Application Layer (Core.Application.Rules)</h3>
+<h4 id="getvisiblequery--getenabledquery">GetVisible.Query / GetEnabled.Query</h4>
+<p>Thin query handlers that delegate to <code>IItemRuleRepository</code>:</p>
+<pre><code class="lang-csharp">public static class GetVisible
+{
+    public record Query(string Id) : IQuery;
+
+    public class Handler(IItemRuleRepository repository) : IQueryHandler&lt;Query, bool&gt;
+    {
+        public Result&lt;bool, Error&gt; Handle(Query query)
+        {
+            var maybeVisible = repository.GetIsVisible(query.Id);
+            return maybeVisible.GetValueOrDefault(true);  // default: visible
+        }
+    }
+}
+</code></pre>
+<pre><code class="lang-csharp">public static class GetEnabled
+{
+    public record Query(string Id) : IQuery;
+
+    public class Handler(IItemRuleRepository repository) : IQueryHandler&lt;Query, bool&gt;
+    {
+        public Result&lt;bool, Error&gt; Handle(Query query)
+        {
+            var maybeEnabled = repository.GetIsEnabled(query.Id);
+            return maybeEnabled.GetValueOrDefault();  // default: false (disabled)
+        }
+    }
+}
+</code></pre>
+<h4 id="ruleconstants">RuleConstants</h4>
+<pre><code class="lang-csharp">public static class RuleConstants
+{
+    public const string Always = &quot;Always&quot;;
+
+    public static bool IsAlways(string value) =&gt;
+        string.IsNullOrWhiteSpace(value) || value.Equals(Always, StringComparison.OrdinalIgnoreCase);
+}
+</code></pre>
+<p><code>&quot;Always&quot;</code>, empty string, and null all resolve to unconditionally true — simplifies configuration.</p>
+<h4 id="iitemrulerepository">IItemRuleRepository</h4>
+<pre><code class="lang-csharp">public interface IItemRuleRepository
+{
+    Maybe&lt;bool&gt; GetIsVisible(string id);
+    Maybe&lt;bool&gt; GetIsEnabled(string id);
+}
+</code></pre>
+<p>Returns <code>Maybe&lt;bool&gt;.None</code> when no rule matches, allowing the handler to apply its domain-specific default.</p>
+<h3 id="infrastructure-layer-infrastructurepersistencerules">Infrastructure Layer (Infrastructure.Persistence.Rules)</h3>
+<h4 id="rulesconfiguration">RulesConfiguration</h4>
+<pre><code class="lang-csharp">public class RulesConfiguration
+{
+    public IEnumerable&lt;Workflow&gt; Workflows { get; init; } = [];
+    public IList&lt;ItemMappingDto&gt; RibbonItemRules { get; init; } = [];
+}
+</code></pre>
+<p>Bound from <code>RulesConfiguration</code> JSON section via <code>IOptionsMonitor&lt;RulesConfiguration&gt;</code>. Hot-reloads on file change.</p>
+<h4 id="itemmappingdto">ItemMappingDto</h4>
+<pre><code class="lang-csharp">public record ItemMappingDto
+{
+    [Required]
+    public string Pattern { get; init; } = string.Empty;
+
+    public string EnabledWhen { get; init; } = RuleConstants.Always;
+    public string VisibleWhen { get; init; } = RuleConstants.Always;
+}
+</code></pre>
+<h4 id="itemrulerepository">ItemRuleRepository</h4>
+<p>Core matching logic:</p>
+<pre><code class="lang-csharp">public class ItemRuleRepository(
+    IOptionsMonitor&lt;RulesConfiguration&gt; ribbonItemRulesConfig,
+    IApplicationRulesEngine rulesEngine) : IItemRuleRepository
+{
+    private readonly ConcurrentDictionary&lt;string, Glob&gt; _globCache = new();
+
+    private Maybe&lt;bool&gt; Evaluate(
+        string id,
+        Func&lt;ItemMappingDto, string&gt; ruleSelector,
+        Func&lt;string, Maybe&lt;bool&gt;&gt; engineEvaluator)
+    {
+        foreach (var rule in ribbonItemRulesConfig.CurrentValue.RibbonItemRules)
+        {
+            if (string.IsNullOrWhiteSpace(rule.Pattern))
+                continue;
+
+            if (rule.Pattern != &quot;*&quot; &amp;&amp; !GetOrParseGlob(rule.Pattern).IsMatch(id))
+                continue;
+
+            var whenValue = ruleSelector(rule);
+            return RuleConstants.IsAlways(whenValue) ? true : engineEvaluator(whenValue);
+        }
+
+        return Maybe&lt;bool&gt;.None;
+    }
+}
+</code></pre>
+<p>Key behaviours:</p>
+<ul>
+<li><strong>Glob cache</strong>: Parsed glob patterns are cached in a <code>ConcurrentDictionary</code> for performance — ribbon callbacks fire frequently during invalidation</li>
+<li><strong>Wildcard shortcut</strong>: <code>&quot;*&quot;</code> pattern bypasses glob parsing (always matches)</li>
+<li><strong>Empty pattern skip</strong>: Rules with blank patterns are silently ignored</li>
+<li><strong>First match wins</strong>: Iteration stops at the first matching pattern</li>
+</ul>
+<h3 id="vsto-layer-wordaddinribbon">VSTO Layer (WordAddIn.Ribbon)</h3>
+<h4 id="productribbon-callbacks">ProductRibbon Callbacks</h4>
+<p>Four callbacks are available for use in Ribbon XML:</p>
+<pre><code class="lang-csharp">public bool GetVisibleById(IRibbonControl control) =&gt; GetVisible(control.Id);
+public bool GetEnabledById(IRibbonControl control) =&gt; GetEnabled(control.Id);
+public bool GetVisibleByTag(IRibbonControl control) =&gt; GetVisible(control.Tag);
+public bool GetEnabledByTag(IRibbonControl control) =&gt; GetEnabled(control.Tag);
+</code></pre>
+<p>The <code>ById</code> variants match against the element's <code>id</code> attribute; the <code>ByTag</code> variants match against <code>tag</code>. Both delegate to the same query pipeline.</p>
+<p>Private helpers apply safe defaults when the value is null/empty or when the query fails:</p>
+<pre><code class="lang-csharp">private bool GetVisible(string value)
+{
+    if (string.IsNullOrEmpty(value)) return true;
+    var query = new GetVisible.Query(value);
+    var result = _queryDispatcher.Dispatch&lt;GetVisible.Query, bool&gt;(query);
+    return result.GetValueOrDefault(defaultValue: true);
+}
+
+private bool GetEnabled(string value)
+{
+    if (string.IsNullOrEmpty(value)) return false;
+    var query = new GetEnabled.Query(value);
+    var result = _queryDispatcher.Dispatch&lt;GetEnabled.Query, bool&gt;(query);
+    return result.GetValueOrDefault(defaultValue: false);
+}
+</code></pre>
+<h4 id="ribbon-refresh">Ribbon Refresh</h4>
+<p><code>RulesConfiguration</code> is registered with <code>IOptionsMonitor</code>. On configuration file change:</p>
+<pre><code class="lang-csharp">options.OnChange(_ =&gt;
+{
+    Globals.ThisAddIn.UiSyncContext.Post(_ =&gt; Refresh(), null);
+});
+</code></pre>
+<p><code>Refresh()</code> calls <code>RibbonUi.Invalidate()</code>, which triggers Office to re-query all getVisible/getEnabled callbacks.</p>
+<h2 id="configuration-format">Configuration Format</h2>
+<pre><code class="lang-json">{
+  &quot;RulesConfiguration&quot;: {
+    &quot;Workflows&quot;: [
+      {
+        &quot;WorkflowName&quot;: &quot;RibbonRules&quot;,
+        &quot;Rules&quot;: [
+          {
+            &quot;RuleName&quot;: &quot;DocumentIsOpen&quot;,
+            &quot;Expression&quot;: &quot;ActiveDocumentName != null&quot;
+          }
+        ]
+      }
+    ],
+    &quot;RibbonItemRules&quot;: [
+      {
+        &quot;Pattern&quot;: &quot;newDocumentMenu&quot;,
+        &quot;VisibleWhen&quot;: &quot;Always&quot;,
+        &quot;EnabledWhen&quot;: &quot;DocumentIsOpen&quot;
+      },
+      {
+        &quot;Pattern&quot;: &quot;starter*&quot;,
+        &quot;VisibleWhen&quot;: &quot;Always&quot;,
+        &quot;EnabledWhen&quot;: &quot;DocumentIsOpen&quot;
+      },
+      {
+        &quot;Pattern&quot;: &quot;*&quot;,
+        &quot;VisibleWhen&quot;: &quot;Always&quot;,
+        &quot;EnabledWhen&quot;: &quot;Always&quot;
+      }
+    ]
+  }
+}
+</code></pre>
+<h2 id="relationship-to-script-visibility">Relationship to Script Visibility</h2>
+<p>The codebase has two parallel visibility/enabled systems:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Script System</th>
+<th>Ribbon Item Rules</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ribbon callbacks</td>
+<td><code>GetVisibleByScript</code> / <code>GetEnabledByScript</code></td>
+<td><code>GetVisibleById</code> / <code>GetEnabledById</code> / <code>ByTag</code></td>
+</tr>
+<tr>
+<td>Configuration</td>
+<td><code>ScriptConfiguration.Mappings[id].VisibleWhen</code></td>
+<td><code>RulesConfiguration.RibbonItemRules[].VisibleWhen</code></td>
+</tr>
+<tr>
+<td>Matching</td>
+<td>Exact id lookup in dictionary</td>
+<td>Glob pattern matching (first match)</td>
+</tr>
+<tr>
+<td>Repository</td>
+<td><code>ScriptRepository</code></td>
+<td><code>ItemRuleRepository</code></td>
+</tr>
+<tr>
+<td>Target elements</td>
+<td>Buttons with <code>onAction=&quot;RunScript&quot;</code></td>
+<td>Any ribbon element (menus, groups, buttons)</td>
+</tr>
+<tr>
+<td>Rules engine</td>
+<td>Same <code>IApplicationRulesEngine</code></td>
+<td>Same <code>IApplicationRulesEngine</code></td>
+</tr>
+</tbody>
+</table>
+<p>Both systems resolve workflow names through <code>IApplicationRulesEngine</code>, so the same workflow definitions work for both.</p>
+<h2 id="testing-strategy">Testing Strategy</h2>
+<h3 id="bdd-scenarios">BDD Scenarios</h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Location</th>
+<th>Coverage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GetVisible</td>
+<td><code>Features/Rules/GetVisible.feature</code></td>
+<td>Default visible, rule visible, rule hidden</td>
+</tr>
+<tr>
+<td>GetEnabled</td>
+<td><code>Features/Rules/GetEnabled.feature</code></td>
+<td>Default disabled, rule enabled, rule disabled</td>
+</tr>
+</tbody>
+</table>
+<h3 id="test-setup">Test Setup</h3>
+<p>Step definitions use <code>NSubstitute</code> to mock <code>IItemRuleRepository</code>:</p>
+<pre><code class="lang-csharp">Given(&quot;a visibility rule that evaluates to visible&quot;)
+  =&gt; _repository.GetIsVisible(Arg.Any&lt;string&gt;()).Returns(Maybe&lt;bool&gt;.From(true));
+
+Given(&quot;no visibility rule matches the item&quot;)
+  =&gt; _repository.GetIsVisible(Arg.Any&lt;string&gt;()).Returns(Maybe&lt;bool&gt;.None);
+</code></pre>
+<h2 id="adding-a-new-callback-variant">Adding a New Callback Variant</h2>
+<p>To add a new matching strategy (e.g. matching by a custom ribbon attribute):</p>
+<ol>
+<li>Add a new public method in <code>ProductRibbon.cs</code> that extracts the value from <code>IRibbonControl</code></li>
+<li>Delegate to the existing <code>GetVisible(string)</code> / <code>GetEnabled(string)</code> private methods</li>
+<li>Reference the new callback name in Ribbon XML</li>
+</ol>
+<p>No changes needed in the Application or Infrastructure layers.</p>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="xref:ribbon-item-rules-user-guide">User Guide: Ribbon Item Rules</a></li>
+<li><a href="xref:scripts-user-guide">User Guide: Script Configuration</a></li>
+<li><a class="xref" href="document-menus.html">Developer Guide: Document Menus</a></li>
+</ul>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.3.7-rc/docs/developer/docs/ribbon-item-rules.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

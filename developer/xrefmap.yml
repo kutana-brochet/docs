@@ -1,6 +1,15 @@
 ### YamlMime:XRefMap
 sorted: true
 references:
+- uid: document-menus-developer-guide
+  name: Document Menus - Developer Guide
+  href: docs/document-menus.html
+- uid: ribbon-item-rules-developer-guide
+  name: Ribbon Item Rules - Developer Guide
+  href: docs/ribbon-item-rules.html
 - uid: scripts-developer-guide
   name: Scripts - Developer Guide
   href: docs/scripts.html
+- uid: square-brackets-developer-guide
+  name: Square Brackets - Developer Guide
+  href: docs/square-brackets.html

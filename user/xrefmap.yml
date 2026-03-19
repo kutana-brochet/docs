@@ -1,6 +1,21 @@
 ### YamlMime:XRefMap
 sorted: true
 references:
+- uid: insert-snippet-user-guide
+  name: Insert Snippet - User Guide
+  href: features/insert-snippet.html
+- uid: new-document-user-guide
+  name: New Document - User Guide
+  href: features/new-document.html
+- uid: ribbon-item-rules-user-guide
+  name: Ribbon Item Rules - User Guide
+  href: features/ribbon-item-rules.html
 - uid: scripts-user-guide
   name: Scripts - User Guide
   href: features/scripts.html
+- uid: square-brackets-user-guide
+  name: Square Brackets - User Guide
+  href: features/square-brackets.html
+- uid: starter-document-user-guide
+  name: Starter Document - User Guide
+  href: features/starter-document.html

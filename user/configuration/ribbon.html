@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.2.56/docs/user/configuration/ribbon.md/#L1">
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.3.7-rc/docs/user/configuration/ribbon.md/#L1">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -122,13 +122,65 @@
 </ol>
 <p>See onAction below for the for list of available commands</p>
 <ol start="4">
-<li><strong><code>getVisible=&quot;GetVisibleByScript&quot;</code></strong> - this is only relvant when the<code> onAction</code> is <code>&quot;RunScript&quot;</code>.</li>
+<li><strong><code>getVisible</code></strong> - determines when the ribbon element is visible. Available callbacks:</li>
 </ol>
-<p>The <code>&quot;ScriptConfiguration&quot;</code> <code>&quot;Mappings&quot;</code>to define the logic of when the button is visible.</p>
-<ol start="7">
-<li><strong><code>getEnabled=&quot;GetEnabledByScript&quot;</code></strong> - this is only relvant when the<code> onAction</code> is <code>&quot;RunScript&quot;</code>.</li>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Used With</th>
+<th>Matches Against</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GetVisibleByScript</code></td>
+<td>Script buttons (<code>onAction=&quot;RunScript&quot;</code>)</td>
+<td><code>ScriptConfiguration.Mappings</code> by button <code>id</code></td>
+</tr>
+<tr>
+<td><code>GetVisibleById</code></td>
+<td>Any ribbon element</td>
+<td><code>RulesConfiguration.RibbonItemRules</code> by element <code>id</code></td>
+</tr>
+<tr>
+<td><code>GetVisibleByTag</code></td>
+<td>Any ribbon element</td>
+<td><code>RulesConfiguration.RibbonItemRules</code> by element <code>tag</code></td>
+</tr>
+</tbody>
+</table>
+<p>See <a href="../features/ScriptConfiguration.html">Script Configuration</a> for script-based visibility. See <a href="../features/ribbon-item-rules.html">Ribbon Item Rules</a> for rules-based visibility.</p>
+<ol start="5">
+<li><strong><code>getEnabled</code></strong> - determines when the ribbon element is clickable. Available callbacks:</li>
 </ol>
-<p>The <code>&quot;ScriptConfiguration&quot;</code> <code>&quot;Mappings&quot;</code>to define the logic of when the button is enables.</p>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Used With</th>
+<th>Matches Against</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GetEnabledByScript</code></td>
+<td>Script buttons (<code>onAction=&quot;RunScript&quot;</code>)</td>
+<td><code>ScriptConfiguration.Mappings</code> by button <code>id</code></td>
+</tr>
+<tr>
+<td><code>GetEnabledById</code></td>
+<td>Any ribbon element</td>
+<td><code>RulesConfiguration.RibbonItemRules</code> by element <code>id</code></td>
+</tr>
+<tr>
+<td><code>GetEnabledByTag</code></td>
+<td>Any ribbon element</td>
+<td><code>RulesConfiguration.RibbonItemRules</code> by element <code>tag</code></td>
+</tr>
+</tbody>
+</table>
+<p>See <a href="../features/ScriptConfiguration.html">Script Configuration</a> for script-based enabled logic. See <a href="../features/ribbon-item-rules.html">Ribbon Item Rules</a> for rules-based enabled logic.</p>
 <h2 id="image">image</h2>
 <p>In the ribbon XML defined in a Word template any ribbon icon used in the image line needs to be added as a Resource to the Word template file. When using the Kutana+Brochet COMs addin these ribbon icons can either be added as a Resource in the COMSs addin for generated on the fly when Word is loaded.</p>
 <p><strong>The embedded image incons</strong>
@@ -147,7 +199,7 @@ The embedded list of icons can be found using the following link:</p>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.2.56/docs/user/configuration/ribbon.md/#L1" class="edit-link">Edit this page</a>
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.3.7-rc/docs/user/configuration/ribbon.md/#L1" class="edit-link">Edit this page</a>
         </div>
 
         <div class="next-article d-print-none border-top" id="nextArticle"></div>

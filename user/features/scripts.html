@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.2.56/docs/user/features/scripts.md/#L1">
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.3.7-rc/docs/user/features/scripts.md/#L1">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -279,16 +279,12 @@
 <li><strong>User Configuration</strong>: <code>%localappdata%/kutana+brochet/Word/Config</code></li>
 </ul>
 <h3 id="json-schema">JSON Schema</h3>
-<p>The complete JSON Schema definition for script configuration:</p>
-<div class="WARNING">
-Warning
-<p>It looks like the sample you are looking for does not exist.</p>
-</div>
+<p>See <a href="../../../output/schemas/CoreConfiguration.schema.json"><code>CoreConfiguration.schema.json</code></a> for the full configuration schema.</p>
 <div class="TIP">
 <h5>Tip</h5>
-<p>Use this schema in your JSON editor for IntelliSense and validation. Most editors (VS Code, Visual Studio, etc.) support JSON Schema auto-completion when you add a <code>$schema</code> property:</p>
+<p>Add a <code>$schema</code> property for IntelliSense and validation in your JSON editor:</p>
 <pre><code class="lang-json">{
-  &quot;$schema&quot;: &quot;path/to/ScriptConfiguration.schema.json&quot;,
+  &quot;$schema&quot;: &quot;path/to/CoreConfiguration.schema.json&quot;,
   &quot;Scripts&quot;: { ... }
 }
 </code></pre>
@@ -399,7 +395,8 @@ Available on InsertText only</li>
 <li><code>CharacterCase</code>: <code>FullWidth</code>, <code>HalfWidth</code>, <code>LowerCase</code>, <code>NextCase</code>, <code>TitleSentence</code>, <code>TitleWord</code>, <code>ToggleCase</code>, <code>UpperCase</code></li>
 <li><code>AllCaps</code>, <code>SmallCaps</code>:  <code>False</code>, <code>Toggle</code>, <code>True</code></li>
 <li><code>Underline</code>: <code>None</code>, <code>Single</code>, <code>Double</code>, <code>Dotted</code>, etc.</li>
-<li><code>Colour</code>: Text string that can either be the RGB colour value enters as a text string eg <code>RGB(0,0,255)</code> or the hex value eg <code>#1234AB</code></li>
+<li><code>Colour</code>: Text string that can either be the RGB colour value enters as a hex value e.g. <code>#1234AB</code>.<br>
+(Originally RGB values were permitted e.g. <code>RGB(0,0,255)</code> but these are no longer supported.)</li>
 <li><code>ColourIndex</code>: <code>0</code> - Not sure how this is used ?????</li>
 <li><code>Hidden</code>:  <code>False</code>, <code>Toggle</code>, <code>True</code></li>
 <li><code>Position</code>: Raise/lower text (in points)</li>
@@ -458,7 +455,7 @@ Available on InsertText only</li>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.2.56/docs/user/features/scripts.md/#L1" class="edit-link">Edit this page</a>
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.3.7-rc/docs/user/features/scripts.md/#L1" class="edit-link">Edit this page</a>
         </div>
 
         <div class="next-article d-print-none border-top" id="nextArticle"></div>

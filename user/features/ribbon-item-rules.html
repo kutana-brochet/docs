@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Ribbon Item Rules - User Guide | User Docs </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Ribbon Item Rules - User Guide | User Docs ">
+      
+      <meta name="description" content="Learn how to control the visibility and enabled state of ribbon items using pattern-based rules.">
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.3.7-rc/docs/user/features/ribbon-item-rules.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="K+B Office Add-ins">
+            K+B Office Add-ins
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="ribbon-item-rules-user-guide">
+<h1 id="ribbon-item-rules">Ribbon Item Rules</h1>
+
+<p>Ribbon Item Rules let you control which ribbon buttons, menus, and groups are visible or enabled. Rules are evaluated dynamically — when conditions change (e.g. a document is opened or a licence is activated), the ribbon updates automatically.</p>
+<h2 id="how-it-works">How It Works</h2>
+<ol>
+<li>Each ribbon element has an <code>id</code> (or <code>tag</code>) attribute in <code>Ribbon.xml</code></li>
+<li>The add-in matches that value against configured <code>RibbonItemRules</code> patterns</li>
+<li>If a matching rule is found, the rule's <code>VisibleWhen</code> and <code>EnabledWhen</code> values determine the item's state</li>
+<li>If no rule matches, the item defaults to <strong>visible</strong> and <strong>disabled</strong></li>
+</ol>
+<h2 id="configuration">Configuration</h2>
+<p>Ribbon Item Rules are configured in the <code>RulesConfiguration</code> section of your JSON configuration file.</p>
+<pre><code class="lang-json">{
+  &quot;$schema&quot;: &quot;https://kutana-brochet.github.io/schemas/7.0/CoreConfiguration.schema.json&quot;,
+  &quot;RulesConfiguration&quot;: {
+    &quot;RibbonItemRules&quot;: [
+      {
+        &quot;Pattern&quot;: &quot;newDocumentMenu&quot;,
+        &quot;VisibleWhen&quot;: &quot;Always&quot;,
+        &quot;EnabledWhen&quot;: &quot;DocumentMenusEnabled&quot;
+      },
+      {
+        &quot;Pattern&quot;: &quot;starterDocument*&quot;,
+        &quot;VisibleWhen&quot;: &quot;Always&quot;,
+        &quot;EnabledWhen&quot;: &quot;DocumentMenusEnabled&quot;
+      },
+      {
+        &quot;Pattern&quot;: &quot;*&quot;,
+        &quot;VisibleWhen&quot;: &quot;Always&quot;,
+        &quot;EnabledWhen&quot;: &quot;Always&quot;
+      }
+    ]
+  }
+}
+</code></pre>
+<h3 id="rule-properties">Rule Properties</h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Pattern</code></td>
+<td>Yes</td>
+<td>—</td>
+<td>Glob pattern matched against the ribbon item's <code>id</code> or <code>tag</code></td>
+</tr>
+<tr>
+<td><code>EnabledWhen</code></td>
+<td>No</td>
+<td><code>Always</code></td>
+<td>Workflow name determining when the item is enabled</td>
+</tr>
+<tr>
+<td><code>VisibleWhen</code></td>
+<td>No</td>
+<td><code>Always</code></td>
+<td>Workflow name determining when the item is visible</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pattern-matching">Pattern Matching</h3>
+<p>Patterns use <a href="https://en.wikipedia.org/wiki/Glob_(programming)">glob syntax</a>:</p>
+<table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Matches</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>newDocumentMenu</code></td>
+<td>Exact match only</td>
+</tr>
+<tr>
+<td><code>starter*</code></td>
+<td>Any id starting with &quot;starter&quot;</td>
+</tr>
+<tr>
+<td><code>*Snippet*</code></td>
+<td>Any id containing &quot;Snippet&quot;</td>
+</tr>
+<tr>
+<td><code>*</code></td>
+<td>All ribbon items</td>
+</tr>
+</tbody>
+</table>
+<p>Rules are evaluated <strong>in order</strong> — the first matching rule wins. Place specific patterns before broad ones.</p>
+<h3 id="visiblewhen-and-enabledwhen-values">VisibleWhen and EnabledWhen Values</h3>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Always</code></td>
+<td>Always visible / enabled (this is the default)</td>
+</tr>
+<tr>
+<td><em>(empty or omitted)</em></td>
+<td>Same as <code>Always</code></td>
+</tr>
+<tr>
+<td><em>(workflow name)</em></td>
+<td>Delegates to a <code>RulesConfiguration.Workflows</code> rule for dynamic evaluation</td>
+</tr>
+</tbody>
+</table>
+<p>When using a workflow name, the corresponding workflow must be defined in the <code>Workflows</code> section of <code>RulesConfiguration</code>. See <a href="ScriptConfiguration.html">Script Configuration</a> for details on configuring workflows.</p>
+<h2 id="ribbonxml-callbacks">Ribbon.xml Callbacks</h2>
+<p>To use Ribbon Item Rules, add <code>getVisible</code> and <code>getEnabled</code> attributes to your ribbon elements:</p>
+<h3 id="by-id-recommended-for-most-elements">By ID (recommended for most elements)</h3>
+<pre><code class="lang-xml">&lt;dynamicMenu id=&quot;newDocumentMenu&quot;
+             getVisible=&quot;GetVisibleById&quot;
+             getEnabled=&quot;GetEnabledById&quot;
+             getContent=&quot;GetNewDocuments&quot; /&gt;
+</code></pre>
+<p>The <code>id</code> attribute value is matched against rule patterns.</p>
+<p><strong>NB:</strong> The <code>getVisible=&quot;GetVisibleById&quot;</code> will also work on a <code>group</code> (do not include <code>getEnabled=&quot;GetEnabledById&quot;</code> as this is not relvant for a <code>group</code>)</p>
+<h3 id="by-tag-for-shared-rules-across-elements">By Tag (for shared rules across elements)</h3>
+<pre><code class="lang-xml">&lt;dynamicMenu id=&quot;insertSnippetMenu&quot;
+             getVisible=&quot;GetVisibleByTag&quot;
+             getEnabled=&quot;GetEnabledByTag&quot;
+             getContent=&quot;GetSnippetDocuments&quot;
+             tag=&quot;snippets&quot; /&gt;
+</code></pre>
+<p>The <code>tag</code> attribute value is matched against rule patterns. This is useful when multiple ribbon elements should share the same visibility/enabled logic.</p>
+<h3 id="available-callbacks">Available Callbacks</h3>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Matches Against</th>
+<th>Default (no rule)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GetVisibleById</code></td>
+<td><code>control.Id</code></td>
+<td>visible</td>
+</tr>
+<tr>
+<td><code>GetEnabledById</code></td>
+<td><code>control.Id</code></td>
+<td>disabled</td>
+</tr>
+<tr>
+<td><code>GetVisibleByTag</code></td>
+<td><code>control.Tag</code></td>
+<td>visible</td>
+</tr>
+<tr>
+<td><code>GetEnabledByTag</code></td>
+<td><code>control.Tag</code></td>
+<td>disabled</td>
+</tr>
+</tbody>
+</table>
+<h2 id="default-behaviour">Default Behaviour</h2>
+<p>When no matching rule is found for a ribbon item:</p>
+<ul>
+<li><strong>Visibility</strong> defaults to <strong>visible</strong> — items do not disappear unexpectedly</li>
+<li><strong>Enabled</strong> defaults to <strong>disabled</strong> — items require an explicit rule to become clickable</li>
+</ul>
+<p>This is intentional: it is safer for an item to appear greyed-out than to silently vanish from the ribbon.</p>
+<h2 id="comparison-with-script-button-rules">Comparison with Script Button Rules</h2>
+<p>Script buttons (using <code>onAction=&quot;RunScript&quot;</code>) have their own visibility/enabled system via <code>ScriptConfiguration.Mappings</code>:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Ribbon Item Rules</th>
+<th>Script Mappings</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Callbacks</td>
+<td><code>GetVisibleById</code> / <code>GetEnabledById</code></td>
+<td><code>GetVisibleByScript</code> / <code>GetEnabledByScript</code></td>
+</tr>
+<tr>
+<td>Configuration</td>
+<td><code>RulesConfiguration.RibbonItemRules</code></td>
+<td><code>ScriptConfiguration.Mappings</code></td>
+</tr>
+<tr>
+<td>Pattern matching</td>
+<td>Glob patterns (e.g. <code>starter*</code>)</td>
+<td>Exact id match only</td>
+</tr>
+<tr>
+<td>Use case</td>
+<td>Dynamic menus, groups, non-script buttons</td>
+<td>Script-driven buttons</td>
+</tr>
+</tbody>
+</table>
+<p>Both systems reference the same <code>RulesConfiguration.Workflows</code> for conditional logic. Choose Ribbon Item Rules for menus and groups; use Script Mappings for buttons that run scripts.</p>
+<h2 id="examples">Examples</h2>
+<h3 id="hide-a-menu-entirely">Hide a menu entirely</h3>
+<pre><code class="lang-json">{
+  &quot;RibbonItemRules&quot;: [
+    {
+      &quot;Pattern&quot;: &quot;starterDocumentMenu&quot;,
+      &quot;VisibleWhen&quot;: &quot;NeverVisible&quot;
+    }
+  ]
+}
+</code></pre>
+<p>Where <code>NeverVisible</code> is a workflow that always evaluates to false.</p>
+<h3 id="enable-menus-only-when-a-document-is-open">Enable menus only when a document is open</h3>
+<pre><code class="lang-json">{
+  &quot;RibbonItemRules&quot;: [
+    {
+      &quot;Pattern&quot;: &quot;newDocumentMenu&quot;,
+      &quot;EnabledWhen&quot;: &quot;DocumentIsOpen&quot;
+    },
+    {
+      &quot;Pattern&quot;: &quot;starterDocumentMenu&quot;,
+      &quot;EnabledWhen&quot;: &quot;DocumentIsOpen&quot;
+    }
+  ]
+}
+</code></pre>
+<h3 id="catch-all-rule-for-all-ribbon-items">Catch-all rule for all ribbon items</h3>
+<pre><code class="lang-json">{
+  &quot;RibbonItemRules&quot;: [
+    {
+      &quot;Pattern&quot;: &quot;newDocumentMenu&quot;,
+      &quot;EnabledWhen&quot;: &quot;SpecialCondition&quot;
+    },
+    {
+      &quot;Pattern&quot;: &quot;*&quot;,
+      &quot;VisibleWhen&quot;: &quot;Always&quot;,
+      &quot;EnabledWhen&quot;: &quot;Always&quot;
+    }
+  ]
+}
+</code></pre>
+<p>The catch-all <code>*</code> rule ensures any item without a specific rule is visible and enabled. Place it last.</p>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="menu-is-visible-but-greyed-out">Menu is visible but greyed out</h3>
+<p><strong>Problem</strong>: A ribbon item appears but cannot be clicked.</p>
+<p><strong>Solutions</strong>:</p>
+<ol>
+<li>Check that the item has an <code>EnabledWhen</code> rule configured (the default is disabled when no rule matches)</li>
+<li>Verify the referenced workflow exists in <code>RulesConfiguration.Workflows</code></li>
+<li>Use <code>&quot;EnabledWhen&quot;: &quot;Always&quot;</code> to make the item always enabled</li>
+</ol>
+<h3 id="menu-has-disappeared">Menu has disappeared</h3>
+<p><strong>Problem</strong>: A ribbon item is not shown on the ribbon.</p>
+<p><strong>Solutions</strong>:</p>
+<ol>
+<li>Check that the item's <code>VisibleWhen</code> rule does not evaluate to false</li>
+<li>Verify the <code>Pattern</code> matches the element's <code>id</code> (or <code>tag</code> if using <code>ByTag</code> callbacks)</li>
+<li>Confirm the <code>RulesConfiguration</code> JSON is valid and loaded correctly</li>
+<li>Remember that rules are evaluated in order — an earlier catch-all pattern may be matching first</li>
+</ol>
+<h3 id="rules-not-updating">Rules not updating</h3>
+<p><strong>Problem</strong>: Changing conditions (e.g. opening a document) does not update the ribbon.</p>
+<p><strong>Solutions</strong>:</p>
+<ol>
+<li>The ribbon refreshes automatically when the rules configuration changes via hot-reload</li>
+<li>If the issue persists, click the <strong>Refresh</strong> button (if available) or restart Word</li>
+</ol>
+<h2 id="see-also">See Also</h2>
+<ul>
+<li><a href="new-document.html">New Document</a></li>
+<li><a href="starter-document.html">Starter Document</a></li>
+<li><a href="insert-snippet.html">Insert Snippet</a></li>
+<li><a href="ScriptConfiguration.html">Script Configuration</a></li>
+<li><a href="xref:ribbon-item-rules-developer-guide">Developer Guide</a></li>
+</ul>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.3.7-rc/docs/user/features/ribbon-item-rules.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

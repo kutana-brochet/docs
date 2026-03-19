@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.2.56/docs/developer/docs/scripts.md/#L1">
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.3.7-rc/docs/developer/docs/scripts.md/#L1">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -183,7 +183,7 @@ public record ApplyStyleScriptCommand(
 </tr>
 <tr>
 <td><code>InsertTextScriptCommand</code></td>
-<td>Text insertion</td>
+<td>Text insertion (with optional cursor repositioning)</td>
 <td><code>Insertion/Text/InsertTextScriptCommand.cs</code></td>
 </tr>
 <tr>
@@ -507,11 +507,7 @@ public abstract class ScriptCommandDto
 }
 </code></pre>
 <h3 id="json-schema">JSON Schema</h3>
-<p>The complete JSON Schema is auto-generated from the C# DTOs using <code>SchemaGenerator</code>:</p>
-<div class="WARNING">
-Warning
-<p>It looks like the sample you are looking for does not exist.</p>
-</div>
+<p>The JSON Schema is auto-generated from the C# DTOs using <code>SchemaGenerator</code>. See <a href="../../../output/schemas/CoreConfiguration.schema.json"><code>CoreConfiguration.schema.json</code></a> for the full schema.</p>
 <p><strong>Schema Generation</strong>: Run <code>SchemaGenerator</code> project to regenerate schemas when DTOs change. The schema provides:</p>
 <ul>
 <li>IntelliSense in JSON editors</li>
@@ -595,6 +591,23 @@ Warning
     AllSentences
 }
 </code></pre>
+<h3 id="afterinsertionbehavior-enumeration">AfterInsertionBehavior Enumeration</h3>
+<p>Controls cursor placement after an <code>InsertText</code> command completes. Located in <code>Core.Application.Scripting.Commands.Insertion</code>.</p>
+<pre><code class="lang-csharp">public enum AfterInsertionBehavior
+{
+    None,               // No cursor movement (default)
+    MoveCursorToEnd,    // Collapse cursor to end of inserted/existing text
+    MoveCursorToStart,  // Collapse cursor to start of inserted/existing text
+    SelectInsertedText  // Select the full span of inserted/existing text
+}
+</code></pre>
+<p><strong>Design Notes</strong>:</p>
+<ul>
+<li>The <code>InsertTextOptions.AfterInsertion</code> property defaults to <code>None</code> for backward compatibility</li>
+<li>Cursor repositioning applies to both freshly inserted text and duplicate-skipped text (when <code>PreventDuplicates</code> is <code>true</code>)</li>
+<li>When multiple ranges are processed, the cursor is positioned relative to the <strong>last</strong> range</li>
+<li>Implementation tracks range boundaries through both insertion and duplicate-skip paths, then applies the cursor behaviour in a single pass after all ranges are processed</li>
+</ul>
 <h2 id="adding-new-commands">Adding New Commands</h2>
 <h3 id="step-1-create-domain-command">Step 1: Create Domain Command</h3>
 <p><strong>File</strong>: <code>src/Core/Core.Domain/Scripting/{Category}/{CommandName}ScriptCommand.cs</code></p>
@@ -890,7 +903,7 @@ public class ExcelApplyFontFormatScriptCommandHandler(
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.2.56/docs/developer/docs/scripts.md/#L1" class="edit-link">Edit this page</a>
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.3.7-rc/docs/developer/docs/scripts.md/#L1" class="edit-link">Edit this page</a>
         </div>
 
         <div class="next-article d-print-none border-top" id="nextArticle"></div>

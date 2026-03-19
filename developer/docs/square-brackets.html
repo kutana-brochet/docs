@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Square Brackets - Developer Guide | Developer Docs </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Square Brackets - Developer Guide | Developer Docs ">
+      
+      <meta name="description" content="Technical implementation guide for the Square Brackets feature including architecture, command handlers, and extension points.">
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.3.7-rc/docs/developer/docs/square-brackets.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="K+B Office Add-ins">
+            K+B Office Add-ins
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="square-brackets-developer-guide">
+<h1 id="square-brackets---developer-guide">Square Brackets - Developer Guide</h1>
+
+<p>Technical implementation guide for the Square Brackets feature. This feature provides tools for working with bracket pairs <code>[...]</code> in legal documents through navigation, addition, and deletion commands.</p>
+<h2 id="architecture-overview">Architecture Overview</h2>
+<p>The Square Brackets feature follows Clean Architecture patterns with clear separation of concerns:</p>
+<pre><code>WordAddIn (Presentation)
+  └─&gt; ProductRibbon.cs - Ribbon button handlers
+  
+Core.Application (Use Cases)
+  └─&gt; Document/SquareBrackets/
+      ├─&gt; FindSquareBrackets.cs - Navigation command
+      ├─&gt; AddSquareBrackets.cs - Add brackets command
+      ├─&gt; DeleteSquareBrackets.cs - Delete commands
+      ├─&gt; InsertBlob.cs - Insert blob command
+      └─&gt; Blob.cs - Blob value object
+
+Core.Domain (Entities)
+  └─&gt; Documents/
+      └─&gt; Delimiter.cs - Delimiter value object
+
+Infrastructure.Persistence (Data)
+  └─&gt; Word/
+      ├─&gt; SquareBracketsConfiguration.cs - Config model
+      └─&gt; SquareBracketsSettingsRepository.cs - Config access
+</code></pre>
+<h3 id="key-architectural-principles">Key Architectural Principles</h3>
+<ol>
+<li><strong>CQRS Pattern</strong>: All operations are commands dispatched through <code>ICommandDispatcher</code></li>
+<li><strong>Strategy Pattern</strong>: Search and modification behaviors use pluggable strategy objects</li>
+<li><strong>Value Objects</strong>: <code>Delimiter</code> and <code>Blob</code> are immutable value objects with factory methods</li>
+<li><strong>Railway-Oriented Programming</strong>: All commands return <code>Result&lt;TValue, Error&gt;</code></li>
+<li><strong>Clean Architecture</strong>: Domain has no infrastructure dependencies; COM interop isolated in VSTO layer</li>
+</ol>
+<h2 id="layer-structure">Layer Structure</h2>
+<h3 id="domain-layer-coredomaindocuments">Domain Layer (Core.Domain.Documents)</h3>
+<h4 id="delimiter">Delimiter</h4>
+<p>Immutable value object representing opening and closing delimiter characters.</p>
+<pre><code class="lang-csharp">public record Delimiter(string Open, string Close)
+{
+    public static Delimiter Default() =&gt; new(&quot;[&quot;, &quot;]&quot;);
+}
+</code></pre>
+<h3 id="application-layer-coreapplication">Application Layer (Core.Application)</h3>
+<h4 id="findsquarebrackets-command">FindSquareBrackets Command</h4>
+<p>Locates and selects square bracket pairs using the Strategy pattern for directional search.</p>
+<p><strong>Command Definition:</strong></p>
+<pre><code class="lang-csharp">public class Command(bool searchForward) : ICommand
+{
+    public bool SearchForward { get; } = searchForward;
+}
+</code></pre>
+<p><strong>Handler Flow:</strong></p>
+<ol>
+<li>Get current selection from <code>IDocumentEditor</code></li>
+<li>Select appropriate search strategy (<code>ForwardSearchStrategy</code> or <code>BackwardSearchStrategy</code>)</li>
+<li>Execute search via <code>IDelimiterPairFinder</code></li>
+<li>If found: select the bracket pair</li>
+<li>If not found: notify user or prompt to restart from beginning/end</li>
+</ol>
+<p><strong>Search Strategies:</strong></p>
+<ul>
+<li><code>ForwardSearchStrategy</code> - Searches from cursor position toward end of document</li>
+<li><code>BackwardSearchStrategy</code> - Searches from cursor position toward start of document</li>
+</ul>
+<p><strong>Returns:</strong></p>
+<ul>
+<li><code>Result.Success&lt;Unit, Error&gt;</code> - Bracket pair found and selected</li>
+<li><code>Result.Success&lt;Unit, Error&gt;</code> - No brackets exist (user notified)</li>
+<li><code>Result.Success&lt;Unit, Error&gt;</code> - End of document reached, restart prompt shown</li>
+<li><code>Result.Failure&lt;Unit, Error&gt;</code> - Infrastructure error occurred</li>
+</ul>
+<p><strong>Special Handling:</strong></p>
+<ul>
+<li>Placeholder content controls showing brackets are treated as bracket pairs</li>
+<li>Allows consistent navigation across both text brackets and content control placeholders</li>
+</ul>
+<h4 id="addsquarebrackets-command">AddSquareBrackets Command</h4>
+<p>Wraps the current selection in square brackets using <code>AddDelimiterPairStrategy</code>.</p>
+<p><strong>Command Definition:</strong></p>
+<pre><code class="lang-csharp">public class Command(Delimiter delimiter) : ICommand
+{
+    public Delimiter Delimiter { get; } = delimiter;
+    
+    public static Command Default =&gt; new(Delimiter.Default());
+}
+</code></pre>
+<p><strong>Handler Flow:</strong></p>
+<ol>
+<li>Get delimiter configuration from <code>ISquareBracketsSettingsRepository</code></li>
+<li>Execute <code>AddDelimiterPairStrategy</code> via <code>IDocumentModifier</code></li>
+<li>Expand selection to include new brackets</li>
+</ol>
+<p><strong>Behaviour:</strong></p>
+<ul>
+<li>Inserts opening delimiter before selection start</li>
+<li>Inserts closing delimiter after selection end</li>
+<li>Expands selection to include new brackets</li>
+<li>Works with empty selection (inserts <code>[]</code> at cursor)</li>
+<li>Creates nested brackets if text already contains brackets</li>
+</ul>
+<p><strong>Returns:</strong></p>
+<ul>
+<li><code>Result.Success&lt;Unit, Error&gt;</code> - Brackets added successfully</li>
+<li><code>Result.Failure&lt;Unit, Error&gt;</code> - Document modification failed</li>
+</ul>
+<p><strong>Entitlements:</strong> WordStandardTools</p>
+<p><strong>Decorators:</strong> [DocumentRequired]</p>
+<h4 id="deletesquarebrackets-command">DeleteSquareBrackets Command</h4>
+<p>Removes brackets and/or content using configurable deletion strategies.</p>
+<p><strong>Command Definition:</strong></p>
+<pre><code class="lang-csharp">public class Command(DeletionMode mode, Delimiter delimiter) : ICommand
+{
+    public DeletionMode Mode { get; } = mode;
+    public Delimiter Delimiter { get; } = delimiter;
+    
+    public static Command DeleteDelimiterPair =&gt; new(DeletionMode.DeleteDelimiterPair, Delimiter.Default());
+    public static Command DeleteAll =&gt; new(DeletionMode.DeleteAll, Delimiter.Default());
+}
+</code></pre>
+<p><strong>Handler Flow:</strong></p>
+<ol>
+<li>Validate selection starts with <code>[</code> and ends with <code>]</code></li>
+<li>If invalid: notify user and return success (no-op)</li>
+<li>Select appropriate deletion strategy based on mode</li>
+<li>Execute strategy via <code>IDocumentModifier</code></li>
+</ol>
+<p><strong>Deletion Strategies:</strong></p>
+<ul>
+<li><code>DeleteDelimiterPair</code> - Removes only <code>[</code> and <code>]</code>, keeps content</li>
+<li><code>DeleteContent</code> - Removes content, keeps <code>[]</code></li>
+<li><code>DeleteAll</code> - Removes everything including brackets</li>
+</ul>
+<p><strong>Validation:</strong></p>
+<ul>
+<li>Selection must start with opening delimiter</li>
+<li>Selection must end with closing delimiter</li>
+<li>Invalid selections show user notification, document unchanged</li>
+</ul>
+<p><strong>Returns:</strong></p>
+<ul>
+<li><code>Result.Success&lt;Unit, Error&gt;</code> - Deletion completed</li>
+<li><code>Result.Success&lt;Unit, Error&gt;</code> - Invalid selection (user notified)</li>
+<li><code>Result.Failure&lt;Unit, Error&gt;</code> - Document modification failed</li>
+</ul>
+<p><strong>Entitlements:</strong> WordStandardTools</p>
+<p><strong>Decorators:</strong> [DocumentRequired]</p>
+<h4 id="insertblob-command">InsertBlob Command</h4>
+<p>Replaces the current selection with a formatted marker between delimiters.</p>
+<p><strong>Command Definition:</strong></p>
+<pre><code class="lang-csharp">public class Command(Delimiter delimiter, Blob blob) : ICommand
+{
+    public Delimiter Delimiter { get; } = delimiter;
+    public Blob Blob { get; } = blob;
+    
+    public static Command Default =&gt; new(Delimiter.Default(), Blob.Default());
+}
+</code></pre>
+<p><strong>Handler Flow:</strong></p>
+<ol>
+<li>Read blob configuration from <code>ISquareBracketsSettingsRepository</code></li>
+<li>Build replacement text: <code>[{blob.Text}]</code></li>
+<li>Replace selection via <code>IDocumentModifier.ReplaceText()</code></li>
+<li>Apply font formatting to blob text only (not delimiters)</li>
+</ol>
+<p><strong>Behaviour:</strong></p>
+<ol>
+<li>Reads blob configuration from <code>SquareBracketsConfiguration</code></li>
+<li>Replaces selection with <code>[{blob text}]</code></li>
+<li>Applies font formatting to blob text only (not delimiters)</li>
+<li>Uses Wingdings font when blob text is empty</li>
+</ol>
+<p><strong>Returns:</strong></p>
+<ul>
+<li><code>Result.Success&lt;Unit, Error&gt;</code> - Blob inserted successfully</li>
+<li><code>Result.Failure&lt;Unit, Error&gt;</code> - Document modification failed</li>
+</ul>
+<p><strong>Entitlements:</strong> WordStandardTools</p>
+<p><strong>Decorators:</strong> [DocumentRequired]</p>
+<h4 id="blob-value-object">Blob Value Object</h4>
+<p>Immutable value object representing blob insertion configuration.</p>
+<pre><code class="lang-csharp">public record Blob(string Text, string? FontName, double? FontSize)
+{
+    public static Blob Default() =&gt; new(string.Empty, &quot;Wingdings&quot;, 10);
+}
+</code></pre>
+<h3 id="infrastructure-layer-infrastructurepersistenceword">Infrastructure Layer (Infrastructure.Persistence.Word)</h3>
+<h4 id="squarebracketsconfiguration">SquareBracketsConfiguration</h4>
+<p>Configuration model for Square Brackets operations.</p>
+<pre><code class="lang-csharp">public class SquareBracketsConfiguration
+{
+    public Delimiter Delimiter { get; set; } = Delimiter.Default;
+    public Blob? Blob { get; set; }
+}
+</code></pre>
+<h4 id="squarebracketssettingsrepository">SquareBracketsSettingsRepository</h4>
+<p>Implements <code>ISquareBracketsSettingsRepository</code> to load configuration from JSON.</p>
+<pre><code class="lang-csharp">public interface ISquareBracketsSettingsRepository
+{
+    Delimiter GetDelimiter();
+    Maybe&lt;Blob&gt; GetBlob();
+}
+</code></pre>
+<p>Implementation reads from <code>SquareBracketsConfiguration</code> section with fallback to defaults:</p>
+<ul>
+<li><code>GetDelimiter()</code> returns <code>Delimiter.Default()</code> if not configured</li>
+<li><code>GetBlob()</code> returns <code>Maybe.None</code> if not configured, allowing caller to use <code>Blob.Default()</code></li>
+</ul>
+<h3 id="vsto-layer-wordaddin">VSTO Layer (WordAddIn)</h3>
+<h4 id="productribbon-callbacks">ProductRibbon Callbacks</h4>
+<p>Ribbon button handlers that dispatch commands:</p>
+<pre><code class="lang-csharp">public void FindNextSquareBrackets(IRibbonControl _)
+{
+    var command = new FindSquareBrackets.Command(searchForward: true);
+    _commandDispatcher.Dispatch&lt;FindSquareBrackets.Command, Unit&gt;(command);
+}
+
+public void FindPreviousSquareBrackets(IRibbonControl _)
+{
+    var command = new FindSquareBrackets.Command(searchForward: false);
+    _commandDispatcher.Dispatch&lt;FindSquareBrackets.Command, Unit&gt;(command);
+}
+
+public void AddSquareBrackets(IRibbonControl _)
+{
+    var command = Core.Application.Document.SquareBrackets.AddSquareBrackets.Default;
+    _commandDispatcher.Dispatch&lt;AddSquareBrackets.Command, Unit&gt;(command);
+}
+
+public void DeleteSquareBrackets(IRibbonControl _)
+{
+    var command = Core.Application.Document.SquareBrackets.DeleteSquareBrackets.DeleteDelimiterPair;
+    _commandDispatcher.Dispatch&lt;DeleteSquareBrackets.Command, Unit&gt;(command);
+}
+
+public void DeleteSquareBracketsIncludingContent(IRibbonControl _)
+{
+    var command = Core.Application.Document.SquareBrackets.DeleteSquareBrackets.DeleteAll;
+    _commandDispatcher.Dispatch&lt;DeleteSquareBrackets.Command, Unit&gt;(command);
+}
+
+public void InsertBlob(IRibbonControl _)
+{
+    var command = Core.Application.Document.SquareBrackets.InsertBlob.Default;
+    _commandDispatcher.Dispatch&lt;InsertBlob.Command, Unit&gt;(command);
+}
+</code></pre>
+<p>Visibility and enabled callbacks are handled by the <a href="ribbon-item-rules.html">Ribbon Item Rules</a> subsystem.</p>
+<h2 id="strategy-pattern-implementation">Strategy Pattern Implementation</h2>
+<p>Square Brackets commands use the Strategy pattern to support multiple operational modes.</p>
+<h3 id="search-strategies">Search Strategies</h3>
+<p>Interface:</p>
+<pre><code class="lang-csharp">public interface ISearchStrategy
+{
+    Maybe&lt;Range&gt; Execute(Range startRange, Delimiter delimiter);
+}
+</code></pre>
+<p>Implementations:</p>
+<ul>
+<li><strong>ForwardSearchStrategy</strong> - Searches from cursor toward document end</li>
+<li><strong>BackwardSearchStrategy</strong> - Searches from cursor toward document start</li>
+</ul>
+<p>Both strategies use Word's <code>Range.Find</code> API for optimal performance.</p>
+<h3 id="modification-strategies">Modification Strategies</h3>
+<p>Interface:</p>
+<pre><code class="lang-csharp">public interface IDelimiterPairStrategy
+{
+    Result&lt;Unit, Error&gt; Execute(Range selection, Delimiter delimiter);
+}
+</code></pre>
+<p>Implementations:</p>
+<ul>
+<li><strong>AddDelimiterPairStrategy</strong> - Inserts delimiters around selection</li>
+<li><strong>RemoveDelimiterPairStrategy</strong> - Removes delimiters, preserves content</li>
+<li><strong>RemoveContentStrategy</strong> - Removes content, preserves delimiters</li>
+</ul>
+<p>See <a href="../../guides/strategy-pattern-guide.md">Strategy Pattern Guide</a> for detailed implementation patterns.</p>
+<h2 id="configuration-format">Configuration Format</h2>
+<p>Configuration is located in the CoreConfiguration JSON file:</p>
+<pre><code class="lang-json">{
+  &quot;$schema&quot;: &quot;https://kutana-brochet.github.io/schemas/7.0/CoreConfiguration.schema.json&quot;,
+  &quot;SquareBracketsConfiguration&quot;: {
+    &quot;Delimiter&quot;: {
+      &quot;Open&quot;: &quot;[&quot;,
+      &quot;Close&quot;: &quot;]&quot;
+    },
+    &quot;Blob&quot;: {
+      &quot;Text&quot;: &quot;X&quot;,
+      &quot;FontName&quot;: &quot;Wingdings&quot;,
+      &quot;FontSize&quot;: 10
+    }
+  }
+}
+</code></pre>
+<h3 id="delimiter-properties">Delimiter Properties</h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Open</code></td>
+<td>string</td>
+<td><code>[</code></td>
+<td>Opening delimiter character</td>
+</tr>
+<tr>
+<td><code>Close</code></td>
+<td>string</td>
+<td><code>]</code></td>
+<td>Closing delimiter character</td>
+</tr>
+</tbody>
+</table>
+<h3 id="blob-properties">Blob Properties</h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Text</code></td>
+<td>string</td>
+<td>Empty</td>
+<td>Text to insert between brackets</td>
+</tr>
+<tr>
+<td><code>FontName</code></td>
+<td>string</td>
+<td><code>Wingdings</code></td>
+<td>Font name for blob character</td>
+</tr>
+<tr>
+<td><code>FontSize</code></td>
+<td>double</td>
+<td><code>10</code></td>
+<td>Font size for blob character</td>
+</tr>
+</tbody>
+</table>
+<h2 id="testing-strategy">Testing Strategy</h2>
+<p>Square Brackets functionality is tested using Reqnroll (BDD) scenarios.</p>
+<h3 id="feature-files">Feature Files</h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Location</th>
+<th>Scenarios</th>
+<th>Coverage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FindSquareBrackets</td>
+<td>FindSquareBrackets.feature</td>
+<td>11</td>
+<td>Navigation, edge cases, content controls</td>
+</tr>
+<tr>
+<td>AddSquareBrackets</td>
+<td>AddSquareBrackets.feature</td>
+<td>14</td>
+<td>Addition, nesting, empty selection</td>
+</tr>
+<tr>
+<td>DeleteSquareBrackets</td>
+<td>DeleteSquareBrackets.feature</td>
+<td>18</td>
+<td>Deletion variants, validation</td>
+</tr>
+<tr>
+<td>InsertBlob</td>
+<td>InsertBlob.feature</td>
+<td>3</td>
+<td>Blob insertion, formatting</td>
+</tr>
+</tbody>
+</table>
+<p>Integration tests verify end-to-end behaviour with Word interop layer.</p>
+<h3 id="running-tests">Running Tests</h3>
+<pre><code class="lang-bash"># Run all Square Brackets tests
+dotnet test --filter &quot;FullyQualifiedName~SquareBrackets&quot;
+
+# Run specific feature
+dotnet test --filter &quot;FullyQualifiedName~FindSquareBrackets&quot;
+</code></pre>
+<h3 id="test-patterns">Test Patterns</h3>
+<p>Step definitions use:</p>
+<ul>
+<li><code>IDocumentEditor</code> for document manipulation</li>
+<li><code>IDocumentModifier</code> for text modification</li>
+<li>NSubstitute for mocking infrastructure dependencies</li>
+</ul>
+<p>Example:</p>
+<pre><code class="lang-csharp">[Given(@&quot;my document contains Square Bracket Pairs&quot;)]
+public void GivenDocumentContainsSquareBracketPairs()
+{
+    _documentEditor.InsertText(&quot;[First] and [Second]&quot;);
+}
+
+[When(@&quot;I run the Find Next command&quot;)]
+public void WhenIRunFindNextCommand()
+{
+    var command = new FindSquareBrackets.Command(searchForward: true);
+    _result = _handler.Handle(command);
+}
+
+[Then(@&quot;the result is successful&quot;)]
+public void ThenResultIsSuccessful()
+{
+    Assert.True(_result.IsSuccess);
+}
+</code></pre>
+<h2 id="extension-points">Extension Points</h2>
+<h3 id="custom-delimiters">Custom Delimiters</h3>
+<p>Override default delimiters via configuration to support different bracket types:</p>
+<pre><code class="lang-json">{
+  &quot;SquareBracketsConfiguration&quot;: {
+    &quot;Delimiter&quot;: {
+      &quot;Open&quot;: &quot;{&quot;,
+      &quot;Close&quot;: &quot;}&quot;
+    }
+  }
+}
+</code></pre>
+<p><strong>Important:</strong> Custom delimiters affect all Square Brackets operations. Ensure your choice doesn't conflict with other document syntax (e.g., mail merge fields use <code>{{ }}</code>).</p>
+<h3 id="custom-blob-markers">Custom Blob Markers</h3>
+<p>Configure blob appearance for organizational standards:</p>
+<pre><code class="lang-json">{
+  &quot;SquareBracketsConfiguration&quot;: {
+    &quot;Blob&quot;: {
+      &quot;Text&quot;: &quot;●&quot;,
+      &quot;FontName&quot;: &quot;Arial&quot;,
+      &quot;FontSize&quot;: 12
+    }
+  }
+}
+</code></pre>
+<p><strong>Common patterns:</strong></p>
+<ul>
+<li><strong>Wingdings checkbox</strong>: Text: empty string, FontName: &quot;Wingdings&quot;</li>
+<li><strong>X marker</strong>: Text: &quot;X&quot;, FontName: &quot;Arial&quot;</li>
+<li><strong>Bullet</strong>: Text: &quot;●&quot;, FontName: &quot;Arial&quot;</li>
+</ul>
+<h3 id="ribbon-visibility-rules">Ribbon Visibility Rules</h3>
+<p>Control when Square Brackets buttons appear using <a href="ribbon-item-rules.html">Ribbon Item Rules</a>:</p>
+<pre><code class="lang-xml">&lt;button id=&quot;AddSquareBrackets&quot;
+        onAction=&quot;AddSquareBrackets&quot;
+        getVisible=&quot;GetVisibleById&quot;
+        getEnabled=&quot;GetEnabledById&quot;
+        label=&quot;Add Brackets&quot; /&gt;
+</code></pre>
+<p>Configuration:</p>
+<pre><code class="lang-json">{
+  &quot;RulesConfiguration&quot;: {
+    &quot;RibbonItemRules&quot;: {
+      &quot;AddSquareBrackets&quot;: {
+        &quot;VisibleWhen&quot;: &quot;DocumentTemplate:Contract*&quot;,
+        &quot;EnabledWhen&quot;: &quot;HasSelection&quot;
+      }
+    }
+  }
+}
+</code></pre>
+<h2 id="performance-considerations">Performance Considerations</h2>
+<h3 id="com-object-disposal">COM Object Disposal</h3>
+<p>All Word interop objects are released in <code>finally</code> blocks to prevent memory leaks:</p>
+<pre><code class="lang-csharp">Word.Range range = null;
+try
+{
+    range = document.Range();
+    // Operations
+}
+finally
+{
+    if (range != null) Marshal.ReleaseComObject(range);
+}
+</code></pre>
+<p>This pattern appears 73 times in the codebase and is critical for VSTO stability.</p>
+<h2 id="error-handling">Error Handling</h2>
+<p>All commands return <code>Result&lt;TValue, Error&gt;</code> following railway-oriented programming:</p>
+<pre><code class="lang-csharp">var result = _commandDispatcher.Dispatch&lt;FindSquareBrackets.Command, Unit&gt;(command);
+if (result.IsFailure)
+{
+    _userNotifier.Notify(result.Error);
+}
+</code></pre>
+<h3 id="common-error-codes">Common Error Codes</h3>
+<p>Defined in <code>DomainErrors.SquareBrackets</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Error Code</th>
+<th>Meaning</th>
+<th>User Message</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NotFound</code></td>
+<td>No brackets in document</td>
+<td>&quot;No square brackets found in document.&quot;</td>
+</tr>
+<tr>
+<td><code>InvalidSelection</code></td>
+<td>Selection doesn't match bracket pair</td>
+<td>&quot;Selection must start with '[' and end with ']'.&quot;</td>
+</tr>
+<tr>
+<td><code>EndOfDocument</code></td>
+<td>Reached document boundary</td>
+<td>&quot;End of document reached. Restart from beginning?&quot;</td>
+</tr>
+</tbody>
+</table>
+<p>Infrastructure errors:</p>
+<table>
+<thead>
+<tr>
+<th>Error Code</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Document.ModificationFailed</code></td>
+<td>Word interop error</td>
+</tr>
+<tr>
+<td><code>Document.NoActiveDocument</code></td>
+<td>No document open</td>
+</tr>
+</tbody>
+</table>
+<h2 id="localisation">Localisation</h2>
+<p>User-facing messages are localised via <code>ILocalisationService</code>.</p>
+<p><strong>Message Resources</strong> (DomainMessages.resx):</p>
+<pre><code class="lang-xml">&lt;data name=&quot;SquareBrackets.NotFound&quot;&gt;
+  &lt;value&gt;No square brackets found in document.&lt;/value&gt;
+&lt;/data&gt;
+&lt;data name=&quot;SquareBrackets.InvalidSelection&quot;&gt;
+  &lt;value&gt;Selection must start with '[' and end with ']'.&lt;/value&gt;
+&lt;/data&gt;
+&lt;data name=&quot;SquareBrackets.EndOfDocument&quot;&gt;
+  &lt;value&gt;End of document reached. Restart from beginning?&lt;/value&gt;
+&lt;/data&gt;
+</code></pre>
+<p><strong>Adding Translations:</strong></p>
+<p>Create <code>DomainMessages.{locale}.resx</code> files:</p>
+<ul>
+<li><code>DomainMessages.fr-FR.resx</code> - French</li>
+<li><code>DomainMessages.de-DE.resx</code> - German</li>
+<li>etc.</li>
+</ul>
+<p>Messages are resolved automatically based on <code>Thread.CurrentThread.CurrentUICulture</code>.</p>
+<h2 id="com-safety-patterns">COM Safety Patterns</h2>
+<h3 id="document-validation">Document Validation</h3>
+<p>Always check for active document before operations:</p>
+<pre><code class="lang-csharp">if (Application.Documents.Count == 0)
+{
+    return Result.Failure&lt;Unit, Error&gt;(DomainErrors.Document.NoActiveDocument);
+}
+</code></pre>
+<h3 id="exception-handling">Exception Handling</h3>
+<p>Catch COM-specific exceptions:</p>
+<pre><code class="lang-csharp">try
+{
+    // Word operations
+}
+catch (System.Runtime.InteropServices.COMException ex)
+{
+    _logger.LogError(ex, &quot;COM error in Square Brackets operation&quot;);
+    return Result.Failure&lt;Unit, Error&gt;(DomainErrors.Document.ModificationFailed);
+}
+</code></pre>
+<h3 id="safe-word-api-calls">Safe Word API Calls</h3>
+<p>Validate COM objects before use:</p>
+<pre><code class="lang-csharp">if (selection is null || !Marshal.IsComObject(selection))
+{
+    return Result.Failure&lt;Unit, Error&gt;(DomainErrors.Document.InvalidSelection);
+}
+</code></pre>
+<h2 id="see-also">See Also</h2>
+<ul>
+<li><a href="xref:square-brackets-user-guide">User Guide: Square Brackets</a></li>
+<li><a href="../../guides/strategy-pattern-guide.md">Strategy Pattern Guide</a></li>
+<li><a href="ribbon-item-rules.html">Developer Guide: Ribbon Item Rules</a></li>
+</ul>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.3.7-rc/docs/developer/docs/square-brackets.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

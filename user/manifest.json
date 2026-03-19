@@ -92,10 +92,60 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "features/insert-snippet.md",
+      "output": {
+        ".html": {
+          "relative_path": "features/insert-snippet.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "features/new-document.md",
+      "output": {
+        ".html": {
+          "relative_path": "features/new-document.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "features/ribbon-item-rules.md",
+      "output": {
+        ".html": {
+          "relative_path": "features/ribbon-item-rules.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "features/scripts.md",
       "output": {
         ".html": {
           "relative_path": "features/scripts.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "features/square-brackets.md",
+      "output": {
+        ".html": {
+          "relative_path": "features/square-brackets.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "features/starter-document.md",
+      "output": {
+        ".html": {
+          "relative_path": "features/starter-document.html"
         }
       },
       "version": ""

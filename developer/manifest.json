@@ -92,10 +92,40 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "docs/document-menus.md",
+      "output": {
+        ".html": {
+          "relative_path": "docs/document-menus.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "docs/ribbon-item-rules.md",
+      "output": {
+        ".html": {
+          "relative_path": "docs/ribbon-item-rules.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "docs/scripts.md",
       "output": {
         ".html": {
           "relative_path": "docs/scripts.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "docs/square-brackets.md",
+      "output": {
+        ".html": {
+          "relative_path": "docs/square-brackets.html"
         }
       },
       "version": ""
