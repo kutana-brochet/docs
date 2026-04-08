@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Scripts - Developer Guide | Developer Docs </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Scripts - Developer Guide | Developer Docs ">
+      
+      <meta name="description" content="Technical implementation guide for the scripting subsystem, covering architecture, domain model, configuration, and extension points.">
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.4.8-rc/docs/developer/docs/scripts.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="K+B Office Add-ins">
+            K+B Office Add-ins
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="scripts-developer-guide">
+<h1 id="scripts---developer-guide">Scripts - Developer Guide</h1>
+
+<p>Technical implementation guide for the scripting subsystem, covering architecture, domain model, configuration, and extension points.</p>
+<h2 id="architecture-overview">Architecture Overview</h2>
+<p>The scripting subsystem implements a Command Executor pattern enabling users to define document formatting and editing scripts through JSON configuration. Scripts are composed of immutable command objects that are executed sequentially against Word documents via VSTO COM interop.</p>
+<h3 id="architectural-pattern-evolution">Architectural Pattern Evolution</h3>
+<p>The current architecture represents a significant refactoring from the original design (October 2025). See <a href="../../adr/20251023-refactor-scripting-to-scriptoperation-pattern.md">ADR: Refactor Scripting to Command Executor Pattern</a> for the full decision context.</p>
+<p><strong>Previous Architecture</strong> (deprecated):</p>
+<pre><code>IScriptCommand.Execute() → IScriptExecutor → DocumentScriptExecutor (adapter) → IDocumentEditor → Word COM
+</code></pre>
+<p><strong>Current Architecture</strong> (dispatcher pattern with individual handlers):</p>
+<pre><code>IScriptCommand (pure data) → IScriptCommandDispatcher.Execute() → Dynamic dispatch → IScriptCommandHandler&lt;T&gt; → Word COM
+</code></pre>
+<h3 id="key-architectural-principles">Key Architectural Principles</h3>
+<ol>
+<li><strong>Pure Data Commands</strong>: <code>IScriptCommand</code> implementations are immutable records with no behaviour</li>
+<li><strong>Dispatcher Pattern</strong>: <code>IScriptCommandDispatcher</code> routes commands to appropriate handlers via dynamic dispatch</li>
+<li><strong>Individual Handlers</strong>: Each command type has its own <code>IScriptCommandHandler&lt;T&gt;</code> implementation</li>
+<li><strong>Backend Agnostic</strong>: Design supports multiple backends (Word, Excel, PowerPoint, PDF)</li>
+<li><strong>CQRS Integration</strong>: Scripts execute via CQRS handlers in the application layer</li>
+<li><strong>Clean Architecture</strong>: Domain layer has no infrastructure dependencies</li>
+<li><strong>Open/Closed Principle</strong>: New commands can be added without modifying the dispatcher</li>
+</ol>
+<h2 id="layer-structure">Layer Structure</h2>
+<h3 id="domain-layer-coredomainscripting">Domain Layer (<code>Core.Domain.Scripting</code>)</h3>
+<p>Pure domain logic with no external dependencies.</p>
+<h4 id="script-aggregate-root">Script Aggregate Root</h4>
+<pre><code class="lang-csharp">public class Script : AggregateRoot&lt;string&gt;
+{
+    public string Name { get; }
+    public string Description { get; }
+    public IReadOnlyCollection&lt;IScriptCommand&gt; Commands { get; }
+}
+</code></pre>
+<p>The <code>Script</code> aggregate is the root entity representing a collection of commands to execute. The Name serves as the aggregate ID.</p>
+<p><strong>Invariants</strong>:</p>
+<ul>
+<li>Name must be unique within the repository</li>
+<li>Commands collection is immutable after construction</li>
+<li>Command order is preserved</li>
+</ul>
+<h4 id="iscriptcommand-interface">IScriptCommand Interface</h4>
+<p>Marker interface for all script commands:</p>
+<pre><code class="lang-csharp">public interface IScriptCommand { }
+</code></pre>
+<p>All command implementations are <strong>immutable records</strong> representing pure data:</p>
+<pre><code class="lang-csharp">public record ApplyFontFormatScriptCommand(
+    FontStyle Style,
+    FontFormattingRange Range) : IScriptCommand;
+
+public record DeleteCharactersScriptCommand(
+    string Characters,
+    CommandRange Range,
+    CommandSubRange SubRange) : IScriptCommand;
+
+public record ApplyStyleScriptCommand(
+    StyleFormatting Style,
+    FormattingRange Range) : IScriptCommand;
+</code></pre>
+<p><strong>Design Rationale</strong>: Commands contain only data (what to do), whilst executors contain behaviour (how to do it). This separation enables:</p>
+<ul>
+<li>Serialisation for audit logging</li>
+<li>Batching for performance optimisation</li>
+<li>Transformation and composition</li>
+<li>Backend-agnostic command representation</li>
+</ul>
+<h4 id="available-commands">Available Commands</h4>
+<table>
+<thead>
+<tr>
+<th>Command Type</th>
+<th>Purpose</th>
+<th>Domain Model Location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ApplyFontFormatScriptCommand</code></td>
+<td>Character formatting</td>
+<td><code>Fonts/ApplyFontFormatScriptCommand.cs</code></td>
+</tr>
+<tr>
+<td><code>ApplyParagraphFormatScriptCommand</code></td>
+<td>Paragraph formatting</td>
+<td><code>Paragraphs/ApplyParagraphFormatScriptCommand.cs</code></td>
+</tr>
+<tr>
+<td><code>ApplyStyleScriptCommand</code></td>
+<td>Style application</td>
+<td><code>Styles/ApplyStyleScriptCommand.cs</code></td>
+</tr>
+<tr>
+<td><code>ApplySelectionFormatScriptCommand</code></td>
+<td>Combined formatting</td>
+<td><code>Selection/SelectionFormattingCommand.cs</code></td>
+</tr>
+<tr>
+<td><code>InsertTextScriptCommand</code></td>
+<td>Text insertion (with optional cursor repositioning)</td>
+<td><code>Insertion/Text/InsertTextScriptCommand.cs</code></td>
+</tr>
+<tr>
+<td><code>InsertFieldScriptCommand</code></td>
+<td>Field insertion</td>
+<td><code>Insertion/Field/InsertFieldScriptCommand.cs</code></td>
+</tr>
+<tr>
+<td><code>DeleteCharactersScriptCommand</code></td>
+<td>Character deletion</td>
+<td><code>Deletion/DeleteCharactersScriptCommand.cs</code></td>
+</tr>
+<tr>
+<td><code>EnforceCaseScriptCommand</code></td>
+<td>Case conversion</td>
+<td><code>EnforceCasing/EnforceCaseScriptCommand.cs</code></td>
+</tr>
+<tr>
+<td><code>SetCustomPropertyScriptCommand</code></td>
+<td>Set document property</td>
+<td><code>Properties/SetCustomPropertyScriptCommand.cs</code></td>
+</tr>
+<tr>
+<td><code>DeleteCustomPropertyScriptCommand</code></td>
+<td>Delete document property</td>
+<td><code>Properties/DeleteCustomPropertyScriptCommand.cs</code></td>
+</tr>
+<tr>
+<td><code>RunMacroScriptCommand</code></td>
+<td>Execute VBA macros</td>
+<td><code>Macro/RunMacroScriptCommand.cs</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="iscriptrepository">IScriptRepository</h4>
+<p>Repository interface for script persistence:</p>
+<pre><code class="lang-csharp">public interface IScriptRepository
+{
+    IEnumerable&lt;Script&gt; GetScripts();
+    Maybe&lt;Script&gt; GetScript(string name);
+    Maybe&lt;bool&gt; IsEnabled(string mappingId);
+    Maybe&lt;bool&gt; IsVisible(string mappingId);
+}
+</code></pre>
+<p>Separates script data (scripts collection) from UI metadata (mappings).</p>
+<h3 id="application-layer-coreapplicationscripting">Application Layer (<code>Core.Application.Scripting</code>)</h3>
+<p>CQRS handlers orchestrating script operations.</p>
+<h4 id="query-handlers">Query Handlers</h4>
+<p><strong>GetScripts</strong>: Retrieves all available scripts</p>
+<pre><code class="lang-csharp">public class Handler(IScriptRepository repository) : IQueryHandler&lt;Query, Result&lt;IEnumerable&lt;Script&gt;&gt;&gt;
+{
+    public Result&lt;IEnumerable&lt;Script&gt;&gt; Handle(Query query) 
+        =&gt; Result.Success(repository.GetScripts());
+}
+</code></pre>
+<p><strong>GetScriptEnabled</strong>: Checks if a script is enabled</p>
+<pre><code class="lang-csharp">public Result&lt;Maybe&lt;bool&gt;&gt; Handle(Query query)
+{
+    var enabled = repository.IsEnabled(query.MappingId);
+    return Result.Success(enabled);
+}
+</code></pre>
+<p><strong>GetScriptVisible</strong>: Checks if a script is visible in UI</p>
+<pre><code class="lang-csharp">public Result&lt;Maybe&lt;bool&gt;&gt; Handle(Query query)
+{
+    var visible = repository.IsVisible(query.MappingId);
+    return Result.Success(visible);
+}
+</code></pre>
+<h4 id="command-handler">Command Handler</h4>
+<p><strong>RunScript</strong>: Executes a script's commands sequentially</p>
+<pre><code class="lang-csharp">public class Handler(
+    IScriptRepository repository,
+    IScriptCommandDispatcher dispatcher,
+    ILogger&lt;Handler&gt; logger)
+    : ICommandHandler&lt;Command, Result&gt;
+{
+    public Result Handle(Command command)
+    {
+        var scriptResult = repository.GetScript(command.ScriptName);
+        if (scriptResult.HasNoValue)
+            return Result.Failure($&quot;Script {command.ScriptName} not found&quot;);
+
+        var script = scriptResult.Value;
+        foreach (var scriptCommand in script.Commands)
+        {
+            var result = dispatcher.Execute(scriptCommand);
+            if (result.IsFailure)
+            {
+                logger.LogError(&quot;Command failed: {Error}&quot;, result.Error);
+                return result;
+            }
+        }
+
+        return Result.Success();
+    }
+}
+</code></pre>
+<p><strong>Key Behaviours</strong>:</p>
+<ul>
+<li>Sequential execution - stops on first failure</li>
+<li>Logging of command failures</li>
+<li>Transaction-like semantics (all or nothing)</li>
+<li>Cancellation token support (via extension)</li>
+</ul>
+<h4 id="iscriptcommanddispatcher-interface">IScriptCommandDispatcher Interface</h4>
+<p>Dispatcher interface for routing commands to handlers:</p>
+<pre><code class="lang-csharp">public interface IScriptCommandDispatcher
+{
+    Result Execute(IScriptCommand command);
+}
+</code></pre>
+<p><strong>Design Note</strong>: This interface abstracts the backend implementation (Word, Excel, etc.) from the application layer. The dispatcher uses runtime type resolution to invoke the correct <code>IScriptCommandHandler&lt;T&gt;</code> for each command type.</p>
+<h4 id="iscriptcommandhandler-interface">IScriptCommandHandler<t> Interface</t></h4>
+<p>Generic handler interface for individual command types:</p>
+<pre><code class="lang-csharp">public interface IScriptCommandHandler&lt;in T&gt; where T : IScriptCommand
+{
+    Result Handle(T command);
+}
+</code></pre>
+<p>Enables:</p>
+<ul>
+<li>Individual command handlers per type</li>
+<li>Dependency injection per handler</li>
+<li>Programmatic reuse of script commands</li>
+<li>Open/Closed Principle compliance</li>
+<li>Independent testing of each command type</li>
+</ul>
+<h3 id="infrastructure-layer">Infrastructure Layer</h3>
+<h4 id="persistence-coreinfrastructurepersistence">Persistence (<code>Core.Infrastructure.Persistence</code>)</h4>
+<p><strong>ScriptRepository</strong>: Loads scripts from JSON configuration</p>
+<pre><code class="lang-csharp">public class ScriptRepository(
+    IOptionsMonitor&lt;ScriptConfiguration&gt; configuration,
+    ILogger&lt;ScriptRepository&gt; logger) 
+    : IScriptRepository
+{
+    public IEnumerable&lt;Script&gt; GetScripts()
+    {
+        var config = configuration.CurrentValue;
+        return config.Scripts.Select(kvp =&gt; MapToScript(kvp.Key, kvp.Value));
+    }
+}
+</code></pre>
+<p><strong>Key Features</strong>:</p>
+<ul>
+<li>Hot-reloading via <code>IOptionsMonitor&lt;T&gt;</code></li>
+<li>Bidirectional mapping (DTO ↔ Domain)</li>
+<li>JSON polymorphism for command types</li>
+</ul>
+<h4 id="configuration-dtos">Configuration DTOs</h4>
+<p><strong>ScriptDto</strong>: Represents a script in JSON</p>
+<pre><code class="lang-csharp">public class ScriptDto
+{
+    public string Comment { get; set; }
+    public IList&lt;ScriptCommandDto&gt; Commands { get; init; }
+}
+</code></pre>
+<p><strong>ScriptConfiguration</strong>: Root configuration object</p>
+<pre><code class="lang-csharp">public class ScriptConfiguration
+{
+    public IDictionary&lt;string, ScriptDto&gt; Scripts { get; init; }
+    public IDictionary&lt;string, ScriptMapping&gt; Mappings { get; init; }
+}
+</code></pre>
+<p><strong>ScriptMapping</strong>: Controls UI behaviour</p>
+<pre><code class="lang-csharp">public class ScriptMapping
+{
+    public string Script { get; init; }       // References a script name
+    public string EnabledWhen { get; init; }  // Rules expression
+    public string VisibleWhen { get; init; }  // Rules expression
+}
+</code></pre>
+<p><strong>Design Rationale</strong>: Separation of scripts (what) from mappings (when/where) enables:</p>
+<ul>
+<li>Multiple UI buttons for same script</li>
+<li>Context-dependent visibility/enablement</li>
+<li>Rules engine integration</li>
+</ul>
+<h4 id="command-dtos">Command DTOs</h4>
+<p>Base class using JSON polymorphism:</p>
+<pre><code class="lang-csharp">[JsonPolymorphic]
+[JsonDerivedType(typeof(ApplyFontFormattingScriptCommandDto), &quot;ApplyFontFormatting&quot;)]
+[JsonDerivedType(typeof(DeleteCharactersScriptCommandDto), &quot;DeleteCharacters&quot;)]
+// ... other command types
+public abstract class ScriptCommandDto
+{
+    [Required]
+    public CommandRange CommandRange { get; set; }
+}
+</code></pre>
+<p>Example concrete DTO:</p>
+<pre><code class="lang-csharp">public class DeleteCharactersScriptCommandDto : ScriptCommandDto, IHasSubRange
+{
+    [JsonRequired]
+    public string Characters { get; set; }
+    
+    [JsonRequired]
+    public CommandSubRange SubRange { get; set; }
+}
+</code></pre>
+<p><strong>DTO Mapping</strong>: ScriptRepository handles bidirectional mapping between DTOs and domain commands.</p>
+<h4 id="common-infrastructure-coreinfrastructurecommon">Common Infrastructure (<code>Core.Infrastructure.Common</code>)</h4>
+<p><strong>ScriptCommandDispatcher</strong>: Dynamic dispatch implementation</p>
+<p>Located in <code>Core.Infrastructure.Common.Messaging</code>, this dispatcher uses runtime type resolution to route commands to their registered handlers:</p>
+<pre><code class="lang-csharp">public class ScriptCommandDispatcher(
+    IServiceProvider serviceProvider,
+    ILogger&lt;ScriptCommandDispatcher&gt; logger) : IScriptCommandDispatcher
+{
+    public Result Execute(IScriptCommand command)
+    {
+        if (command is null)
+            throw new ArgumentNullException(nameof(command));
+
+        try
+        {
+            // Resolve handler type at runtime based on command's actual type
+            var commandType = command.GetType();
+            var handlerType = typeof(IScriptCommandHandler&lt;&gt;).MakeGenericType(commandType);
+
+            logger.LogDebug(&quot;Resolving handler {HandlerType} for command {CommandType}&quot;,
+                handlerType.Name, commandType.Name);
+
+            // Try to get handler from DI
+            var handler = serviceProvider.GetService(handlerType);
+
+            if (handler is null)
+            {
+                logger.LogWarning(&quot;No handler registered for script command type {CommandType}&quot;, commandType.Name);
+                return Result.Failure($&quot;No handler registered for {commandType.Name}&quot;);
+            }
+
+            // Dynamic dispatch: CLR resolves to correct Handle(TCommand) method at runtime
+            return ((dynamic)handler).Handle((dynamic)command);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, &quot;Error dispatching script command {CommandType}&quot;, command.GetType().Name);
+            return Result.Failure($&quot;Error dispatching command: {ex.Message}&quot;);
+        }
+    }
+}
+</code></pre>
+<p><strong>Key Features</strong>:</p>
+<ul>
+<li>Generic type resolution at runtime</li>
+<li>Dynamic dispatch to strongly-typed handlers</li>
+<li>Automatic handler discovery via dependency injection</li>
+<li>No modification required when adding new command types</li>
+</ul>
+<h4 id="vsto-command-handlers-wordaddinfeaturesscriptinghandlers">VSTO Command Handlers (<code>WordAddIn.Features.Scripting.Handlers</code>)</h4>
+<p>All script commands are implemented as individual handlers. Example handler:</p>
+<pre><code class="lang-csharp">public class DeleteCharactersScriptCommandHandler(
+    ITextReplacer textReplacer,
+    ILogger&lt;DeleteCharactersScriptCommandHandler&gt; logger)
+    : IScriptCommandHandler&lt;DeleteCharactersScriptCommand&gt;
+{
+    private readonly Application _wordApp = Globals.ThisAddIn.Application;
+
+    public Result Handle(DeleteCharactersScriptCommand command)
+    {
+        try
+        {
+            _wordApp.ScreenUpdating = false;
+            _wordApp.System.Cursor = WdCursorType.wdCursorWait;
+
+            // Implementation using Word COM interop
+            var result = textReplacer.Replace(
+                command.Characters,
+                string.Empty,
+                command.Range);
+
+            return result;
+        }
+        catch (COMException ex)
+        {
+            logger.LogError(ex, &quot;COM error deleting characters&quot;);
+            return Result.Failure($&quot;Error: {ex.Message}&quot;);
+        }
+        finally
+        {
+            _wordApp.ScreenUpdating = true;
+            _wordApp.System.Cursor = WdCursorType.wdCursorNormal;
+        }
+    }
+}
+</code></pre>
+<p><strong>All Command Handlers</strong> (located in <code>src/VSTO/WordAddIn/Features/Scripting/Handlers</code>):</p>
+<ul>
+<li><code>ApplyFontFormatScriptCommandHandler</code></li>
+<li><code>ApplyParagraphFormatScriptCommandHandler</code></li>
+<li><code>ApplyStyleScriptCommandHandler</code></li>
+<li><code>ApplySelectionFormatScriptCommandHandler</code></li>
+<li><code>InsertTextScriptCommandHandler</code></li>
+<li><code>InsertFieldScriptCommandHandler</code></li>
+<li><code>DeleteCharactersScriptCommandHandler</code></li>
+<li><code>EnforceCaseScriptCommandHandler</code></li>
+<li><code>SetCustomPropertyScriptCommandHandler</code></li>
+<li><code>DeleteCustomPropertyScriptCommandHandler</code></li>
+</ul>
+<p><strong>Handler Pattern Benefits</strong>:</p>
+<ul>
+<li>Independent testability</li>
+<li>Focused responsibilities</li>
+<li>Programmatic reuse via DI</li>
+<li>No modification of dispatcher for new commands</li>
+<li>Clean separation of concerns</li>
+</ul>
+<h2 id="configuration-format">Configuration Format</h2>
+<h3 id="file-location">File Location</h3>
+<p>Scripts are loaded from JSON files via .NET Configuration system:</p>
+<ul>
+<li>Shared: <code>%appdata%/kutana+brochet/Word/Config/scripts.json</code></li>
+<li>User: <code>%localappdata%/kutana+brochet/Word/Config/scripts.json</code></li>
+</ul>
+<p>Configuration locations are defined in <code>appsettings.json</code>:</p>
+<pre><code class="lang-json">{
+  &quot;ConfigurationLocations&quot;: {
+    &quot;Shared&quot;: &quot;%appdata%/kutana+brochet/Word/Config&quot;,
+    &quot;User&quot;: &quot;%localappdata%/kutana+brochet/Word/Config&quot;
+  }
+}
+</code></pre>
+<h3 id="json-schema">JSON Schema</h3>
+<p>The JSON Schema is auto-generated from the C# DTOs using <code>SchemaGenerator</code>. See <a href="../../../output/schemas/CoreConfiguration.schema.json"><code>CoreConfiguration.schema.json</code></a> for the full schema.</p>
+<p><strong>Schema Generation</strong>: Run <code>SchemaGenerator</code> project to regenerate schemas when DTOs change. The schema provides:</p>
+<ul>
+<li>IntelliSense in JSON editors</li>
+<li>Compile-time validation of configuration files</li>
+<li>Documentation of available properties and their types</li>
+<li>Enum value validation</li>
+</ul>
+<h3 id="complete-configuration-example">Complete Configuration Example</h3>
+<pre><code class="lang-json">{
+  &quot;Scripts&quot;: {
+    &quot;FormatLegalDocument&quot;: {
+      &quot;Comment&quot;: &quot;Applies standard legal document formatting&quot;,
+      &quot;Commands&quot;: [
+        {
+          &quot;$type&quot;: &quot;ApplyStyle&quot;,
+          &quot;CommandRange&quot;: &quot;AllParagraphs&quot;,
+          &quot;StyleName&quot;: &quot;Legal Body Text&quot;
+        },
+        {
+          &quot;$type&quot;: &quot;ApplyFontFormatting&quot;,
+          &quot;CommandRange&quot;: &quot;Selection&quot;,
+          &quot;SubRange&quot;: &quot;All&quot;,
+          &quot;Bold&quot;: 0,
+          &quot;Italic&quot;: 0,
+          &quot;Colour&quot;: &quot;RGB(0,0,0)&quot;
+        },
+        {
+          &quot;$type&quot;: &quot;DeleteCharacters&quot;,
+          &quot;CommandRange&quot;: &quot;EntireDocument&quot;,
+          &quot;SubRange&quot;: &quot;All&quot;,
+          &quot;Characters&quot;: &quot;  &quot;
+        }
+      ]
+    },
+    &quot;RunLegacyMacro&quot;: {
+      &quot;Comment&quot;: &quot;Executes a VBA macro from the attached template&quot;,
+      &quot;Commands&quot;: [
+        {
+          &quot;$type&quot;: &quot;RunMacro&quot;,
+          &quot;Options&quot;: {
+            &quot;MacroName&quot;: &quot;CustomModule.FormatDocument&quot;,
+            &quot;Parameters&quot;: [&quot;Standard&quot;, true]
+          }
+        }
+      ]
+    }
+  },
+  &quot;Mappings&quot;: {
+    &quot;formatLegalDoc&quot;: {
+      &quot;Script&quot;: &quot;FormatLegalDocument&quot;,
+      &quot;EnabledWhen&quot;: &quot;Always&quot;,
+      &quot;VisibleWhen&quot;: &quot;HasEntitlement('WordStandardTools')&quot;
+    },
+    &quot;runMacro&quot;: {
+      &quot;Script&quot;: &quot;RunLegacyMacro&quot;,
+      &quot;EnabledWhen&quot;: &quot;Always&quot;,
+      &quot;VisibleWhen&quot;: &quot;Always&quot;
+    }
+  }
+}
+</code></pre>
+<h3 id="commandrange-enumeration">CommandRange Enumeration</h3>
+<pre><code class="lang-csharp">public enum CommandRange
+{
+    Selection,
+    EntireDocument,
+    FirstParagraph,
+    LastParagraph,
+    AllParagraphs
+}
+</code></pre>
+<h3 id="commandsubrange-enumeration">CommandSubRange Enumeration</h3>
+<pre><code class="lang-csharp">public enum CommandSubRange
+{
+    All,
+    FirstWord,
+    LastWord,
+    AllWords,
+    FirstSentence,
+    LastSentence,
+    AllSentences
+}
+</code></pre>
+<h3 id="afterinsertionbehavior-enumeration">AfterInsertionBehavior Enumeration</h3>
+<p>Controls cursor placement after an <code>InsertText</code> command completes. Located in <code>Core.Application.Scripting.Commands.Insertion</code>.</p>
+<pre><code class="lang-csharp">public enum AfterInsertionBehavior
+{
+    None,               // No cursor movement (default)
+    MoveCursorToEnd,    // Collapse cursor to end of inserted/existing text
+    MoveCursorToStart,  // Collapse cursor to start of inserted/existing text
+    SelectInsertedText  // Select the full span of inserted/existing text
+}
+</code></pre>
+<p><strong>Design Notes</strong>:</p>
+<ul>
+<li>The <code>InsertTextOptions.AfterInsertion</code> property defaults to <code>None</code> for backward compatibility</li>
+<li>Cursor repositioning applies to both freshly inserted text and duplicate-skipped text (when <code>PreventDuplicates</code> is <code>true</code>)</li>
+<li>When multiple ranges are processed, the cursor is positioned relative to the <strong>last</strong> range</li>
+<li>Implementation tracks range boundaries through both insertion and duplicate-skip paths, then applies the cursor behaviour in a single pass after all ranges are processed</li>
+</ul>
+<h2 id="adding-new-commands">Adding New Commands</h2>
+<h3 id="step-1-create-domain-command">Step 1: Create Domain Command</h3>
+<p><strong>File</strong>: <code>src/Core/Core.Domain/Scripting/{Category}/{CommandName}ScriptCommand.cs</code></p>
+<pre><code class="lang-csharp">namespace KutanaBrochet.Core.Domain.Scripting.{Category};
+
+public record {CommandName}ScriptCommand(
+    {Type} {Property},
+    CommandRange Range,
+    CommandSubRange SubRange) : IScriptCommand;
+</code></pre>
+<h3 id="step-2-create-dto">Step 2: Create DTO</h3>
+<p><strong>File</strong>: <code>src/Core/Infrastructure.Persistence/Configuration/Commands/{CommandName}ScriptCommandDto.cs</code></p>
+<pre><code class="lang-csharp">public class {CommandName}ScriptCommandDto : ScriptCommandDto, IHasSubRange
+{
+    [JsonRequired]
+    public {Type} {Property} { get; set; }
+    
+    [JsonRequired]
+    public CommandSubRange SubRange { get; set; }
+}
+</code></pre>
+<p><strong>Update</strong> <code>ScriptCommand.cs</code> to register the JSON type discriminator:</p>
+<pre><code class="lang-csharp">[JsonDerivedType(typeof({CommandName}ScriptCommand), &quot;{CommandName}&quot;)]
+</code></pre>
+<p><strong>Note</strong>: For commands without Range (like <code>RunMacroScriptCommand</code>, <code>SetCustomPropertyScriptCommand</code>), inherit directly from <code>ScriptCommand</code> and implement <code>Execute()</code> to delegate to <code>IDocumentEditor</code>.</p>
+<h3 id="step-3-create-handler">Step 3: Create Handler</h3>
+<p><strong>File</strong>: <code>src/VSTO/WordAddIn/Features/Scripting/Handlers/{CommandName}Handler.cs</code></p>
+<pre><code class="lang-csharp">public class {CommandName}Handler(
+    {IDependency} dependency,
+    ILogger&lt;{CommandName}Handler&gt; logger)
+    : IScriptCommandHandler&lt;{CommandName}ScriptCommand&gt;
+{
+    private readonly Application _wordApp = Globals.ThisAddIn.Application;
+
+    public Result Handle({CommandName}ScriptCommand command)
+    {
+        try
+        {
+            _wordApp.ScreenUpdating = false;
+            _wordApp.System.Cursor = WdCursorType.wdCursorWait;
+
+            // Implementation
+
+            return Result.Success();
+        }
+        catch (COMException ex)
+        {
+            logger.LogError(ex, &quot;COM error executing {CommandName}&quot;);
+            return Result.Failure($&quot;Error: {ex.Message}&quot;);
+        }
+        finally
+        {
+            _wordApp.ScreenUpdating = true;
+            _wordApp.System.Cursor = WdCursorType.wdCursorNormal;
+        }
+    }
+}
+</code></pre>
+<h3 id="step-4-handler-auto-registration">Step 4: Handler Auto-Registration</h3>
+<p>Handlers are <strong>automatically registered</strong> via Scrutor in <code>ThisAddIn.cs</code>:</p>
+<pre><code class="lang-csharp">builder.Services.Scan(s =&gt; s.FromAssemblyOf&lt;WordScriptCommandHandlerBase&gt;()
+    .AddClasses(c =&gt; c.AssignableTo(typeof(IScriptCommandHandler&lt;&gt;)), publicOnly: false)
+    .AsImplementedInterfaces()
+    .WithTransientLifetime());
+</code></pre>
+<p><strong>No manual registration required</strong>:</p>
+<ul>
+<li>Scrutor automatically discovers all classes implementing <code>IScriptCommandHandler&lt;T&gt;</code></li>
+<li>Handlers are registered with transient lifetime</li>
+<li>The dispatcher will automatically find and invoke your new handler</li>
+</ul>
+<h3 id="step-5-add-dto-mapping">Step 5: Add DTO Mapping</h3>
+<p><strong>File</strong>: <code>src/Core/Infrastructure.Persistence/ScriptRepository.cs</code></p>
+<p>Add mapping logic in <code>MapToScript()</code> method:</p>
+<pre><code class="lang-csharp">private Script MapToScript(string name, ScriptDto dto)
+{
+    var commands = dto.Commands.Select(cmd =&gt; cmd switch
+    {
+        {CommandName}ScriptCommandDto c =&gt; new {CommandName}ScriptCommand(
+            c.{Property},
+            c.CommandRange,
+            c.SubRange),
+        // ... other command types
+    });
+    
+    return new Script(name, dto.Comment, commands.ToList());
+}
+</code></pre>
+<h3 id="step-6-write-bdd-tests">Step 6: Write BDD Tests</h3>
+<p><strong>Feature File</strong>: <code>tests/Core.Application.Tests/Features/Scripts/{CommandName}.feature</code></p>
+<pre><code class="lang-gherkin">Feature: {Command Name}
+  As a document author
+  I want to {capability}
+  So that I can {benefit}
+
+  Scenario: {Scenario name}
+    Given {precondition}
+    When I execute the {command name} command
+    Then the result should be successful
+    And {expected outcome}
+</code></pre>
+<p><strong>Step Definitions</strong>: Implement the Given/When/Then steps.</p>
+<h2 id="testing-strategy">Testing Strategy</h2>
+<h3 id="unit-tests">Unit Tests</h3>
+<p><strong>Domain Tests</strong>: Verify script aggregate invariants</p>
+<ul>
+<li>Script name uniqueness</li>
+<li>Command order preservation</li>
+<li>Immutability of commands collection</li>
+</ul>
+<p><strong>Application Tests</strong>: BDD scenarios for each command</p>
+<ul>
+<li>Command execution logic</li>
+<li>Error handling</li>
+<li>Integration with repository</li>
+</ul>
+<p><strong>Infrastructure Tests</strong>: Configuration loading</p>
+<ul>
+<li>JSON deserialisation</li>
+<li>DTO to domain mapping</li>
+<li>Configuration hot-reloading</li>
+</ul>
+<h3 id="integration-tests">Integration Tests</h3>
+<p><strong>VSTO Tests</strong>: Word COM interop</p>
+<ul>
+<li>Command execution against real Word documents</li>
+<li>COM exception handling</li>
+<li>Resource cleanup (Marshal.ReleaseComObject)</li>
+</ul>
+<h3 id="test-structure">Test Structure</h3>
+<pre><code>tests/
+├── Core.Application.Tests/
+│   └── Features/
+│       └── Scripts/
+│           ├── GetScripts.feature
+│           ├── RunScript.feature
+│           ├── ApplyFontFormatting.feature
+│           └── ...
+├── Core.Domain.Tests/
+│   └── Scripting/
+│       └── ScriptTests.cs
+└── WordAddIn.Tests/
+    └── Features/
+        └── Scripting/
+            └── WordScriptCommandExecutor.feature
+</code></pre>
+<h2 id="com-safety-and-error-handling">COM Safety and Error Handling</h2>
+<h3 id="critical-vsto-practices">Critical VSTO Practices</h3>
+<p><strong>1. COM Exception Handling</strong></p>
+<p>Always wrap Word API calls:</p>
+<pre><code class="lang-csharp">try
+{
+    // Word COM operations
+}
+catch (COMException ex)
+{
+    logger.LogError(ex, &quot;COM error&quot;);
+    return Result.Failure($&quot;Error: {ex.Message}&quot;);
+}
+</code></pre>
+<p><strong>2. COM Object Cleanup</strong></p>
+<p>Release COM objects explicitly:</p>
+<pre><code class="lang-csharp">Sentences sentences = null;
+try
+{
+    sentences = range.Sentences;
+    // Use sentences
+}
+finally
+{
+    if (sentences != null)
+        Marshal.ReleaseComObject(sentences);
+}
+</code></pre>
+<p><strong>3. Screen Updating and Cursor Management</strong></p>
+<pre><code class="lang-csharp">try
+{
+    _wordApp.ScreenUpdating = false;
+    _wordApp.System.Cursor = WdCursorType.wdCursorWait;
+    // Operations
+}
+finally
+{
+    _wordApp.ScreenUpdating = true;
+    _wordApp.System.Cursor = WdCursorType.wdCursorNormal;
+}
+</code></pre>
+<p><strong>4. Infinite Loop Prevention</strong></p>
+<pre><code class="lang-csharp">int iterations = 0;
+const int maxIterations = 10000;
+
+while (condition &amp;&amp; iterations &lt; maxIterations)
+{
+    // Operation
+    iterations++;
+}
+
+if (iterations &gt;= maxIterations)
+    logger.LogWarning(&quot;Maximum iterations reached&quot;);
+</code></pre>
+<h2 id="performance-considerations">Performance Considerations</h2>
+<h3 id="optimisation-strategies">Optimisation Strategies</h3>
+<p><strong>1. Batch Operations</strong></p>
+<p>Process multiple paragraphs/words/sentences in a single operation rather than one-by-one.</p>
+<p><strong>2. Minimise Range Access</strong></p>
+<p>Cache Range objects rather than repeatedly accessing <code>Selection</code>, <code>Paragraphs</code>, etc.</p>
+<p><strong>3. Screen Updating</strong></p>
+<p>Disable during bulk operations:</p>
+<pre><code class="lang-csharp">_wordApp.ScreenUpdating = false;
+try { /* operations */ }
+finally { _wordApp.ScreenUpdating = true; }
+</code></pre>
+<p><strong>4. Command Ordering</strong></p>
+<ul>
+<li>Apply styles before character formatting</li>
+<li>Combine formatting commands when possible</li>
+<li>Use <code>ApplySelectionFormatting</code> for multiple format changes</li>
+</ul>
+<h3 id="known-bottlenecks">Known Bottlenecks</h3>
+<ul>
+<li><strong>Paragraph iteration</strong>: O(n) for each paragraph access</li>
+<li><strong>Word/Sentence enumeration</strong>: Expensive for large documents</li>
+<li><strong>Find/Replace operations</strong>: Can be slow on entire document</li>
+</ul>
+<h2 id="extension-points">Extension Points</h2>
+<h3 id="adding-backend-support">Adding Backend Support</h3>
+<p>To support Excel/PowerPoint/PDF:</p>
+<p><strong>1. Create Backend-Specific Handlers</strong></p>
+<pre><code class="lang-csharp">// Example: Excel handler for applying font formatting
+public class ExcelApplyFontFormatScriptCommandHandler(
+    ILogger&lt;ExcelApplyFontFormatScriptCommandHandler&gt; logger)
+    : IScriptCommandHandler&lt;ApplyFontFormatScriptCommand&gt;
+{
+    private readonly Excel.Application _excelApp = Globals.ThisAddIn.Application;
+
+    public Result Handle(ApplyFontFormatScriptCommand command)
+    {
+        // Excel-specific implementation
+    }
+}
+</code></pre>
+<p><strong>2. Handlers Auto-Register via Scrutor</strong></p>
+<p>Set up Scrutor in your Excel/PowerPoint add-in's <code>ThisAddIn.cs</code>:</p>
+<pre><code class="lang-csharp">builder.Services.Scan(s =&gt; s.FromExecutingAssembly()
+    .AddClasses(c =&gt; c.AssignableTo(typeof(IScriptCommandHandler&lt;&gt;)))
+    .AsImplementedInterfaces()
+    .WithTransientLifetime());
+</code></pre>
+<p><strong>3. Dispatcher Works Automatically</strong></p>
+<p>The same <code>ScriptCommandDispatcher</code> from <code>Core.Infrastructure.Common</code> works across all backends:</p>
+<ul>
+<li>Dispatcher routes commands to backend-specific handlers</li>
+<li>No changes needed to domain commands</li>
+<li>Backend handlers can share interfaces/base classes for common logic</li>
+</ul>
+<h3 id="custom-command-types">Custom Command Types</h3>
+<p>For organisation-specific commands:</p>
+<p><strong>1. Extend IScriptCommand</strong></p>
+<pre><code class="lang-csharp">public record CustomFormatCommand(
+    string CustomProperty,
+    CommandRange Range) : IScriptCommand;
+</code></pre>
+<p><strong>2. Create Handler</strong></p>
+<pre><code class="lang-csharp">public class CustomFormatHandler : IScriptCommandHandler&lt;CustomFormatCommand&gt;
+{
+    public Result Handle(CustomFormatCommand command) { /* */ }
+}
+</code></pre>
+<p><strong>3. Register JSON Type</strong></p>
+<pre><code class="lang-csharp">[JsonDerivedType(typeof(CustomFormatCommandDto), &quot;CustomFormat&quot;)]
+</code></pre>
+<h2 id="architecture-evolution">Architecture Evolution</h2>
+<p>The scripting subsystem has undergone two major refactorings to reach its current state:</p>
+<p><strong>Phase 1 (October 2025)</strong>: Refactored from the original multi-layered architecture to a Command Executor pattern with <code>IScriptCommandExecutor</code> using switch expression pattern matching. See <a href="../../adr/20251023-refactor-scripting-to-scriptoperation-pattern.md">ADR: Refactor Scripting to Command Executor Pattern</a>.</p>
+<p><strong>Phase 2 (October 2025)</strong>: Migrated from monolithic executor to dispatcher pattern with individual handlers:</p>
+<ul>
+<li>✅ Replaced <code>IScriptCommandExecutor</code> with <code>IScriptCommandDispatcher</code></li>
+<li>✅ Migrated all 8 command types to individual <code>IScriptCommandHandler&lt;T&gt;</code> implementations</li>
+<li>✅ Removed switch expression entirely</li>
+<li>✅ Implemented dynamic dispatch via runtime type resolution</li>
+<li>✅ Auto-registration of handlers via Scrutor</li>
+</ul>
+<p><strong>Result</strong>: The subsystem now follows the Open/Closed Principle - new commands can be added without modifying the dispatcher, and each command handler is independently testable and maintainable.</p>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="../../adr/20251023-refactor-scripting-to-scriptoperation-pattern.md">ADR: Refactor Scripting to Command Executor Pattern</a></li>
+<li><a href="../../script-command-migration-guide.md">Script Command Migration Guide</a></li>
+<li><a href="xref:scripts-user-guide">User Guide</a> - End-user documentation</li>
+<li><a href="https://refactoring.guru/design-patterns/interpreter">Interpreter Pattern</a> - Design pattern reference</li>
+<li><a href="https://learn.microsoft.com/en-us/visualstudio/vsto/programming-vsto-add-ins">VSTO Programming Guide</a> - Microsoft documentation</li>
+</ul>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.4.8-rc/docs/developer/docs/scripts.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

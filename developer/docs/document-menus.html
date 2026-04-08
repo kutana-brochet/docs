@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Document Menus - Developer Guide | Developer Docs </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Document Menus - Developer Guide | Developer Docs ">
+      
+      <meta name="description" content="Technical implementation guide for the New Document, Starter Document, and Insert Snippet dynamic menu subsystem.">
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.4.8-rc/docs/developer/docs/document-menus.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="K+B Office Add-ins">
+            K+B Office Add-ins
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="document-menus-developer-guide">
+<h1 id="document-menus---developer-guide">Document Menus - Developer Guide</h1>
+
+<p>Technical implementation guide for the New Document, Starter Document, and Insert Snippet dynamic menu subsystem. All three features share a common discovery, formatting, and rendering pipeline but differ in their final action.</p>
+<table>
+<thead>
+<tr>
+<th>Menu Type</th>
+<th>Action</th>
+<th>Creates New Document?</th>
+<th>Default Extensions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>New Document</td>
+<td>CreateDocument</td>
+<td>Yes (from template)</td>
+<td>.dotx, .dotm</td>
+</tr>
+<tr>
+<td>Starter Document</td>
+<td>CreateFromStarterDocument</td>
+<td>Yes (from existing doc)</td>
+<td>.docx, .docm, .dotx, .dotm</td>
+</tr>
+<tr>
+<td>Insert Snippet</td>
+<td>InsertSnippet</td>
+<td>No (inserts into active doc)</td>
+<td>.docx, .docm</td>
+</tr>
+</tbody>
+</table>
+<h2 id="architecture-overview">Architecture Overview</h2>
+<p>The document menu subsystem implements a pipeline pattern: file discovery, menu formatting, XML rendering, and command dispatch.</p>
+<pre><code>Ribbon click (dynamicMenu getContent callback)
+  |
+  v
+GetDocumentMenuItems.Query --&gt; FileProviderRepository --&gt; FileDiscoveryService
+  (reads config)                (scans file system)
+  |
+  v
+FormatDocumentMenu.Query --&gt; FolderTreeBuilder + DocumentMenuFormatter
+  |
+  v
+DocumentMenuXmlRenderer --&gt; XML string returned to Office
+  |
+  v
+User picks item --&gt; Ribbon onAction callback
+  |
+  v
+RibbonTagCache.TryGet(tag) --&gt; full file path
+  |
+  v
+CreateDocument / CreateDocumentFromStarterDocument / InsertSnippet command
+</code></pre>
+<h3 id="key-architectural-principles">Key Architectural Principles</h3>
+<ol>
+<li><strong>Shared Pipeline</strong>: All three menu types use the same discovery, formatting, and rendering infrastructure</li>
+<li><strong>Menu-Type Discrimination</strong>: DocumentMenuType enum distinguishes behaviour at each pipeline stage</li>
+<li><strong>Configuration-Driven</strong>: Menu content is entirely driven by FileProviderConfiguration JSON</li>
+<li><strong>Tag-Based Security</strong>: File paths are never exposed in ribbon XML; RibbonTagCache maps opaque tags to paths</li>
+<li><strong>Clean Architecture</strong>: Domain has no infrastructure dependencies; COM interop is isolated in the VSTO layer</li>
+</ol>
+<h2 id="layer-structure">Layer Structure</h2>
+<h3 id="domain-layer-coredomainword">Domain Layer (Core.Domain.Word)</h3>
+<h4 id="idocumentsource">IDocumentSource</h4>
+<p>Base abstraction for any file that can appear in a menu:</p>
+<pre><code class="lang-csharp">public interface IDocumentSource
+{
+    string Name { get; }       // Filename (e.g. &quot;Contract.dotx&quot;)
+    string Location { get; }   // Full path
+    string Container { get; }  // Parent folder path
+    string Extension { get; }
+    bool Matches(string value);
+    bool MatchesContainer(IDocumentSource source);
+}
+</code></pre>
+<h4 id="documentfile">DocumentFile</h4>
+<p>Sealed record implementing IDocumentSource for files on disk. Created via factory method:</p>
+<pre><code class="lang-csharp">public static Maybe&lt;DocumentFile&gt; Create(string path, bool exists)
+</code></pre>
+<p>Returns Maybe.None if the file does not exist.</p>
+<h4 id="documentpath">DocumentPath</h4>
+<p>Validated path value object:</p>
+<pre><code class="lang-csharp">public sealed record DocumentPath
+{
+    public static Result&lt;DocumentPath, Error&gt; Create(string path)
+}
+</code></pre>
+<p>Rejects null/whitespace paths with DomainErrors.Document.InvalidPath.</p>
+<h4 id="template">Template</h4>
+<p>Entity representing a Word template (.dotx/.dotm). Extends TemplateReference:</p>
+<pre><code class="lang-csharp">public record Template(IDocumentSource Source, TemplateMetadata Metadata)
+</code></pre>
+<p>Key behaviours:</p>
+<ul>
+<li>MatchesFilter(string) - regex match against file name (used for pre-profile configuration)</li>
+<li>IsMissing() - true if Source is a MissingDocument</li>
+</ul>
+<h4 id="starterdocument">StarterDocument</h4>
+<p>Pairs a source file with its resolved template:</p>
+<pre><code class="lang-csharp">public record StarterDocument(IDocumentSource Source, Template Template)
+</code></pre>
+<p>The Template is resolved by inspecting the starter file's XML to read its AttachedTemplate property.</p>
+<h3 id="application-layer-coreapplication">Application Layer (Core.Application)</h3>
+<h4 id="documentmenutype">DocumentMenuType</h4>
+<pre><code class="lang-csharp">public enum DocumentMenuType { NewDocument, StarterDocument, Snippet }
+</code></pre>
+<h4 id="menuaction">MenuAction</h4>
+<p>Immutable record mapping menu types to ribbon callback names:</p>
+<pre><code class="lang-csharp">public static readonly MenuAction CreateDocument            = new(&quot;CreateDocument&quot;, &quot;FileNewBlankDocument&quot;);
+public static readonly MenuAction CreateFromStarterDocument = new(&quot;CreateFromStarterDocument&quot;, &quot;FileNewBlankDocument&quot;);
+public static readonly MenuAction InsertSnippet             = new(&quot;InsertSnippet&quot;, &quot;FileNewBlankDocument&quot;);
+</code></pre>
+<p>The ActionName is written into the generated ribbon XML as the onAction attribute value.</p>
+<h4 id="getdocumentmenuitemsquery">GetDocumentMenuItems.Query</h4>
+<p>Retrieves raw file list for a given menu button ID:</p>
+<pre><code class="lang-csharp">public class Query(DocumentMenuType menuType, string id) : IQuery
+</code></pre>
+<p>Returns IReadOnlyList<idocumentsource> from IFileProviderRepository.GetDocuments().</idocumentsource></p>
+<h4 id="formatdocumentmenuquery">FormatDocumentMenu.Query</h4>
+<p>Transforms raw documents into a structured DocumentMenu:</p>
+<pre><code class="lang-csharp">public class Query(DocumentMenuType menuType, IReadOnlyList&lt;IDocumentSource&gt; documents) : IQuery
+</code></pre>
+<p>Delegates to IDocumentMenuFormatter which uses FolderTreeBuilder to group items.</p>
+<h4 id="documentmenu--documentmenugroup--documentmenuitem">DocumentMenu / DocumentMenuGroup / DocumentMenuItem</h4>
+<pre><code class="lang-csharp">public record DocumentMenu(IReadOnlyList&lt;DocumentMenuGroup&gt; Groups, bool UseSubmenus, Maybe&lt;string&gt; Title);
+public record DocumentMenuGroup(string DisplayName, IReadOnlyList&lt;DocumentMenuItem&gt; Items, ...);
+public record DocumentMenuItem(string DisplayName, IDocumentSource Source, MenuAction Action);
+</code></pre>
+<h4 id="commands">Commands</h4>
+<p><strong>CreateDocument.Command</strong> (DocumentManagement/CreateDocument.cs):</p>
+<pre><code class="lang-csharp">public class Command : ICommand
+{
+    public string Value { get; }       // Template name or path
+    public string DisplayName { get; }
+}
+</code></pre>
+<p>Handler flow:</p>
+<ol>
+<li>ITemplateRepository.GetByNameOrPath() - resolve template</li>
+<li>IDocumentManagementService.CreateDocument(template) - Word Documents.Add()</li>
+<li>Optional pre-profile via DMS configuration</li>
+<li>Dispatch DocumentCreatedFromTemplateEvent</li>
+</ol>
+<p><strong>Entitlements</strong>: WordDocumentManagement + WordStandardTools</p>
+<p><strong>CreateDocumentFromStarterDocument.Command</strong> (DocumentManagement/CreateDocumentFromStarterDocument.cs):</p>
+<pre><code class="lang-csharp">public class Command(string starterDocumentPath) : ICommand
+</code></pre>
+<p>Handler flow:</p>
+<ol>
+<li>DocumentFileFactory.Create(path) - validate path + existence</li>
+<li>IDocumentRepository.GetStarterDocument(documentFile) - inspect XML, resolve template</li>
+<li>IDocumentManagementService.CreateDocument(starterDocument) - Word Documents.Add()</li>
+<li>Optional pre-profile via DMS configuration</li>
+<li>Dispatch DocumentCreatedFromStarterDocument event</li>
+</ol>
+<p><strong>Entitlements</strong>: WordDocumentManagement + WordStandardTools</p>
+<p><strong>InsertSnippet.Command</strong> (Word/InsertSnippet.cs):</p>
+<pre><code class="lang-csharp">public class Command(string sourcePath) : ICommand
+</code></pre>
+<p>Handler flow:</p>
+<ol>
+<li>DocumentPath.Create(sourcePath) - validate path</li>
+<li>IDocumentEditor.InsertFile(documentPath) - Word Selection.InsertFile()</li>
+</ol>
+<p><strong>Entitlements</strong>: WordStandardTools. <strong>Decorators</strong>: [DocumentRequired]</p>
+<h4 id="application-events">Application Events</h4>
+<ul>
+<li>DocumentCreatedFromTemplateEvent - raised after CreateDocument succeeds</li>
+<li>DocumentCreatedFromStarterDocument - raised after CreateDocumentFromStarterDocument succeeds</li>
+</ul>
+<p>Both implement IApplicationEvent and are dispatched asynchronously for side effects (DMS profiling, VBA callbacks).</p>
+<p><strong>NB:</strong> Insert Snippet does not raise an application event.</p>
+<h3 id="infrastructure-layer">Infrastructure Layer</h3>
+<h4 id="fileproviderrepository-infrastructurepersistence">FileProviderRepository (Infrastructure.Persistence)</h4>
+<p>Implements IFileProviderRepository. Reads FileProviderConfiguration and delegates to FileDiscoveryService:</p>
+<pre><code class="lang-csharp">public IReadOnlyList&lt;IDocumentSource&gt; GetDocuments(DocumentMenuType menuType, string id)
+</code></pre>
+<p>Resolves path placeholders (%Workgroup%, %User%) via IEnvironmentService.GetPaths().</p>
+<h4 id="filediscoveryservice">FileDiscoveryService</h4>
+<p>Recursively walks the filesystem up to MaxDepth levels. Exclusions:</p>
+<ul>
+<li>Temporary lock files (~$ prefix)</li>
+<li>Non-matching extensions</li>
+<li>Non-matching prefixes (when configured)</li>
+<li>Directories in ExcludedContainers</li>
+<li>Reparse points (symlinks / junctions)</li>
+</ul>
+<h4 id="foldertreebuilder">FolderTreeBuilder</h4>
+<p>Builds the group hierarchy from IDocumentSource lists:</p>
+<ul>
+<li>Finds common root path, strips it</li>
+<li><strong>Compacts</strong> single-child directory chains: &quot;Parent / Child&quot; instead of nested menus</li>
+<li>Max depth: <strong>2 levels</strong> (deeper items flattened into level 2)</li>
+<li>Items within a group sorted alphabetically</li>
+<li>Optional leading-number stripping from names</li>
+</ul>
+<h4 id="displaynameformatter">DisplayNameFormatter</h4>
+<ul>
+<li>Strips file extensions from display names</li>
+<li>Strips numeric prefixes (01_, 01-, 01., 01 , 01) unless the entire name is digits (e.g. locale code 1033)</li>
+</ul>
+<h3 id="vsto-layer-wordaddin">VSTO Layer (WordAddIn)</h3>
+<h4 id="productribbon-callbacks">ProductRibbon Callbacks</h4>
+<p>Content callbacks:</p>
+<pre><code class="lang-csharp">public string GetNewDocuments(IRibbonControl button)
+    =&gt; GetDocumentMenu(DocumentMenuType.NewDocument, button.Id);
+
+public string GetStarterDocuments(IRibbonControl button)
+    =&gt; GetDocumentMenu(DocumentMenuType.StarterDocument, button.Id);
+
+public string GetSnippetDocuments(IRibbonControl button)
+    =&gt; GetDocumentMenu(DocumentMenuType.Snippet, button.Id);
+</code></pre>
+<p>Visibility and enabled callbacks are handled by the <a href="ribbon-item-rules.html">Ribbon Item Rules</a> subsystem. Dynamic menus typically use <code>GetVisibleById</code> / <code>GetEnabledById</code> attributes in Ribbon XML:</p>
+<pre><code class="lang-xml">&lt;dynamicMenu id=&quot;newDocumentMenu&quot;
+             getVisible=&quot;GetVisibleById&quot;
+             getEnabled=&quot;GetEnabledById&quot;
+             getContent=&quot;GetNewDocuments&quot; /&gt;
+</code></pre>
+<p>Action handlers:</p>
+<pre><code class="lang-csharp">public void CreateDocument(IRibbonControl control)            // dispatches CreateDocument.Command
+public void CreateFromStarterDocument(IRibbonControl control) // dispatches CreateDocumentFromStarterDocument.Command
+public void InsertSnippet(IRibbonControl control)             // dispatches InsertSnippet.Command
+</code></pre>
+<p>All action handlers resolve the file path from RibbonTagCache using control.Tag.</p>
+<h4 id="documentmenuxmlrenderer">DocumentMenuXmlRenderer</h4>
+<p>Renders DocumentMenu to Office Ribbon XML. Per item:</p>
+<ul>
+<li>Resolves icon via IMenuItemIconResolver</li>
+<li>Composes screentip with last modified date: &quot;TemplateName (dd/MM/yyyy)&quot;</li>
+<li>Registers path in RibbonTagCache, embeds tag in tag= attribute</li>
+<li>For grouped menus: uses menu elements for submenus, menuSeparator for flat separators</li>
+</ul>
+<h4 id="menuitemiconresolver">MenuItemIconResolver</h4>
+<p>Resolves icons per menu item. For Starter Documents with staleness configuration, applies colour-coded icons based on file age thresholds.</p>
+<h4 id="ribbontagcache">RibbonTagCache</h4>
+<p>Thread-safe cache mapping opaque string keys to file paths. Prevents file paths from appearing in generated XML. Each Render() call registers new entries; entries are never removed during the application lifecycle.</p>
+<h2 id="configuration-format">Configuration Format</h2>
+<h3 id="fileproviderconfiguration">FileProviderConfiguration</h3>
+<p>Located in the CoreConfiguration JSON file at the shared or user config path.</p>
+<pre><code class="lang-json">{
+  &quot;FileProviderConfiguration&quot;: {
+    &quot;NewDocument&quot;: { },
+    &quot;StarterDocument&quot;: { },
+    &quot;InsertSnippet&quot;: { }
+  }
+}
+</code></pre>
+<p>Each section is a dictionary keyed by ribbon button id. This allows multiple ribbon buttons to show different file sets from the same menu type.</p>
+<h3 id="fileproviderdto">FileProviderDto</h3>
+<pre><code class="lang-csharp">public class FileProviderDto
+{
+    public LocalSourceDto Source { get; init; }
+    public DisplayStyleDto? Style { get; init; }
+}
+</code></pre>
+<h3 id="localsourcedto">LocalSourceDto</h3>
+<pre><code class="lang-csharp">public class LocalSourceDto
+{
+    public string Location { get; init; } = &quot;%Workgroup%&quot;;
+    public int? MaxDepth { get; init; } = 0;
+    public IReadOnlyList&lt;string&gt; Extensions { get; init; } = [];
+    public IReadOnlyList&lt;string&gt; Prefixes { get; init; } = [];
+    public IReadOnlyList&lt;string&gt; ExcludedContainers { get; init; } = [];
+}
+</code></pre>
+<h3 id="displaystyledto">DisplayStyleDto</h3>
+<pre><code class="lang-csharp">public class DisplayStyleDto
+{
+    public string? Title { get; init; }
+    public DisplayType Type { get; init; } = DisplayType.Flat;
+    public bool RemoveLeadingNumbersFromTemplateNames { get; init; } = true;
+    public bool RemoveLeadingNumbersFromContainerNames { get; init; } = true;
+    public bool SeparateByContainer { get; init; } = true;
+    public StalenessConfigDto? Staleness { get; init; }
+}
+</code></pre>
+<h3 id="displaytype">DisplayType</h3>
+<pre><code class="lang-csharp">public enum DisplayType { Flat, Group }
+</code></pre>
+<ul>
+<li><strong>Flat</strong>: FlatMenuDisplayStyle - all items in one group, optional separator headers by container</li>
+<li><strong>Group</strong>: GroupedMenuDisplayStyle - each container becomes a submenu (max 2 levels)</li>
+</ul>
+<h2 id="adding-a-new-menu-type">Adding a New Menu Type</h2>
+<h3 id="step-1-add-to-documentmenutype-enum">Step 1: Add to DocumentMenuType enum</h3>
+<p>Add a new value to DocumentMenuType in Core.Application/Document/DocumentMenuType.cs.</p>
+<h3 id="step-2-create-a-menuaction">Step 2: Create a MenuAction</h3>
+<p>Add a static MenuAction in Core.Application/Document/MenuActions.cs with the ribbon callback name.</p>
+<h3 id="step-3-add-default-extensions">Step 3: Add default extensions</h3>
+<p>Add default extensions in Core.Application/Document/FileProviderDefaults.cs.</p>
+<h3 id="step-4-add-configuration-section">Step 4: Add configuration section</h3>
+<p>Add a new dictionary property to FileProviderConfiguration in Infrastructure.Persistence/Files/FileProviderConfiguration.cs.</p>
+<h3 id="step-5-add-ribbon-callbacks">Step 5: Add ribbon callbacks</h3>
+<p>In WordAddIn/Ribbon/ProductRibbon.cs:</p>
+<ul>
+<li>Add a GetContent callback that calls GetDocumentMenu() with the new type</li>
+<li>Add an onAction callback that dispatches the appropriate command</li>
+</ul>
+<h3 id="step-6-create-the-command">Step 6: Create the command</h3>
+<p>Create a new command + handler in Core.Application following the existing patterns (CreateDocument.cs or InsertSnippet.cs).</p>
+<h2 id="starter-document-template-resolution">Starter Document Template Resolution</h2>
+<p>The starter document pipeline has an additional step: template resolution. When a user selects a starter document:</p>
+<pre><code>DocumentFileFactory.Create(path)
+  |
+  v
+WordDocumentRepository.GetStarterDocument(documentFile)
+  |-- InspectFile(documentSource)                      // Read XML from .docx
+  |-- inspection.TemplateName                          // Attached template name/path
+  |-- templateRepository.GetByNameOrPath(fullName)     // Try full path
+  |-- templateRepository.GetByNameOrPath(fileName)     // Try just filename
+  |-- templateRepository.GetDefault()                  // Fallback
+  |
+  v
+StarterDocument(source, resolvedTemplate)
+</code></pre>
+<p><strong>Design Rationale</strong>: Starter documents carry their template reference internally rather than via configuration. This means the same starter document always produces a document with the correct template, regardless of which menu or configuration triggered it.</p>
+<h2 id="com-safety">COM Safety</h2>
+<p>All Word COM operations in the document creation pipeline are wrapped in try/catch with proper COM object disposal. Key patterns:</p>
+<ul>
+<li>Documents.Add() returns a Document COM object that must be tracked</li>
+<li>Pre-profile dialogs are synchronous COM calls; if cancelled, the created document may need to be closed</li>
+<li>Selection.InsertFile() (Insert Snippet) operates on the active selection and does not create new COM objects</li>
+</ul>
+<h2 id="testing-strategy">Testing Strategy</h2>
+<h3 id="unit-tests">Unit Tests</h3>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Location</th>
+<th>Coverage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>InsertSnippet command</td>
+<td>InsertSnippet.feature</td>
+<td>Path validation, editor delegation</td>
+</tr>
+<tr>
+<td>GetDocumentMenuItems query</td>
+<td>GetSnippetDocumentMenuItems.feature</td>
+<td>Repository integration</td>
+</tr>
+<tr>
+<td>FormatDocumentMenu query</td>
+<td>FormatInsertSnippetMenu.feature, FormatNewDocumentMenu.feature, FormatStarterDocumentMenu.feature</td>
+<td>Menu action mapping, formatting</td>
+</tr>
+<tr>
+<td>FolderTreeBuilder</td>
+<td>FolderTreeBuilder.feature</td>
+<td>Grouping, compaction, depth limits</td>
+</tr>
+<tr>
+<td>DisplayNameFormatter</td>
+<td>DisplayNameFormatter.feature</td>
+<td>Extension stripping, number stripping</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bdd-scenarios">BDD Scenarios</h3>
+<p>All features use Reqnroll (SpecFlow successor) with Given/When/Then scenarios.</p>
+<h2 id="com-interface-external-automation">COM Interface (External Automation)</h2>
+<p>External VBA macros or DMS systems can trigger document creation programmatically:</p>
+<pre><code class="lang-vba">' New Document from template
+comInterface.RunOperation(&quot;DMSNewDocument&quot;, &quot;templateNameOrPath&quot;)
+
+' New Document from Starter Document
+comInterface.RunOperation(&quot;DMSNewDocumentFromStarterDocument&quot;, &quot;C:\StarterDocs\Agreement.docx&quot;)
+</code></pre>
+<p>Both dispatch the same commands as the ribbon buttons and return the created Word Document COM object.</p>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="xref:new-document-user-guide">User Guide: New Document</a></li>
+<li><a href="xref:starter-document-user-guide">User Guide: Starter Document</a></li>
+<li><a href="xref:insert-snippet-user-guide">User Guide: Insert Snippet</a></li>
+<li><a class="xref" href="ribbon-item-rules.html">Developer Guide: Ribbon Item Rules</a></li>
+</ul>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.4.8-rc/docs/developer/docs/document-menus.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

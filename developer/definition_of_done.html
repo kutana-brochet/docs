@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Definition of Done | Developer Docs </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Definition of Done | Developer Docs ">
+      
+      
+      <link rel="icon" href="favicon.ico">
+      <link rel="stylesheet" href="public/docfx.min.css">
+      <link rel="stylesheet" href="public/main.css">
+      <meta name="docfx:navrel" content="toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.4.8-rc/docs/developer/definition_of_done.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="index.html">
+            <img id="logo" class="svg" src="logo.svg" alt="K+B Office Add-ins">
+            K+B Office Add-ins
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+
+      <div class="content">
+        <div class="actionbar">
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="definition-of-done">Definition of Done</h1>
+
+<div class="TIP">
+<h5>Tip</h5>
+<p><strong>For our 2-3 Developer Team:</strong>
+Efficiency is key. We rely on <strong>Automated Checks</strong> to be the primary gatekeepers. If the build fails, the tests fail, or the analyzer warnings persist, the task is <strong>not done</strong>.</p>
+<p>The Manual Checklist below is for the &quot;Human Element&quot;—verification of logic, design correctness, and user experience that simple scripts cannot catch.</p>
+</div>
+<h2 id="1-automated-checks-the-gatekeepers">1. Automated Checks (The Gatekeepers)</h2>
+<p><em>Before you even open the PR, ensure these are Green.</em></p>
+<ul>
+<li>[ ] <strong>Build &amp; CI</strong>
+<ul>
+<li>[ ] Solution builds with <strong>Zero Warnings</strong>.</li>
+<li>[ ] All Tests Passing (Unit, Integration, Architecture/ArchUnitNET).</li>
+<li>[ ] <strong>80% Code Coverage</strong> on Core Layers.</li>
+</ul>
+</li>
+<li>[ ] <strong>Code Quality</strong>
+<ul>
+<li>[ ] EditorConfig rules pass (naming, formatting).</li>
+<li>[ ] PR Title follows <a href="https://www.conventionalcommits.org/">Conventional Commits</a> (e.g., <code>feat: add user notification</code>).</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="2-design-correctness-decision-prompts">2. Design Correctness (Decision Prompts)</h2>
+<p>Verify using the prompts in <a href="patterns_and_principles.html">Patterns and Principles</a>:</p>
+<ul>
+<li>[ ] <strong>BDD</strong>: Did I write the Gherkin scenario <em>before</em> the code?</li>
+<li>[ ] <strong>DDD</strong>: Does each piece of code live in the correct layer? (Use the decision tree)</li>
+<li>[ ] <strong>CQS</strong>: Commands mutate, Queries read. No mixed concerns.</li>
+</ul>
+<hr>
+<h2 id="3-implementation-correctness-manual-checklist">3. Implementation Correctness (Manual Checklist)</h2>
+<h3 id="handlers--logic">Handlers &amp; Logic</h3>
+<ul>
+<li>[ ] <strong>Attributes Correctly Applied</strong>:
+<ul>
+<li>[ ] <code>[RequireEntitlement(EntitlementType.WordStandardTools)]</code> (if feature requires license).</li>
+<li>[ ] <code>[DocumentRequired]</code> (if handler operates on an active document).</li>
+</ul>
+</li>
+<li>[ ] <strong>Return Values</strong>:
+<ul>
+<li>[ ] Return <code>Result.Success()</code> or <code>Result&lt;T&gt;</code> values.</li>
+<li>[ ] <strong>Do NOT</strong> return <code>null</code> or throw exceptions for control flow.</li>
+<li>[ ] If operation cannot continue, return <code>Result.Failure</code>.</li>
+</ul>
+</li>
+<li>[ ] <strong>User Feedback</strong>:
+<ul>
+<li>[ ] Use <code>IUserNotifier</code> for any user-facing messages.</li>
+<li>[ ] <strong>Must be Localized</strong> (no hardcoded strings in logic).</li>
+</ul>
+</li>
+</ul>
+<h3 id="com-interop">COM Interop</h3>
+<ul>
+<li>[ ] <strong>Resource Management</strong>:
+<ul>
+<li>[ ] All COM objects released explicitly (using <code>using</code> blocks or <code>Marshal.ReleaseComObject</code> in <code>finally</code>).</li>
+<li>[ ] <strong>Two-dot rule</strong> followed (avoid <code>obj.Prop.Prop</code> chains).</li>
+</ul>
+</li>
+<li>[ ] <strong>Layer Safety</strong>:
+<ul>
+<li>[ ] No COM types leaked into Core/Domain layers.</li>
+</ul>
+</li>
+</ul>
+<h3 id="configuration">Configuration</h3>
+<ul>
+<li>[ ] <strong>Settings</strong>:
+<ul>
+<li>[ ] <code>[Description]</code> attribute added to all new settings props.</li>
+<li>[ ] Validation logic implemented (e.g., check paths exist at load time).</li>
+</ul>
+</li>
+<li>[ ] <strong>Sample Configs</strong>:
+<ul>
+<li>[ ] Debug/Sample configurations added to:
+<code>C:\Brochet Dropbox\Brochet internal\Development\Word\Config</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="documentation">Documentation</h3>
+<ul>
+<li>[ ] <strong>Developer Docs</strong>: Updated <code>docs/developer</code> with &quot;Why&quot; not just &quot;What&quot;.</li>
+<li>[ ] <strong>User Docs</strong>: Updated <code>docs/user</code> if feature is visible.</li>
+<li>[ ] <strong>Schemas</strong>: Validated (if changing config structure).</li>
+</ul>
+<hr>
+<div class="NOTE">
+<h5>Note</h5>
+<p><strong>Why this matters:</strong>
+As a small team, we don't have a dedicated QA department. This Definition of Done ensures that when we merge, we are confident the solution is stable, maintainable, and ready for deployment.</p>
+</div>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.4.8-rc/docs/developer/definition_of_done.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

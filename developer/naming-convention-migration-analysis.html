@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Naming Convention Migration Analysis | Developer Docs </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Naming Convention Migration Analysis | Developer Docs ">
+      
+      
+      <link rel="icon" href="favicon.ico">
+      <link rel="stylesheet" href="public/docfx.min.css">
+      <link rel="stylesheet" href="public/main.css">
+      <meta name="docfx:navrel" content="toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.4.8-rc/docs/developer/naming-convention-migration-analysis.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="index.html">
+            <img id="logo" class="svg" src="logo.svg" alt="K+B Office Add-ins">
+            K+B Office Add-ins
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+
+      <div class="content">
+        <div class="actionbar">
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="naming-convention-migration-analysis">Naming Convention Migration Analysis</h1>
+
+<p><strong>Current codebase</strong> vs <strong>Clean Architecture Naming Cheatsheet</strong></p>
+<hr>
+<h2 id="executive-summary">Executive Summary</h2>
+<p>The codebase is <strong>~75% aligned</strong> with the cheatsheet. The architecture layers, dependency direction, and most suffix conventions already match. The gaps are primarily <strong>structural naming</strong> (folder names, config suffixes) and <strong>feature area organisation</strong> (missing <code>Features/</code> wrapper, <code>Abstractions/</code> vs <code>Common/</code>).</p>
+<hr>
+<h2 id="differences">Differences</h2>
+<h3 id="1-application-layer--missing-features-wrapper">1. Application Layer — Missing <code>Features/</code> Wrapper</h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Current</th>
+<th>Cheatsheet</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Feature areas</td>
+<td><code>Core.Application/Document/</code>, <code>Core.Application/Licensing/</code></td>
+<td><code>Core.Application/Features/Documents/</code>, <code>Core.Application/Features/Licensing/</code></td>
+</tr>
+</tbody>
+</table>
+<p>Feature slices sit directly under <code>Core.Application/</code>. The cheatsheet expects a <code>Features/</code> grouping folder to separate use-case code from cross-cutting <code>Common/</code> and <code>Abstractions/</code>.</p>
+<p><strong>Impact</strong>: Medium. Makes it harder to distinguish feature code from infrastructure at a glance.</p>
+<h3 id="2-abstractions-vs-common-split">2. <code>Abstractions/</code> vs <code>Common/</code> Split</h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Current</th>
+<th>Cheatsheet</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cross-cutting interfaces</td>
+<td><code>Abstractions/</code> (Behaviours, Messaging, Localisation, Notifications)</td>
+<td><code>Common/</code> (Behaviours, Interfaces, Messaging, Models, Exceptions)</td>
+</tr>
+<tr>
+<td>Shared utilities</td>
+<td><code>Common/</code> (LoopHelpers, Messages, Errors, RuleEvaluation)</td>
+<td>Also <code>Common/</code></td>
+</tr>
+</tbody>
+</table>
+<p>The codebase has <strong>two</strong> top-level folders (<code>Abstractions/</code> + <code>Common/</code>) where the cheatsheet has <strong>one</strong> (<code>Common/</code>). Content overlaps — both hold cross-cutting concerns.</p>
+<p><strong>Impact</strong>: High cognitive load. Developers must guess which folder to check.</p>
+<h3 id="3-feature-area-naming--singular-vs-plural">3. Feature Area Naming — Singular vs Plural</h3>
+<table>
+<thead>
+<tr>
+<th>Current</th>
+<th>Cheatsheet</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Document/</code> (singular, Application)</td>
+<td><code>Documents/</code> (plural)</td>
+</tr>
+<tr>
+<td><code>Documents/</code> (plural, Domain)</td>
+<td><code>Documents/</code> (plural)</td>
+</tr>
+<tr>
+<td><code>DocumentManagement/</code> (Application)</td>
+<td>Would be a sub-area or merged into <code>Documents/</code></td>
+</tr>
+</tbody>
+</table>
+<p>The cheatsheet mandates <strong>plural nouns</strong> for feature area folders. The codebase mixes singular (<code>Document/</code>) and compound names (<code>DocumentManagement/</code>).</p>
+<p><strong>Impact</strong>: Low-medium. Inconsistency, not a structural problem.</p>
+<h3 id="4-configuration-naming--configuration-vs-optionssettings">4. Configuration Naming — <code>*Configuration</code> vs <code>*Options</code>/<code>*Settings</code></h3>
+<table>
+<thead>
+<tr>
+<th>Current</th>
+<th>Cheatsheet</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>14x <code>*Configuration</code> classes</td>
+<td><code>*Options</code> (raw POCO) + <code>*Settings</code> (typed accessor)</td>
+</tr>
+<tr>
+<td>All implement <code>IUserConfiguration</code></td>
+<td><code>*Options</code> bound from config; <code>*Settings</code> wraps <code>IOptionsMonitor&lt;*Options&gt;</code></td>
+</tr>
+<tr>
+<td>No <code>I*Settings</code> application interfaces</td>
+<td>Handlers depend on <code>I*Settings</code>, not config POCOs</td>
+</tr>
+</tbody>
+</table>
+<p>This is the <strong>largest naming gap</strong>. The cheatsheet separates concerns:</p>
+<ul>
+<li><code>*Options</code> = dumb POCO bound from JSON/registry</li>
+<li><code>*Settings</code> = smart wrapper implementing an Application-layer <code>I*Settings</code> interface</li>
+</ul>
+<p>The current <code>*Configuration</code> pattern conflates both roles.</p>
+<p><strong>Impact</strong>: High. Affects dependency direction (handlers reference Infrastructure types).</p>
+<h3 id="5-domain--word-namespace">5. Domain — <code>Word/</code> Namespace</h3>
+<table>
+<thead>
+<tr>
+<th>Current</th>
+<th>Cheatsheet</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Core.Domain/Word/</code> (DocumentPath, Templates, ContentControls)</td>
+<td>Feature areas only (<code>Documents/</code>, <code>Licensing/</code>) — no host-app namespace</td>
+</tr>
+</tbody>
+</table>
+<p>The cheatsheet avoids host-app namespaces in Domain. <code>DocumentPath</code>, <code>Template</code>, etc. would live under their feature area (e.g., <code>Documents/</code> or <code>Templates/</code>).</p>
+<p><strong>Impact</strong>: Medium. Couples Domain to &quot;Word&quot; concept when it should be host-agnostic.</p>
+<h3 id="6-application-documentinterfaces-subfolder">6. Application <code>Document/Interfaces/</code> Subfolder</h3>
+<table>
+<thead>
+<tr>
+<th>Current</th>
+<th>Cheatsheet</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Document/Interfaces/</code> (20+ interfaces)</td>
+<td>Co-locate at feature area root OR <code>Common/Interfaces/</code> if cross-area</td>
+</tr>
+</tbody>
+</table>
+<p>The cheatsheet doesn't use an <code>Interfaces/</code> subfolder within feature areas. Interfaces are either:</p>
+<ul>
+<li>At feature area root (feature-specific)</li>
+<li>In <code>Common/Interfaces/</code> (cross-cutting)</li>
+</ul>
+<p><strong>Impact</strong>: Low. Organisation preference, but creates deep nesting.</p>
+<h3 id="7-addin-structure--missing-startup-folder">7. AddIn Structure — Missing <code>Startup/</code> Folder</h3>
+<table>
+<thead>
+<tr>
+<th>Current</th>
+<th>Cheatsheet</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DI in <code>ThisAddIn.cs</code> + <code>Infrastructure.Common/DependencyInjection.cs</code></td>
+<td><code>Startup/ContainerConfig.cs</code> + <code>Startup/AddInBootstrapper.cs</code></td>
+</tr>
+<tr>
+<td>No <code>Startup/</code> folder</td>
+<td>Dedicated startup folder</td>
+</tr>
+</tbody>
+</table>
+<p>DI registration is split between <code>ThisAddIn.cs</code> (300+ lines of setup) and the Infrastructure DependencyInjection extension methods. The cheatsheet extracts this to a <code>Startup/</code> folder.</p>
+<p><strong>Impact</strong>: Medium. <code>ThisAddIn.cs</code> is overloaded with registration logic.</p>
+<h3 id="8-addin-services-folder">8. AddIn <code>Services/</code> Folder</h3>
+<table>
+<thead>
+<tr>
+<th>Current</th>
+<th>Cheatsheet</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>WordAddIn/Services/</code> (AddInInfoService, EnvironmentService, XmlDocumentInspectorService)</td>
+<td>No <code>Services/</code> — these would be in <code>Interop/</code> or feature folders</td>
+</tr>
+</tbody>
+</table>
+<p>The cheatsheet doesn't have a <code>Services/</code> folder in the AddIn. Service implementations belong in <code>Interop/</code> (if COM-dependent) or Infrastructure.</p>
+<p><strong>Impact</strong>: Low. Only 3 files.</p>
+<h3 id="9-missing-mapper-vs-adapter-distinction">9. Missing <code>Mapper</code> vs <code>Adapter</code> Distinction</h3>
+<table>
+<thead>
+<tr>
+<th>Current</th>
+<th>Cheatsheet</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>WordContentControlMapper</code> (correct)</td>
+<td><code>Mapper</code> = pure data transform, <code>Adapter</code> = interface bridging</td>
+</tr>
+<tr>
+<td><code>DmsProfileConverter</code></td>
+<td>Would be <code>DmsProfileMapper</code> or <code>DmsProfileAdapter</code></td>
+</tr>
+<tr>
+<td><code>WordContextAdapter</code> (correct)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Some classes use <code>Converter</code> suffix where the cheatsheet would use <code>Mapper</code> or <code>Adapter</code>.</p>
+<p><strong>Impact</strong>: Low. Naming clarity.</p>
+<h3 id="10-cominterop-vs-interop">10. <code>ComInterop/</code> vs <code>Interop/</code></h3>
+<table>
+<thead>
+<tr>
+<th>Current</th>
+<th>Cheatsheet</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Both <code>ComInterop/</code> and <code>Interop/</code> in WordAddIn</td>
+<td>Single <code>Interop/</code> folder</td>
+</tr>
+</tbody>
+</table>
+<p><code>ComInterop/</code> contains the COM-visible interface (<code>IComInterface</code>, <code>ComOperations</code>). The cheatsheet uses a single <code>Interop/</code> folder.</p>
+<p><strong>Impact</strong>: Low. Could argue <code>ComInterop/</code> is a valid cohesive subfolder per the &quot;3+ classes&quot; rule.</p>
+<hr>
+<h2 id="decision-points">Decision Points</h2>
+<p>These are choices where <strong>multiple valid approaches exist</strong> and the team needs to decide before migrating.</p>
+<h3 id="d1-introduce-features-wrapper-or-keep-flat">D1: Introduce <code>Features/</code> Wrapper or Keep Flat?</h3>
+<p><strong>Option A — Add <code>Features/</code></strong>: Matches cheatsheet. Clear separation of feature code vs cross-cutting.
+<strong>Option B — Keep flat</strong>: Less nesting. Feature areas already have distinct names.
+<strong>Trade-off</strong>: Readability vs brevity. With 10+ feature areas the <code>Features/</code> wrapper aids navigation.</p>
+<h3 id="d2-merge-abstractions-into-common-or-keep-both">D2: Merge <code>Abstractions/</code> into <code>Common/</code> or Keep Both?</h3>
+<p><strong>Option A — Merge into <code>Common/</code></strong>: Single place for cross-cutting code. Matches cheatsheet.
+<strong>Option B — Keep <code>Abstractions/</code></strong>: Some teams prefer separating interfaces from utilities.
+<strong>Trade-off</strong>: Discoverability (one place to look) vs separation of concerns (interfaces vs helpers).</p>
+<h3 id="d3-rename-configuration-to-options--extract-settings">D3: Rename <code>*Configuration</code> to <code>*Options</code> + Extract <code>*Settings</code>?</h3>
+<p><strong>Option A — Full migration</strong>: Rename all 14 Configuration classes to Options, create I*Settings interfaces in Application, create *Settings implementations in Infrastructure.
+<strong>Option B — Gradual</strong>: Only apply to new code; migrate existing as you touch them.
+<strong>Option C — Skip</strong>: Current pattern works; migration is high-churn for naming gain.
+<strong>Trade-off</strong>: This is the highest-impact change. It fixes dependency direction (handlers shouldn't reference Infrastructure config types) but touches ~40+ files.</p>
+<h3 id="d4-flatten-domainword-into-feature-areas">D4: Flatten <code>Domain/Word/</code> into Feature Areas?</h3>
+<p><strong>Option A — Move to feature areas</strong>: <code>DocumentPath</code> → <code>Documents/</code>, <code>Template</code> → <code>Templates/</code>, etc.
+<strong>Option B — Keep <code>Word/</code></strong>: The codebase serves Word specifically; the namespace is honest.
+<strong>Trade-off</strong>: Purity (host-agnostic domain) vs pragmatism (it IS a Word add-in). If PowerPoint shares these types, flattening makes more sense.</p>
+<h3 id="d5-dissolve-documentinterfaces-subfolder">D5: Dissolve <code>Document/Interfaces/</code> Subfolder?</h3>
+<p><strong>Option A — Promote to feature area root</strong>: Move 20+ interfaces up one level.
+<strong>Option B — Promote cross-cutting ones to <code>Common/Interfaces/</code></strong>: Keep feature-specific at root, move shared ones.
+<strong>Option C — Keep subfolder</strong>: 20 interfaces at root would be noisy.
+<strong>Trade-off</strong>: Flat-but-noisy vs nested-but-organized. With 20+ interfaces, the subfolder might be the pragmatic choice despite the cheatsheet preference.</p>
+<h3 id="d6-extract-startup-from-thisaddincs">D6: Extract <code>Startup/</code> from <code>ThisAddIn.cs</code>?</h3>
+<p><strong>Option A — Extract</strong>: Create <code>Startup/ContainerConfig.cs</code> and <code>Startup/AddInBootstrapper.cs</code>.
+<strong>Option B — Keep inline</strong>: DependencyInjection.cs already handles most of it.
+<strong>Trade-off</strong>: <code>ThisAddIn.cs</code> is 425 lines. Extracting startup would bring it under 200 and match the cheatsheet.</p>
+<h3 id="d7-rename-document-to-documents-plural">D7: Rename <code>Document/</code> to <code>Documents/</code> (Plural)?</h3>
+<p><strong>Option A — Rename</strong>: Consistent plural nouns across all feature areas.
+<strong>Option B — Keep</strong>: <code>Document</code> is also a valid feature area name (it's a bounded context, not a collection).
+<strong>Trade-off</strong>: Consistency vs namespace change churn. Affects imports across the entire solution.</p>
+<hr>
+<h2 id="migration-steps-priority-order">Migration Steps (Priority Order)</h2>
+<h3 id="phase-1--low-risk-high-clarity-do-first">Phase 1 — Low Risk, High Clarity (Do First)</h3>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Files Affected</th>
+<th>Risk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Create <code>Startup/</code> folder in WordAddIn, extract DI from ThisAddIn.cs</td>
+<td>~3 files</td>
+<td>Low</td>
+</tr>
+<tr>
+<td>2. Rename <code>Converter</code> suffixes to <code>Mapper</code>/<code>Adapter</code> where appropriate</td>
+<td>~3 files</td>
+<td>Low</td>
+</tr>
+<tr>
+<td>3. Merge <code>ComInterop/</code> into <code>Interop/</code> (or justify as cohesive group)</td>
+<td>~4 files</td>
+<td>Low</td>
+</tr>
+<tr>
+<td>4. Move <code>Services/</code> contents to <code>Interop/</code> or feature folders</td>
+<td>~3 files</td>
+<td>Low</td>
+</tr>
+</tbody>
+</table>
+<h3 id="phase-2--structural-renames-namespace-changes">Phase 2 — Structural Renames (Namespace Changes)</h3>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Files Affected</th>
+<th>Risk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>5. Merge <code>Abstractions/</code> into <code>Common/</code> (D2)</td>
+<td>~30 files</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>6. Add <code>Features/</code> wrapper to Application feature areas (D1)</td>
+<td>~80+ files</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>7. Rename <code>Document/</code> → <code>Documents/</code> (D7)</td>
+<td>~50+ files</td>
+<td>Medium</td>
+</tr>
+</tbody>
+</table>
+<h3 id="phase-3--configuration-pattern-highest-impact">Phase 3 — Configuration Pattern (Highest Impact)</h3>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Files Affected</th>
+<th>Risk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>8. Create <code>I*Settings</code> interfaces in Application (D3)</td>
+<td>New files</td>
+<td>Low</td>
+</tr>
+<tr>
+<td>9. Rename <code>*Configuration</code> → <code>*Options</code></td>
+<td>~14 files</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>10. Create <code>*Settings</code> wrappers implementing <code>I*Settings</code></td>
+<td>~14 new files</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>11. Update handlers to depend on <code>I*Settings</code> instead of config types</td>
+<td>~20+ files</td>
+<td>High</td>
+</tr>
+</tbody>
+</table>
+<h3 id="phase-4--domain-restructure-optional">Phase 4 — Domain Restructure (Optional)</h3>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Files Affected</th>
+<th>Risk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>12. Flatten <code>Domain/Word/</code> into feature areas (D4)</td>
+<td>~15 files</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>13. Dissolve <code>Document/Interfaces/</code> (D5)</td>
+<td>~20 files</td>
+<td>Low</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="what-already-matches">What Already Matches</h2>
+<p>These are areas where the codebase <strong>already follows</strong> the cheatsheet:</p>
+<ul>
+<li><strong>Project structure &amp; dependency direction</strong> (Domain → Application ← Infrastructure ← AddIn)</li>
+<li><strong>Feature slice pattern</strong> (static wrapper with nested Command/Query/Handler)</li>
+<li><strong>Decorator chain</strong> in <code>Behaviours/</code> with explicit ordering</li>
+<li><strong>Repository interfaces co-located in Domain</strong> (<code>IDocumentRepository</code>, <code>ILicenceRepository</code>, <code>ITemplateRepository</code>)</li>
+<li><strong>Event handler naming</strong> (<code>DocumentBeforeSaveEventHandler</code> pattern → <code>AttachTemplateEventHandler</code>, etc.)</li>
+<li><strong>Interop wrapper naming</strong> (<code>WordDocumentRepository</code>, <code>WordContentControlFinder</code>, <code>WordObjectModel*</code> prefix)</li>
+<li><strong>DomainEvents subfolder</strong> in Domain feature areas</li>
+<li><strong>Application events</strong> in feature area <code>Events/</code> folders</li>
+<li><strong>BDD test structure</strong> with <code>.feature</code> + <code>StepDefinitions</code> pairs</li>
+<li><strong>Infrastructure DI extension methods</strong> (<code>AddCoreInfrastructure()</code>)</li>
+<li><strong>Owned vs External state</strong> distinction (Licence as aggregate, Document as projection)</li>
+</ul>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.4.8-rc/docs/developer/naming-convention-migration-analysis.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

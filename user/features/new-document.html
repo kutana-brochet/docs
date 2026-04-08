@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>New Document - User Guide | User Docs </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="New Document - User Guide | User Docs ">
+      
+      <meta name="description" content="Learn how to create new Word documents from organisation templates using the New Document menu.">
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.4.8-rc/docs/user/features/new-document.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="K+B Office Add-ins">
+            K+B Office Add-ins
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="new-document-user-guide">
+<h1 id="new-document">New Document</h1>
+
+<p>The New Document menu lets you create a new Word document based on an organisation template (<code>.dotx</code> or <code>.dotm</code>). Rather than navigating to a template folder manually, you select from a dynamically populated drop-down menu on the ribbon.</p>
+<h2 id="how-it-works">How It Works</h2>
+<ol>
+<li>Click the <strong>New Document</strong> drop-down button on the ribbon (remember it must be part of a group)</li>
+<li>The add-in discovers template files from your configured template folder(s)</li>
+<li>A menu appears listing all available templates, optionally grouped by folder</li>
+<li>Click a template name to create a new document based on that template</li>
+</ol>
+<p>If your organisation uses a Document Management System (DMS), a pre-profile dialog may appear after the document is created, allowing you to save and categorise the document immediately.</p>
+<h3 id="ribbonxml">Ribbon.xml</h3>
+<p>The New Document menu is a <code>&lt;dynamicMenu&gt;</code> element. Your organisation's <code>Ribbon.xml</code> should include an element like:</p>
+<pre><code class="lang-xml">&lt;dynamicMenu id=&quot;newDocumentMenu&quot;
+             label=&quot;New Document&quot;
+             size=&quot;large&quot;
+             image=&quot;NewDocument&quot;
+             getVisible=&quot;GetVisibleById&quot;
+             getEnabled=&quot;GetEnabledById&quot;
+             getContent=&quot;GetNewDocuments&quot; /&gt;
+</code></pre>
+<p><strong>NB:</strong> The <code>id</code> attribute must match a key in the <code>FileProviderConfiguration.NewDocument</code> configuration section. Multiple New Document menus can be configured with different IDs to show different template sets.</p>
+<p>The optional <code>getVisible</code> and <code>getEnabled</code> attributes use <a href="ribbon-item-rules.html">Ribbon Item Rules</a> to control whether the menu appears and whether it is clickable. If omitted, the menu is always visible and enabled.</p>
+<h2 id="configuration">Configuration</h2>
+<p>The New Document menu is configured within the <code>FileProviderConfiguration</code> section of your JSON configuration file.</p>
+<pre><code class="lang-json">{
+  &quot;$schema&quot;: &quot;https://kutana-brochet.github.io/schemas/7.0/CoreConfiguration.schema.json&quot;,
+  &quot;FileProviderConfiguration&quot;: {
+    &quot;NewDocument&quot;: {
+      &quot;newDocumentMenu&quot;: {
+        &quot;Source&quot;: {
+          &quot;Location&quot;: &quot;%Workgroup%&quot;,
+          &quot;MaxDepth&quot;: 2,
+          &quot;Extensions&quot;: [&quot;.dotx&quot;, &quot;.dotm&quot;]
+        },
+        &quot;Style&quot;: {
+          &quot;Title&quot;: &quot;Templates&quot;,
+          &quot;Type&quot;: &quot;Flat&quot;,
+          &quot;RemoveLeadingNumbersFromTemplateNames&quot;: true,
+          &quot;RemoveLeadingNumbersFromContainerNames&quot;: true,
+          &quot;SeparateByContainer&quot;: true
+        }
+      }
+    }
+  }
+}
+</code></pre>
+<p><strong>NB:</strong> The key <code>&quot;newDocumentMenu&quot;</code> must match the <code>id</code> attribute on the <code>&lt;dynamicMenu&gt;</code> element in your <code>Ribbon.xml</code>.</p>
+<h3 id="source-properties">Source Properties</h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Location</code></td>
+<td>No</td>
+<td><code>%Workgroup%</code></td>
+<td>Root folder path. Supports <code>%Workgroup%</code> and <code>%User%</code> placeholders</td>
+</tr>
+<tr>
+<td><code>MaxDepth</code></td>
+<td>No</td>
+<td><code>0</code></td>
+<td>Subdirectory depth to search. <code>0</code> = root only</td>
+</tr>
+<tr>
+<td><code>Extensions</code></td>
+<td>No</td>
+<td><code>[&quot;.dotx&quot;, &quot;.dotm&quot;]</code></td>
+<td>File extensions to include</td>
+</tr>
+<tr>
+<td><code>Prefixes</code></td>
+<td>No</td>
+<td><code>[]</code></td>
+<td>Only show files with these name prefixes. Empty = show all</td>
+</tr>
+<tr>
+<td><code>ExcludedContainers</code></td>
+<td>No</td>
+<td><code>[]</code></td>
+<td>Folder names to skip during discovery</td>
+</tr>
+</tbody>
+</table>
+<h3 id="style-properties">Style Properties</h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Title</code></td>
+<td>No</td>
+<td>none</td>
+<td>Optional header text shown at the top of the menu</td>
+</tr>
+<tr>
+<td><code>Type</code></td>
+<td>No</td>
+<td><code>Flat</code></td>
+<td><code>Flat</code> (single list with separators) or <code>Group</code> (nested submenus)</td>
+</tr>
+<tr>
+<td><code>RemoveLeadingNumbersFromTemplateNames</code></td>
+<td>No</td>
+<td><code>true</code></td>
+<td>Strip numeric prefixes (e.g. <code>01_Letter</code> becomes <code>Letter</code>)</td>
+</tr>
+<tr>
+<td><code>RemoveLeadingNumbersFromContainerNames</code></td>
+<td>No</td>
+<td><code>true</code></td>
+<td>Strip numeric prefixes from folder names</td>
+</tr>
+<tr>
+<td><code>SeparateByContainer</code></td>
+<td>No</td>
+<td><code>true</code></td>
+<td>In <code>Flat</code> mode, show folder name separators between groups</td>
+</tr>
+</tbody>
+</table>
+<h3 id="path-placeholders">Path Placeholders</h3>
+<ul>
+<li><code>%Workgroup%</code> - resolves to the shared workgroup template path (typically set via Group Policy or installer)</li>
+<li><code>%User%</code> - resolves to the user's personal template path</li>
+</ul>
+<h2 id="display-styles">Display Styles</h2>
+<h3 id="flat">Flat</h3>
+<p>Items appear as a single list. When <code>SeparateByContainer</code> is <code>true</code>, items from different folders are visually separated with a folder name header.</p>
+<h3 id="group">Group</h3>
+<p>Items are organised into submenus by folder. Each folder becomes a submenu (maximum 2 levels deep). Folders with only a single subfolder and no files are compacted into one level (e.g. <code>Corporate / Letters</code> instead of a <code>Corporate</code> submenu containing a <code>Letters</code> submenu).</p>
+<h2 id="template-organisation">Template Organisation</h2>
+<h3 id="file-naming">File Naming</h3>
+<ul>
+<li>Templates can use numeric prefixes to control sort order: <code>01_Letter.dotx</code>, <code>02_Memo.dotx</code></li>
+<li>When <code>RemoveLeadingNumbersFromTemplateNames</code> is <code>true</code>, the prefix is stripped from the display name</li>
+<li>Supported prefix formats: <code>01_</code>, <code>01-</code>, <code>01.</code>, <code>01 </code>, or just <code>01</code></li>
+</ul>
+<h3 id="folder-structure">Folder Structure</h3>
+<ul>
+<li>Organise templates in subfolders for logical grouping</li>
+<li>Set <code>MaxDepth</code> to control how deep the add-in searches</li>
+<li>Use <code>ExcludedContainers</code> to hide folders like <code>Archive</code> or <code>Deprecated</code></li>
+</ul>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="menu-is-empty">Menu is empty</h3>
+<p><strong>Problem</strong>: The New Document drop-down shows no items.</p>
+<p><strong>Solutions</strong>:</p>
+<ol>
+<li>Verify the <code>Location</code> path exists and is accessible</li>
+<li>Check that template files have the correct extensions (<code>.dotx</code> or <code>.dotm</code>)</li>
+<li>Ensure <code>MaxDepth</code> is set high enough to reach your template files</li>
+<li>Confirm the configuration key matches the ribbon button <code>id</code></li>
+</ol>
+<h3 id="templates-not-appearing-from-subfolders">Templates not appearing from subfolders</h3>
+<p><strong>Problem</strong>: Templates in subfolders are not shown.</p>
+<p><strong>Solutions</strong>:</p>
+<ol>
+<li>Increase the <code>MaxDepth</code> value (default is <code>0</code> which only searches the root folder)</li>
+<li>Check that the subfolder is not listed in <code>ExcludedContainers</code></li>
+</ol>
+<h2 id="see-also">See Also</h2>
+<ul>
+<li><a href="starter-document.html">Starter Document</a></li>
+<li><a href="insert-snippet.html">Insert Snippet</a></li>
+<li><a href="ribbon-item-rules.html">Ribbon Item Rules</a></li>
+<li><a href="dms.html">DMS Integration</a></li>
+<li><a href="xref:document-menus-developer-guide">Developer Guide</a></li>
+</ul>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.4.8-rc/docs/user/features/new-document.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

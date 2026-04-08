@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Insert Snippet - User Guide | User Docs </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Insert Snippet - User Guide | User Docs ">
+      
+      <meta name="description" content="Learn how to insert pre-configured content snippets into your active Word document.">
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.4.8-rc/docs/user/features/insert-snippet.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="K+B Office Add-ins">
+            K+B Office Add-ins
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="insert-snippet-user-guide">
+<h1 id="insert-snippet">Insert Snippet</h1>
+
+<p>The Insert Snippet menu lets you insert the content of a pre-configured Word document into your active document at the current cursor position. This is useful for inserting standard clauses, boilerplate paragraphs, signature blocks, or any reusable content.</p>
+<h2 id="how-it-works">How It Works</h2>
+<ol>
+<li>Place your cursor where you want the content inserted</li>
+<li>Click the <strong>Insert Snippet</strong> drop-down button on the ribbon</li>
+<li>The add-in discovers snippet files from your configured folder(s)</li>
+<li>A menu appears listing available snippets, optionally grouped by folder</li>
+<li>Click a snippet name to insert its content at the cursor position</li>
+</ol>
+<p><strong>NB:</strong> Unlike <a href="new-document.html">New Document</a> and <a href="starter-document.html">Starter Document</a>, Insert Snippet does not create a new document. It inserts content into the currently active document.</p>
+<h3 id="ribbonxml">Ribbon.xml</h3>
+<pre><code class="lang-xml">&lt;dynamicMenu id=&quot;insertSnippetMenu&quot;
+             label=&quot;Insert Snippet&quot;
+             size=&quot;large&quot;
+             image=&quot;NewDocument&quot;
+             getVisible=&quot;GetVisibleByTag&quot;
+             getEnabled=&quot;GetEnabledByTag&quot;
+             getContent=&quot;GetSnippetDocuments&quot;
+             tag=&quot;insertSnippets&quot; /&gt;
+</code></pre>
+<p><strong>NB:</strong> The <code>id</code> attribute must match a key in the <code>FileProviderConfiguration.InsertSnippet</code> configuration section.</p>
+<p>The optional <code>getVisible</code> and <code>getEnabled</code> attributes use <a href="ribbon-item-rules.html">Ribbon Item Rules</a> to control whether the menu appears and whether it is clickable. When using the <code>ByTag</code> variants, the <code>tag</code> attribute value is matched against rules instead of the <code>id</code>. If omitted, the menu is always visible and enabled.</p>
+<h2 id="configuration">Configuration</h2>
+<p>The Insert Snippet menu is configured within the <code>FileProviderConfiguration</code> section of your JSON configuration file.</p>
+<pre><code class="lang-json">{
+  &quot;$schema&quot;: &quot;https://kutana-brochet.github.io/schemas/7.0/CoreConfiguration.schema.json&quot;,
+  &quot;FileProviderConfiguration&quot;: {
+    &quot;InsertSnippet&quot;: {
+      &quot;insertSnippetMenu&quot;: {
+        &quot;Source&quot;: {
+          &quot;Location&quot;: &quot;%Workgroup%&quot;,
+          &quot;MaxDepth&quot;: 2,
+          &quot;Extensions&quot;: [&quot;.docx&quot;, &quot;.docm&quot;]
+        },
+        &quot;Style&quot;: {
+          &quot;Title&quot;: &quot;Snippets&quot;,
+          &quot;Type&quot;: &quot;Flat&quot;,
+          &quot;RemoveLeadingNumbersFromTemplateNames&quot;: true,
+          &quot;RemoveLeadingNumbersFromContainerNames&quot;: true,
+          &quot;SeparateByContainer&quot;: true
+        }
+      }
+    }
+  }
+}
+</code></pre>
+<p><strong>NB:</strong> The key <code>&quot;insertSnippetMenu&quot;</code> must match the <code>id</code> attribute on the <code>&lt;dynamicMenu&gt;</code> element in your <code>Ribbon.xml</code>.</p>
+<h3 id="source-properties">Source Properties</h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Location</code></td>
+<td>No</td>
+<td><code>%Workgroup%</code></td>
+<td>Root folder path. Supports <code>%Workgroup%</code> and <code>%User%</code> placeholders</td>
+</tr>
+<tr>
+<td><code>MaxDepth</code></td>
+<td>No</td>
+<td><code>0</code></td>
+<td>Subdirectory depth to search. <code>0</code> = root only</td>
+</tr>
+<tr>
+<td><code>Extensions</code></td>
+<td>No</td>
+<td><code>[&quot;.docx&quot;, &quot;.docm&quot;]</code></td>
+<td>File extensions to include</td>
+</tr>
+<tr>
+<td><code>Prefixes</code></td>
+<td>No</td>
+<td><code>[]</code></td>
+<td>Only show files with these name prefixes. Empty = show all</td>
+</tr>
+<tr>
+<td><code>ExcludedContainers</code></td>
+<td>No</td>
+<td><code>[]</code></td>
+<td>Folder names to skip during discovery</td>
+</tr>
+</tbody>
+</table>
+<h3 id="style-properties">Style Properties</h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Title</code></td>
+<td>No</td>
+<td>none</td>
+<td>Optional header text shown at the top of the menu</td>
+</tr>
+<tr>
+<td><code>Type</code></td>
+<td>No</td>
+<td><code>Flat</code></td>
+<td><code>Flat</code> (single list with separators) or <code>Group</code> (nested submenus)</td>
+</tr>
+<tr>
+<td><code>RemoveLeadingNumbersFromTemplateNames</code></td>
+<td>No</td>
+<td><code>true</code></td>
+<td>Strip numeric prefixes from file names</td>
+</tr>
+<tr>
+<td><code>RemoveLeadingNumbersFromContainerNames</code></td>
+<td>No</td>
+<td><code>true</code></td>
+<td>Strip numeric prefixes from folder names</td>
+</tr>
+<tr>
+<td><code>SeparateByContainer</code></td>
+<td>No</td>
+<td><code>true</code></td>
+<td>In <code>Flat</code> mode, show folder name separators between groups</td>
+</tr>
+</tbody>
+</table>
+<h2 id="creating-snippet-files">Creating Snippet Files</h2>
+<p>Snippet files are standard Word documents (<code>.docx</code> or <code>.docm</code>) containing the content you want to insert.</p>
+<h3 id="best-practices">Best Practices</h3>
+<ul>
+<li><strong>One snippet per file</strong>: Each file should contain a single reusable block of content</li>
+<li><strong>Use styles</strong>: Format content using your organisation's styles so it integrates cleanly with the target document</li>
+<li><strong>Avoid headers/footers</strong>: Only the document body content is inserted</li>
+<li><strong>Use numeric prefixes for ordering</strong>: <code>01_Signature Block.docx</code>, <code>02_Confidentiality Clause.docx</code></li>
+</ul>
+<h3 id="folder-organisation">Folder Organisation</h3>
+<p>Organise snippets into subfolders by category:</p>
+<pre><code>Snippets/
+  01_Clauses/
+    Confidentiality.docx
+    Non-Compete.docx
+  02_Blocks/
+    Signature Block.docx
+    Address Block.docx
+  03_Standard Text/
+    Disclaimer.docx
+    Copyright Notice.docx
+</code></pre>
+<p>With <code>MaxDepth</code> set to <code>1</code> or higher and <code>SeparateByContainer</code> enabled, the menu will group items by folder with separator headers.</p>
+<h2 id="display-styles">Display Styles</h2>
+<h3 id="flat">Flat</h3>
+<p>Items appear as a single list. When <code>SeparateByContainer</code> is <code>true</code>, items from different folders are visually separated with a folder name header.</p>
+<h3 id="group">Group</h3>
+<p>Items are organised into submenus by folder (maximum 2 levels deep). Folders with only a single subfolder and no files are compacted into one level.</p>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="menu-is-empty">Menu is empty</h3>
+<p><strong>Problem</strong>: The Insert Snippet drop-down shows no items.</p>
+<p><strong>Solutions</strong>:</p>
+<ol>
+<li>Verify the <code>Location</code> path exists and is accessible</li>
+<li>Check that snippet files have the correct extensions (<code>.docx</code> or <code>.docm</code>)</li>
+<li>Ensure <code>MaxDepth</code> is set high enough to reach your snippet files</li>
+<li>Confirm the configuration key matches the ribbon button <code>id</code></li>
+</ol>
+<h3 id="content-not-inserted">Content not inserted</h3>
+<p><strong>Problem</strong>: Clicking a snippet does nothing.</p>
+<p><strong>Solutions</strong>:</p>
+<ol>
+<li>Ensure you have an active document open - Insert Snippet requires a document to insert into</li>
+<li>Check that the snippet file still exists at its original location</li>
+<li>Verify that the add-in has a valid licence with the <code>WordStandardTools</code> entitlement</li>
+</ol>
+<h3 id="formatting-looks-wrong-after-insert">Formatting looks wrong after insert</h3>
+<p><strong>Problem</strong>: Inserted content does not match the target document's formatting.</p>
+<p><strong>Solutions</strong>:</p>
+<ol>
+<li>Ensure the snippet file uses named styles rather than direct formatting</li>
+<li>Check that the target document has matching style definitions</li>
+<li>Consider using the <a href="utilities.html#clear-text-formatting-command-cleartextformatting">Clear Text Formatting</a> utility after insertion if needed</li>
+</ol>
+<h2 id="see-also">See Also</h2>
+<ul>
+<li><a href="new-document.html">New Document</a></li>
+<li><a href="starter-document.html">Starter Document</a></li>
+<li><a href="ribbon-item-rules.html">Ribbon Item Rules</a></li>
+<li><a href="scripts.html">Scripts</a></li>
+<li><a href="xref:document-menus-developer-guide">Developer Guide</a></li>
+</ul>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.4.8-rc/docs/user/features/insert-snippet.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

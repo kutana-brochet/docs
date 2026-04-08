@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Patterns and Principles | Developer Docs </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Patterns and Principles | Developer Docs ">
+      
+      
+      <link rel="icon" href="favicon.ico">
+      <link rel="stylesheet" href="public/docfx.min.css">
+      <link rel="stylesheet" href="public/main.css">
+      <meta name="docfx:navrel" content="toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.4.8-rc/docs/developer/patterns_and_principles.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="index.html">
+            <img id="logo" class="svg" src="logo.svg" alt="K+B Office Add-ins">
+            K+B Office Add-ins
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+
+      <div class="content">
+        <div class="actionbar">
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="patterns-and-principles">Patterns and Principles</h1>
+
+<div class="CAUTION">
+<h5>Caution</h5>
+<p><strong>Adhere to Agreed Approaches</strong>
+Consistency is our primary driver for velocity. <strong>Do not change architectural approaches</strong> (e.g., swapping CQS for Services) without discussing it with the team first.
+<em>Least Surprise</em> &gt; <em>Clever Solutions</em>.</p>
+</div>
+<hr>
+<h2 id="1-core-philosophy">1. Core Philosophy</h2>
+<h3 id="least-surprise--consistency">Least Surprise &amp; Consistency</h3>
+<p>We value code that looks boring. If you solve a problem in <code>Module A</code>, the solution in <code>Module B</code> should look identical.</p>
+<h3 id="tell-dont-ask">Tell-Don't-Ask</h3>
+<p>Encapsulate logic within your Domain Models. Don't pull data out to process it; ask the object to do the work.</p>
+<h4 id="-bad-anemic-model">❌ Bad: Anemic Model</h4>
+<pre><code class="lang-csharp">var user = _repo.GetUser(id);
+if (user.IsActive &amp;&amp; user.Expiry &gt; DateTime.Now) {
+    user.LastLogin = DateTime.Now; // Logic leaks into the service/handler
+    _repo.Save(user);
+}
+</code></pre>
+<h4 id="-good-rich-model">✅ Good: Rich Model</h4>
+<pre><code class="lang-csharp">var user = _repo.GetUser(id);
+var result = user.Login(); // Logic stays in the User entity
+if (result.IsSuccess) _repo.Save(user);
+</code></pre>
+<hr>
+<h2 id="2-architecture-where-does-this-code-belong">2. Architecture: Where Does This Code Belong?</h2>
+<p>We follow a rigid dependency hierarchy. Use this decision tree:</p>
+<pre><code>Is it a business rule or invariant?
+├── Yes → Domain (Entity or Value Object)
+│   └── Does it need identity tracking?
+│       ├── Yes → Entity
+│       └── No → Value Object
+└── No → Continue...
+
+Is it orchestrating multiple domain objects?
+├── Yes → Application (Command/Query Handler)
+└── No → Continue...
+
+Is it calling external systems (DB, API, files)?
+├── Yes → Infrastructure
+└── No → Continue...
+
+Is it translating user input to commands?
+├── Yes → Presentation (VSTO/Ribbon)
+└── No → Re-evaluate. Something's off.
+</code></pre>
+<h3 id="layer-summary">Layer Summary</h3>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Contains</th>
+<th>Dependencies</th>
+<th>Examples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Domain</strong></td>
+<td>Entities, Value Objects, Domain Events</td>
+<td><strong>None</strong></td>
+<td><code>EntitlementType</code>, <code>Template</code>, <code>Script</code></td>
+</tr>
+<tr>
+<td><strong>Application</strong></td>
+<td>Commands, Queries, Handlers, Interfaces</td>
+<td>Domain</td>
+<td><code>CreateDocument</code>, <code>GetScripts</code>, <code>IUserNotifier</code></td>
+</tr>
+<tr>
+<td><strong>Infrastructure</strong></td>
+<td>Implementations, DB, File System</td>
+<td>Application, Domain</td>
+<td><code>TemplateRepository</code>, <code>CommandDispatcher</code></td>
+</tr>
+<tr>
+<td><strong>Presentation</strong></td>
+<td>Ribbons, UI</td>
+<td>Application, Domain</td>
+<td>Thin dispatch only</td>
+</tr>
+</tbody>
+</table>
+<h3 id="quick-checks">Quick Checks</h3>
+<ul>
+<li><strong>Domain has no dependencies</strong> → If you're adding a <code>using</code> for infrastructure, wrong layer</li>
+<li><strong>Application orchestrates, doesn't decide</strong> → Business logic in handler = anemic domain smell</li>
+<li><strong>Infrastructure implements interfaces</strong> → Defined in Application, implemented in Infrastructure</li>
+<li><strong>Presentation is trivial</strong> → Just dispatch commands/queries, no logic</li>
+</ul>
+<h3 id="anti-patterns">Anti-patterns</h3>
+<ul>
+<li>❌ <code>if (user.IsActive &amp;&amp; user.HasPermission)</code> in a handler → belongs in <code>user.CanPerform()</code></li>
+<li>❌ Repository interface in Infrastructure → belongs in Application</li>
+<li>❌ COM objects in Application layer → stays in VSTO project</li>
+</ul>
+<hr>
+<h2 id="3-bdd-before-you-code">3. BDD: Before You Code</h2>
+<p><strong>Decision prompt:</strong></p>
+<blockquote>
+<p>&quot;Do I have a Gherkin scenario that describes what I'm building?&quot;</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Answer</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>No</strong></td>
+<td>Write the scenario first. No exceptions.</td>
+</tr>
+<tr>
+<td><strong>Yes, but vague</strong></td>
+<td>Refine until Given/When/Then are concrete and testable</td>
+</tr>
+<tr>
+<td><strong>Yes, specific</strong></td>
+<td>Proceed to red → green → refactor</td>
+</tr>
+</tbody>
+</table>
+<h3 id="heuristics">Heuristics</h3>
+<ul>
+<li>Scenario should be writable <em>without knowing implementation</em></li>
+<li>If you can't write the scenario, you don't understand the requirement</li>
+<li>One scenario = one behavior (not one feature)</li>
+</ul>
+<h3 id="anti-patterns-1">Anti-patterns</h3>
+<ul>
+<li>❌ Writing tests after code &quot;to get coverage&quot;</li>
+<li>❌ Scenarios that describe UI clicks, not behavior</li>
+<li>❌ Multiple When clauses (that's multiple scenarios)</li>
+</ul>
+<hr>
+<h2 id="4-cqs-command-or-query">4. CQS: Command or Query?</h2>
+<p><strong>Decision prompt:</strong></p>
+<blockquote>
+<p>&quot;Does this operation change state?&quot;</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Answer</th>
+<th>Type</th>
+<th>Returns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Yes</strong></td>
+<td>Command</td>
+<td><code>Result</code> or <code>Result&lt;T&gt;</code></td>
+</tr>
+<tr>
+<td><strong>No</strong></td>
+<td>Query</td>
+<td><code>Result&lt;T&gt;</code> with data, no side effects</td>
+</tr>
+</tbody>
+</table>
+<h3 id="commands-can-read-internally">Commands Can Read Internally</h3>
+<p>From <code>CreateDocument</code>:</p>
+<pre><code class="lang-csharp">[RequireEntitlement(EntitlementType.WordDocumentManagement)]
+[RequireEntitlement(EntitlementType.WordStandardTools)]
+public class Handler(
+    ILogger&lt;Handler&gt; logger,
+    ITemplateRepository templateRepository,           // reads
+    IDocumentManagementService documentManagementService,
+    IDocumentRepository documentRepository,
+    IUserNotifier userNotifier,                       // notifies
+    IApplicationEventDispatcher applicationEventDispatcher)
+    : ICommandHandler&lt;Command&gt;
+{
+    public Result Handle(Command command, CancellationToken cancellationToken = default)
+    {
+        var result = templateRepository.GetByTag(command.Value);  // internal read
+
+        if (!result.HasValue)
+        {
+            userNotifier.Alert(error, &quot;Template Error&quot;);          // notify on failure
+            return Result.Failure(error);
+        }
+
+        var doc = documentManagementService.CreateDocument(result.Value);  // mutate
+
+        applicationEventDispatcher.DispatchAsync(
+            new DocumentCreatedFromTemplateEvent(doc.Value, template));    // event
+
+        return doc;
+    }
+}
+</code></pre>
+<h3 id="queries-stay-pure">Queries Stay Pure</h3>
+<p>From <code>GetScripts</code>:</p>
+<pre><code class="lang-csharp">public class Handler(IScriptRepository repository) : IQueryHandler&lt;Query, IEnumerable&lt;Script&gt;&gt;
+{
+    public Result&lt;IEnumerable&lt;Script&gt;&gt; Handle(Query query, CancellationToken cancellationToken = default)
+    {
+        return Result.Success(repository.GetScripts());  // read only
+    }
+}
+</code></pre>
+<h3 id="rules">Rules</h3>
+<ul>
+<li>Commands read what they need internally</li>
+<li><code>IUserNotifier</code> in command handler keeps notification testable</li>
+<li>Queries have no side effects</li>
+<li>Use domain events for cross-aggregate coordination</li>
+</ul>
+<h3 id="anti-patterns-2">Anti-patterns</h3>
+<ul>
+<li>❌ Separate query dispatch just to read data for a command</li>
+<li>❌ Query that writes audit logs → use decorator or event</li>
+<li>❌ Notification logic in Ribbon → untestable</li>
+</ul>
+<hr>
+<h2 id="5-design-principles-solid">5. Design Principles (SOLID)</h2>
+<h3 id="single-responsibility-srp">Single Responsibility (SRP)</h3>
+<p>Handlers should do <strong>one thing</strong>.</p>
+<h4 id="-bad">❌ Bad</h4>
+<p><code>UpdateUserHandler</code>: Validates input, checks DB, updates User, sends Email, logs to file.</p>
+<h4 id="-good">✅ Good</h4>
+<p><code>UpdateUserHandler</code>: loads User, calls <code>user.Update()</code>, saves.
+<em>Separately</em>: <code>UserUpdatedEvents</code> trigger a <code>SendEmailEventHandler</code>.</p>
+<h3 id="openclosed-ocp">Open/Closed (OCP)</h3>
+<p>Extend behavior without modifying existing code.</p>
+<h4 id="-bad-1">❌ Bad</h4>
+<pre><code class="lang-csharp">if (type == &quot;Word&quot;) ExportWord();
+else if (type == &quot;PDF&quot;) ExportPdf();
+// Modifying this method every time we add a format.
+</code></pre>
+<h4 id="-good-1">✅ Good</h4>
+<pre><code class="lang-csharp">// Inject IEnumerable&lt;IExportStrategy&gt;
+_strategies.First(s =&gt; s.Supports(type)).Export();
+// Add new class PdfExportStrategy : IExportStrategy. No change to caller.
+</code></pre>
+<h3 id="liskov-substitution-lsp">Liskov Substitution (LSP)</h3>
+<p>Subtypes must be substitutable for their base types.</p>
+<h4 id="-bad-2">❌ Bad</h4>
+<p><code>public class ReadOnlyList : IList</code> -&gt; throws <code>NotSupportedException</code> on <code>Add()</code>.
+<em>Why? code expecting an <code>IList</code> assumes it can <code>Add</code>.</em></p>
+<h4 id="-good-2">✅ Good</h4>
+<p>Use <code>IEnumerable</code> or <code>IReadOnlyCollection</code> if the list shouldn't be modified.</p>
+<hr>
+<h2 id="6-coding-standards">6. Coding Standards</h2>
+<h3 id="naming-conventions">Naming Conventions</h3>
+<p>Remove ambiguity.</p>
+<ul>
+<li><strong>Commands</strong>: <code>&lt;Verb&gt;&lt;Noun&gt;</code> → <code>CreateDocument</code>, <code>RunScript</code>, <code>ActivateLicence</code></li>
+<li><strong>Queries</strong>: <code>Get&lt;Noun&gt;</code> / <code>Find&lt;Noun&gt;</code> → <code>GetScripts</code>, <code>GetLicence</code></li>
+</ul>
+<h4 id="-bad-3">❌ Bad</h4>
+<ul>
+<li><code>DocumentManager</code> (What does it do?)</li>
+<li><code>ProcessData</code> (How?)</li>
+</ul>
+<h4 id="-good-3">✅ Good</h4>
+<ul>
+<li><code>ITemplateRepository</code></li>
+<li><code>SaveDocument</code></li>
+</ul>
+<h3 id="logging">Logging</h3>
+<p>Log for the poor soul debugging this at 3 AM.</p>
+<h4 id="-bad-4">❌ Bad</h4>
+<pre><code class="lang-csharp">catch (Exception ex) {
+    _logger.LogError(&quot;Error happened&quot;); // What error? What context?
+}
+</code></pre>
+<h4 id="-good-4">✅ Good</h4>
+<pre><code class="lang-csharp">catch (Exception ex) {
+    _logger.LogError(ex, &quot;Failed to create document from template {TemplateName}&quot;, template.Name);
+}
+</code></pre>
+<p><strong>When to Log:</strong></p>
+<ul>
+<li><strong>Info</strong>: Significant business events (&quot;Document created successfully&quot;).</li>
+<li><strong>Warning</strong>: Recoverable issues (&quot;File locked, retrying&quot;).</li>
+<li><strong>Error</strong>: Exceptions/Failures that stop the flow.</li>
+</ul>
+<h3 id="commits">Commits</h3>
+<p>Follow <a href="https://www.conventionalcommits.org/">Conventional Commits</a>.</p>
+<h4 id="-bad-5">❌ Bad</h4>
+<ul>
+<li>&quot;fixed bug&quot;</li>
+<li>&quot;updates&quot;</li>
+<li>&quot;wip&quot;</li>
+</ul>
+<h4 id="-good-5">✅ Good</h4>
+<ul>
+<li><code>fix(templates): handle missing template gracefully</code></li>
+<li><code>feat(scripting): add custom property commands</code></li>
+<li><code>chore: update nuget packages</code></li>
+</ul>
+<hr>
+<h2 id="7-specific-patterns">7. Specific Patterns</h2>
+<h3 id="factories-vs-di">Factories vs DI</h3>
+<h4 id="-bad-6">❌ Bad</h4>
+<p>Creating a factory just to call <code>new</code>.</p>
+<pre><code class="lang-csharp">public class ServiceFactory {
+    public Service Create() =&gt; new Service(); // Just register Service with DI!
+}
+</code></pre>
+<h4 id="-good-6">✅ Good</h4>
+<p>Runtime decisions.</p>
+<pre><code class="lang-csharp">public IExporter Create(string format) {
+    return format switch {
+        &quot;PDF&quot; =&gt; new PdfExporter(),
+        &quot;Word&quot; =&gt; new WordExporter(),
+        _ =&gt; throw new NotSupportedException()
+    };
+}
+</code></pre>
+<h3 id="records-vs-classes">Records vs Classes</h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Use Case</th>
+<th>Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Record</strong></td>
+<td>DTOs, Messages, Config</td>
+<td>Use when data <em>is</em> the value. <code>new Point(1,2) == new Point(1,2)</code>.</td>
+</tr>
+<tr>
+<td><strong>Class</strong></td>
+<td>Domain Entities</td>
+<td>Use when identity matters.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="further-reading">Further Reading</h2>
+<p>These sources informed our principles. Links may change; the principles above are authoritative for this project.</p>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>BDD</strong></td>
+<td>Gojko Adzic, <em>Specification by Example</em> (2011)</td>
+</tr>
+<tr>
+<td><strong>Gherkin</strong></td>
+<td>Cucumber Team, <em>BDD with Cucumber</em> - cucumber.io/docs/bdd</td>
+</tr>
+<tr>
+<td><strong>DDD</strong></td>
+<td>Vaughn Vernon, <em>Domain-Driven Design Distilled</em> (2016)</td>
+</tr>
+<tr>
+<td><strong>DDD Tactical</strong></td>
+<td>Eric Evans, <em>Domain-Driven Design</em> (2003) - &quot;The Blue Book&quot;</td>
+</tr>
+<tr>
+<td><strong>CQS</strong></td>
+<td>Martin Fowler, &quot;Command Query Separation&quot; - martinfowler.com/bliki</td>
+</tr>
+<tr>
+<td><strong>Clean Architecture</strong></td>
+<td>Robert C. Martin, <em>Clean Architecture</em> (2017)</td>
+</tr>
+</tbody>
+</table>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.4.8-rc/docs/developer/patterns_and_principles.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

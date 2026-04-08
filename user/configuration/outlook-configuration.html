@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Outlook Address Book Configuration | User Docs </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Outlook Address Book Configuration | User Docs ">
+      
+      
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.4.8-rc/docs/user/configuration/outlook-configuration.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="K+B Office Add-ins">
+            K+B Office Add-ins
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+
+      <div class="content">
+        <div class="actionbar">
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="outlook-address-book-configuration">Outlook Address Book Configuration</h1>
+
+<p>This guide explains how to configure the Outlook address book provider to fetch contacts from Microsoft Outlook.</p>
+<h2 id="overview">Overview</h2>
+<p>The Outlook provider allows you to retrieve contact information from Outlook address books and use it within Word documents for mail merge, data insertion, or other purposes.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>Microsoft Outlook must be installed on the system</li>
+<li>Outlook must be configured with at least one profile</li>
+<li>The add-in must have permission to access Outlook (check Outlook Trust Center settings)</li>
+</ul>
+<h2 id="configuration">Configuration</h2>
+<h3 id="basic-configuration">Basic Configuration</h3>
+<p>Add the following configuration to your dataset configuration file:</p>
+<pre><code class="lang-json">{
+  &quot;$schema&quot;: &quot;../../../output/schemas/DatasetProviderConfiguration.schema.json&quot;,
+  &quot;DatasetProviderConfiguration&quot;: {
+    &quot;Datasets&quot;: {
+      &quot;OutlookContacts&quot;: {
+        &quot;$connectionType&quot;: &quot;Outlook&quot;,
+        &quot;OutlookAddressbook&quot;: &quot;Contacts&quot;,
+        &quot;ConnectionSettings&quot;: &quot;&quot;,
+        &quot;SQLQuery&quot;: &quot;&quot;,
+        &quot;Timeout&quot;: 30,
+        &quot;FieldAliasOrder&quot;: {
+          &quot;FullName&quot;: &quot;Name&quot;,
+          &quot;EmailAddress&quot;: &quot;Email&quot;,
+          &quot;CompanyName&quot;: &quot;Company&quot;,
+          &quot;JobTitle&quot;: &quot;Title&quot;,
+          &quot;BusinessPhone&quot;: &quot;Phone&quot;,
+          &quot;MobilePhone&quot;: &quot;Mobile&quot;
+        },
+</code></pre><h3 id="required-properties">Required Properties</h3>
+<h4 id="connectiontype"><code>$connectionType</code></h4>
+<ul>
+<li><strong>Value</strong>: <code>&quot;Outlook&quot;</code></li>
+<li><strong>Description</strong>: Specifies that this dataset uses the Outlook provider</li>
+</ul>
+<h4 id="outlookaddressbook"><code>OutlookAddressbook</code></h4>
+<ul>
+<li><strong>Type</strong>: <code>string</code></li>
+<li><strong>Required</strong>: Yes</li>
+<li><strong>Description</strong>: The name of the Outlook address book to access</li>
+<li><strong>Common Values</strong>:
+<ul>
+<li><code>&quot;Contacts&quot;</code> - Your personal contacts folder</li>
+<li><code>&quot;Global Address List&quot;</code> - Organization's GAL (Exchange environments)</li>
+<li>Custom address book names configured in Outlook</li>
+</ul>
+</li>
+</ul>
+<h4 id="connectionsettings"><code>ConnectionSettings</code></h4>
+<ul>
+<li><strong>Type</strong>: <code>string</code></li>
+<li><strong>Description</strong>: Reserved for future use (currently unused but required)</li>
+<li><strong>Default</strong>: <code>&quot;&quot;</code></li>
+</ul>
+<h4 id="sqlquery"><code>SQLQuery</code></h4>
+<ul>
+<li><strong>Type</strong>: <code>string</code></li>
+<li><strong>Description</strong>: Reserved for future filtering capabilities</li>
+<li><strong>Default</strong>: <code>&quot;&quot;</code></li>
+</ul>
+<h3 id="optional-properties">Optional Properties</h3>
+<h4 id="timeout"><code>Timeout</code></h4>
+<ul>
+<li><strong>Type</strong>: <code>integer</code></li>
+<li><strong>Default</strong>: <code>30</code></li>
+<li><strong>Description</strong>: Maximum time in seconds to wait for Outlook operations</li>
+</ul>
+<h4 id="fieldaliasorder"><code>FieldAliasOrder</code></h4>
+<ul>
+<li><strong>Type</strong>: <code>Dictionary&lt;string, string&gt;</code></li>
+<li><strong>Description</strong>: Maps internal field names to friendly display names</li>
+<li><strong>Available Fields</strong>:
+<ul>
+<li><code>FullName</code> - Complete name from address book</li>
+<li><code>FirstName</code> - First name (if available)</li>
+<li><code>LastName</code> - Last name (if available)</li>
+<li><code>EmailAddress</code> - Email address</li>
+<li><code>CompanyName</code> - Company/organization name</li>
+<li><code>JobTitle</code> - Position/title</li>
+<li><code>BusinessPhone</code> - Business telephone number</li>
+<li><code>MobilePhone</code> - Mobile phone number</li>
+<li><code>BusinessAddress</code> - Business address</li>
+<li><code>Type</code> - Entry type (Contact, Exchange User, etc.)</li>
+</ul>
+</li>
+</ul>
+<h4 id="uselocalcache"><code>UseLocalCache</code></h4>
+<ul>
+<li><strong>Type</strong>: <code>boolean</code></li>
+<li><strong>Default</strong>: <code>false</code></li>
+<li><strong>Description</strong>: Enable caching to improve performance for large address books</li>
+</ul>
+<h4 id="localcachepath"><code>LocalCachePath</code></h4>
+<ul>
+<li><strong>Type</strong>: <code>string</code></li>
+<li><strong>Description</strong>: Path for cached data (supports environment variables)</li>
+<li><strong>Example</strong>: <code>&quot;%temp%\\outlook_cache&quot;</code></li>
+</ul>
+<h2 id="examples">Examples</h2>
+<h3 id="example-1-personal-contacts">Example 1: Personal Contacts</h3>
+<pre><code class="lang-json">{
+  &quot;PersonalContacts&quot;: {
+    &quot;$connectionType&quot;: &quot;Outlook&quot;,
+    &quot;OutlookAddressbook&quot;: &quot;Contacts&quot;,
+    &quot;ConnectionSettings&quot;: &quot;&quot;,
+    &quot;SQLQuery&quot;: &quot;&quot;,
+    &quot;Timeout&quot;: 30,
+    &quot;FieldAliasOrder&quot;: {
+      &quot;FullName&quot;: &quot;Contact Name&quot;,
+      &quot;EmailAddress&quot;: &quot;Email&quot;,
+      &quot;CompanyName&quot;: &quot;Company&quot;,
+      &quot;BusinessPhone&quot;: &quot;Phone&quot;
+    }
+  }
+}
+</code></pre>
+<h3 id="example-2-global-address-list-exchange">Example 2: Global Address List (Exchange)</h3>
+<pre><code class="lang-json">{
+  &quot;CompanyDirectory&quot;: {
+    &quot;$connectionType&quot;: &quot;Outlook&quot;,
+    &quot;OutlookAddressbook&quot;: &quot;Global Address List&quot;,
+    &quot;ConnectionSettings&quot;: &quot;&quot;,
+    &quot;SQLQuery&quot;: &quot;&quot;,
+    &quot;Timeout&quot;: 60,
+    &quot;FieldAliasOrder&quot;: {
+      &quot;FullName&quot;: &quot;Employee Name&quot;,
+      &quot;EmailAddress&quot;: &quot;Email Address&quot;,
+      &quot;JobTitle&quot;: &quot;Position&quot;,
+      &quot;CompanyName&quot;: &quot;Department&quot;
+    },
+    &quot;UseLocalCache&quot;: true,
+    &quot;LocalCachePath&quot;: &quot;%localappdata%\\KutanaBrochet\\Cache&quot;
+  }
+}
+</code></pre>
+<h3 id="example-3-multiple-address-books">Example 3: Multiple Address Books</h3>
+<pre><code class="lang-json">{
+  &quot;DatasetProviderConfiguration&quot;: {
+    &quot;Datasets&quot;: {
+      &quot;Clients&quot;: {
+        &quot;$connectionType&quot;: &quot;Outlook&quot;,
+        &quot;OutlookAddressbook&quot;: &quot;Client Contacts&quot;,
+        &quot;ConnectionSettings&quot;: &quot;&quot;,
+        &quot;SQLQuery&quot;: &quot;&quot;
+      },
+      &quot;Staff&quot;: {
+        &quot;$connectionType&quot;: &quot;Outlook&quot;,
+        &quot;OutlookAddressbook&quot;: &quot;Company Staff&quot;,
+        &quot;ConnectionSettings&quot;: &quot;&quot;,
+        &quot;SQLQuery&quot;: &quot;&quot;
+      },
+      &quot;External&quot;: {
+        &quot;$connectionType&quot;: &quot;Outlook&quot;,
+        &quot;OutlookAddressbook&quot;: &quot;Global Address List&quot;,
+        &quot;ConnectionSettings&quot;: &quot;&quot;,
+        &quot;SQLQuery&quot;: &quot;&quot;
+      }
+    }
+  }
+}
+</code></pre>
+<h2 id="finding-your-address-book-names">Finding Your Address Book Names</h2>
+<p>To find the exact names of your Outlook address books:</p>
+<ol>
+<li>Open Microsoft Outlook</li>
+<li>Click on <strong>Home</strong> tab &gt; <strong>Address Book</strong> button (or press Ctrl+Shift+B)</li>
+<li>In the Address Book window, use the dropdown at the top</li>
+<li>The dropdown shows all available address book names - use these exact names in your configuration</li>
+</ol>
+<p>Common address book names:</p>
+<ul>
+<li><strong>Contacts</strong> - Your personal Outlook contacts</li>
+<li><strong>Global Address List</strong> - Company directory (Exchange/Microsoft 365)</li>
+<li><strong>Suggested Contacts</strong> - Auto-collected contacts</li>
+<li>Any custom address books you've created</li>
+</ul>
+<h2 id="returned-data-structure">Returned Data Structure</h2>
+<p>The Outlook provider returns a DataSet with the following columns:</p>
+<table>
+<thead>
+<tr>
+<th>Column Name</th>
+<th>Data Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FullName</td>
+<td>string</td>
+<td>Complete display name</td>
+</tr>
+<tr>
+<td>FirstName</td>
+<td>string</td>
+<td>First name (when available)</td>
+</tr>
+<tr>
+<td>LastName</td>
+<td>string</td>
+<td>Last name (when available)</td>
+</tr>
+<tr>
+<td>EmailAddress</td>
+<td>string</td>
+<td>Primary email address</td>
+</tr>
+<tr>
+<td>CompanyName</td>
+<td>string</td>
+<td>Company/organization name</td>
+</tr>
+<tr>
+<td>JobTitle</td>
+<td>string</td>
+<td>Job title/position</td>
+</tr>
+<tr>
+<td>BusinessPhone</td>
+<td>string</td>
+<td>Business telephone number</td>
+</tr>
+<tr>
+<td>MobilePhone</td>
+<td>string</td>
+<td>Mobile phone number</td>
+</tr>
+<tr>
+<td>BusinessAddress</td>
+<td>string</td>
+<td>Business address</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>string</td>
+<td>Entry type identifier</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note</strong>: Not all fields may be populated for every contact, depending on what information is available in Outlook.</p>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="microsoft-outlook-is-not-installed">&quot;Microsoft Outlook is not installed&quot;</h3>
+<ul>
+<li>Ensure Microsoft Outlook is installed on the system</li>
+<li>Verify that Outlook is properly licensed</li>
+</ul>
+<h3 id="address-book-x-not-found">&quot;Address book 'X' not found&quot;</h3>
+<ul>
+<li>Check the exact spelling of the address book name (case-sensitive)</li>
+<li>Open Outlook's Address Book (Ctrl+Shift+B) to verify available names</li>
+<li>Ensure you have permission to access the address book</li>
+</ul>
+<h3 id="access-denied-to-outlook">&quot;Access denied to Outlook&quot;</h3>
+<ol>
+<li>Open Outlook</li>
+<li>Go to <strong>File</strong> &gt; <strong>Options</strong> &gt; <strong>Trust Center</strong> &gt; <strong>Trust Center Settings</strong></li>
+<li>Select <strong>Programmatic Access</strong></li>
+<li>Ensure appropriate settings allow programmatic access</li>
+<li>You may need to approve access when prompted</li>
+</ol>
+<h3 id="no-entries-found-in-address-book">&quot;No entries found in address book&quot;</h3>
+<ul>
+<li>Verify the address book contains contacts</li>
+<li>Check if you have read permissions for the address book</li>
+<li>For Exchange GAL, ensure you're connected to the server</li>
+</ul>
+<h3 id="performance-issues-with-large-address-books">Performance Issues with Large Address Books</h3>
+<ul>
+<li>Enable <code>UseLocalCache</code> in configuration</li>
+<li>Increase the <code>Timeout</code> value</li>
+<li>Consider filtering contacts (future feature via SQLQuery)</li>
+</ul>
+<h2 id="security-considerations">Security Considerations</h2>
+<ul>
+<li>The add-in requires programmatic access to Outlook</li>
+<li>Outlook may prompt users to grant access when first connecting</li>
+<li>Cached data is stored locally - ensure appropriate file permissions</li>
+<li>Consider data privacy when using Global Address Lists</li>
+<li>Cached data is not encrypted - use secure storage locations</li>
+</ul>
+<h2 id="best-practices">Best Practices</h2>
+<ol>
+<li><strong>Use Descriptive Dataset Names</strong>: Name datasets clearly (e.g., &quot;ClientContacts&quot;, &quot;StaffDirectory&quot;)</li>
+<li><strong>Enable Caching for Large Lists</strong>: Use local cache for GAL or large contact lists</li>
+<li><strong>Map Fields Appropriately</strong>: Use FieldAliasOrder to provide user-friendly column names</li>
+<li><strong>Set Appropriate Timeouts</strong>: Increase timeout for large address books or slow networks</li>
+<li><strong>Test with Small Address Books First</strong>: Verify configuration with personal contacts before using GAL</li>
+</ol>
+<h2 id="future-enhancements">Future Enhancements</h2>
+<p>The following features are planned for future releases:</p>
+<ul>
+<li><strong>SQLQuery Support</strong>: Filter contacts based on criteria</li>
+<li><strong>Incremental Updates</strong>: Only fetch changed contacts</li>
+<li><strong>Custom Field Mapping</strong>: Support for custom Outlook contact fields</li>
+<li><strong>Multiple Profile Support</strong>: Specify which Outlook profile to use</li>
+</ul>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.4.8-rc/docs/user/configuration/outlook-configuration.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

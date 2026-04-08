@@ -1,0 +1,238 @@
+{
+  "source_base_path": "/github/workspace/docs/user",
+  "xrefmap": "xrefmap.yml",
+  "files": [
+    {
+      "type": "Resource",
+      "output": {
+        "resource": {
+          "relative_path": "index.json"
+        }
+      }
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "configuration/outlook-configuration.md",
+      "output": {
+        ".html": {
+          "relative_path": "configuration/outlook-configuration.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "configuration/outlook-implementation-summary.md",
+      "output": {
+        ".html": {
+          "relative_path": "configuration/outlook-implementation-summary.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "configuration/ribbon.md",
+      "output": {
+        ".html": {
+          "relative_path": "configuration/ribbon.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "features/RibbonIcons.md",
+      "output": {
+        ".html": {
+          "relative_path": "features/RibbonIcons.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "features/ScriptConfiguration.md",
+      "output": {
+        ".html": {
+          "relative_path": "features/ScriptConfiguration.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "features/content-controls.md",
+      "output": {
+        ".html": {
+          "relative_path": "features/content-controls.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "features/dms.md",
+      "output": {
+        ".html": {
+          "relative_path": "features/dms.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "features/index.md",
+      "output": {
+        ".html": {
+          "relative_path": "features/index.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "features/insert-snippet.md",
+      "output": {
+        ".html": {
+          "relative_path": "features/insert-snippet.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "features/new-document.md",
+      "output": {
+        ".html": {
+          "relative_path": "features/new-document.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "features/ribbon-item-rules.md",
+      "output": {
+        ".html": {
+          "relative_path": "features/ribbon-item-rules.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "features/scripts.md",
+      "output": {
+        ".html": {
+          "relative_path": "features/scripts.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "features/square-brackets.md",
+      "output": {
+        ".html": {
+          "relative_path": "features/square-brackets.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "features/starter-document.md",
+      "output": {
+        ".html": {
+          "relative_path": "features/starter-document.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "features/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "features/toc.html"
+        },
+        ".json": {
+          "relative_path": "features/toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "features/utilities.md",
+      "output": {
+        ".html": {
+          "relative_path": "features/utilities.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "index.md",
+      "output": {
+        ".html": {
+          "relative_path": "index.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "licensing/licensing-file.md",
+      "output": {
+        ".html": {
+          "relative_path": "licensing/licensing-file.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "licensing/overview.md",
+      "output": {
+        ".html": {
+          "relative_path": "licensing/overview.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "licensing/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "licensing/toc.html"
+        },
+        ".json": {
+          "relative_path": "licensing/toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "toc.html"
+        },
+        ".json": {
+          "relative_path": "toc.json"
+        }
+      },
+      "version": ""
+    }
+  ],
+  "groups": [
+    {
+      "xrefmap": "xrefmap.yml"
+    }
+  ]
+}
