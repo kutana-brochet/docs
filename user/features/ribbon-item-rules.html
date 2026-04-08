@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.3.8-rc/docs/user/features/ribbon-item-rules.md/#L1">
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.4.8-rc/docs/user/features/ribbon-item-rules.md/#L1">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -204,6 +204,42 @@
 </tbody>
 </table>
 <p>When using a workflow name, the corresponding workflow must be defined in the <code>Workflows</code> section of <code>RulesConfiguration</code>. See <a href="ScriptConfiguration.html">Script Configuration</a> for details on configuring workflows.</p>
+<h3 id="built-in-rule-conditions">Built-in Rule Conditions</h3>
+<p>The following conditions are available for use in workflow rule expressions:</p>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Expression</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CanEdit</code></td>
+<td><code>context.CanEdit == true</code></td>
+<td>Document is open <strong>and</strong> editable (not protected or read-only)</td>
+</tr>
+<tr>
+<td><code>HasDocument</code></td>
+<td><code>context.HasDocument == true</code></td>
+<td>A document is open</td>
+</tr>
+<tr>
+<td><code>IsReadOnly</code></td>
+<td><code>context.Document.IsReadOnly == true</code></td>
+<td>Document is read-only</td>
+</tr>
+</tbody>
+</table>
+<h4 id="document-protection-and-canedit">Document Protection and CanEdit</h4>
+<p>The <code>CanEdit</code> condition checks whether the active document can be modified. A document is <strong>not</strong> editable when:</p>
+<ul>
+<li><strong>Protected</strong> — the document has any form of Word protection applied (form fields only, tracked changes only, comments only, or read-only protection via Review &gt; Restrict Editing)</li>
+<li><strong>Read-only</strong> — the document was opened in read-only mode, the file is marked read-only on disk, or the document has been marked as final</li>
+</ul>
+<p>Buttons that modify document content (e.g. formatting, text replacement, field insertion) should use <code>CanEdit</code> as their <code>EnabledWhen</code> condition. This ensures they are automatically greyed out when the document cannot be edited.</p>
+<p><strong>Note:</strong> Documents opened in <strong>Protected View</strong> (e.g. files downloaded from the internet) are not visible to the add-in until the user clicks &quot;Enable Editing&quot; in the yellow banner. Once editing is enabled, the <code>CanEdit</code> condition evaluates normally.</p>
 <h2 id="ribbonxml-callbacks">Ribbon.xml Callbacks</h2>
 <p>To use Ribbon Item Rules, add <code>getVisible</code> and <code>getEnabled</code> attributes to your ribbon elements:</p>
 <h3 id="by-id-recommended-for-most-elements">By ID (recommended for most elements)</h3>
@@ -374,7 +410,7 @@
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.3.8-rc/docs/user/features/ribbon-item-rules.md/#L1" class="edit-link">Edit this page</a>
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.4.8-rc/docs/user/features/ribbon-item-rules.md/#L1" class="edit-link">Edit this page</a>
         </div>
 
         <div class="next-article d-print-none border-top" id="nextArticle"></div>

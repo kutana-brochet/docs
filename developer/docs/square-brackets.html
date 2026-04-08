@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.3.8-rc/docs/developer/docs/square-brackets.md/#L1">
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.4.8-rc/docs/developer/docs/square-brackets.md/#L1">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -583,33 +583,7 @@ if (result.IsFailure)
 }
 </code></pre>
 <h3 id="common-error-codes">Common Error Codes</h3>
-<p>Defined in <code>DomainErrors.SquareBrackets</code>:</p>
-<table>
-<thead>
-<tr>
-<th>Error Code</th>
-<th>Meaning</th>
-<th>User Message</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>NotFound</code></td>
-<td>No brackets in document</td>
-<td>&quot;No square brackets found in document.&quot;</td>
-</tr>
-<tr>
-<td><code>InvalidSelection</code></td>
-<td>Selection doesn't match bracket pair</td>
-<td>&quot;Selection must start with '[' and end with ']'.&quot;</td>
-</tr>
-<tr>
-<td><code>EndOfDocument</code></td>
-<td>Reached document boundary</td>
-<td>&quot;End of document reached. Restart from beginning?&quot;</td>
-</tr>
-</tbody>
-</table>
+<p>Errors are returned from the <code>AddDelimiterPairStrategy</code> and propagated through the handler.</p>
 <p>Infrastructure errors:</p>
 <table>
 <thead>
@@ -630,18 +604,7 @@ if (result.IsFailure)
 </tbody>
 </table>
 <h2 id="localisation">Localisation</h2>
-<p>User-facing messages are localised via <code>ILocalisationService</code>.</p>
-<p><strong>Message Resources</strong> (DomainMessages.resx):</p>
-<pre><code class="lang-xml">&lt;data name=&quot;SquareBrackets.NotFound&quot;&gt;
-  &lt;value&gt;No square brackets found in document.&lt;/value&gt;
-&lt;/data&gt;
-&lt;data name=&quot;SquareBrackets.InvalidSelection&quot;&gt;
-  &lt;value&gt;Selection must start with '[' and end with ']'.&lt;/value&gt;
-&lt;/data&gt;
-&lt;data name=&quot;SquareBrackets.EndOfDocument&quot;&gt;
-  &lt;value&gt;End of document reached. Restart from beginning?&lt;/value&gt;
-&lt;/data&gt;
-</code></pre>
+<p>User-facing messages are localised via <code>ILocalisationService</code> and <code>DomainMessages.resx</code>.</p>
 <p><strong>Adding Translations:</strong></p>
 <p>Create <code>DomainMessages.{locale}.resx</code> files:</p>
 <ul>
@@ -687,7 +650,7 @@ catch (System.Runtime.InteropServices.COMException ex)
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.3.8-rc/docs/developer/docs/square-brackets.md/#L1" class="edit-link">Edit this page</a>
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.4.8-rc/docs/developer/docs/square-brackets.md/#L1" class="edit-link">Edit this page</a>
         </div>
 
         <div class="next-article d-print-none border-top" id="nextArticle"></div>

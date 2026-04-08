@@ -155,6 +155,16 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "naming-convention-migration-analysis.md",
+      "output": {
+        ".html": {
+          "relative_path": "naming-convention-migration-analysis.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "patterns_and_principles.md",
       "output": {
         ".html": {

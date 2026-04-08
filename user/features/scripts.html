@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.3.8-rc/docs/user/features/scripts.md/#L1">
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.4.8-rc/docs/user/features/scripts.md/#L1">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -172,7 +172,7 @@
 <li><code>&quot;Options&quot;:</code> this element holds the different options available for the Command type. There is always at least one Options for all script commands.</li>
 </ul>
 <h2 id="available-script-commands-types">Available Script Commands types</h2>
-<p>Scripts support 13 types of commands that can be combined in any sequence:</p>
+<p>Scripts support 14 types of commands that can be combined in any sequence:</p>
 <h3 id="formatting-commands-type">Formatting Commands &quot;$type&quot;</h3>
 <h4 id="1-apply-font-formatting-type-applyfontformatting">1. Apply Font Formatting (&quot;$type&quot;: &quot;ApplyFontFormatting&quot;)</h4>
 <p>Applies character-level formatting to text, including:</p>
@@ -206,7 +206,7 @@
 <h3 id="text-manipulation-commands">Text Manipulation Commands</h3>
 <h4 id="6-delete-characters-type-deletecharacters">6. Delete Characters (&quot;$type&quot;: &quot;DeleteCharacters&quot;)</h4>
 <p>Removes specified characters from the text. Useful for cleaning up unwanted characters or formatting marks.</p>
-<h4 id="7-delete-words-type-deletewords">7. Delete Words (&quot;$type&quot;: &quot;DeleteWords&quot;)</h4>
+<h4 id="7-delete-words-type-deletewords----phill-is-checking-up-on-where-this-has-gone---need-to-amend">7. Delete Words (&quot;$type&quot;: &quot;DeleteWords&quot;) -  Phill is checking up on where this has gone - NEED TO AMEND</h4>
 <p>Removes specified characters from the text. Useful for cleaning up unwanted characters or formatting marks.</p>
 <h4 id="8-enforce-case-type-enforcecase">8. Enforce Case (&quot;$type&quot;: &quot;EnforceCase&quot;)</h4>
 <p>Converts text to a specific case:</p>
@@ -218,15 +218,94 @@
 </ul>
 <h4 id="9-insert-field-type-insertfield">9. Insert Field (&quot;$type&quot;: &quot;InsertField&quot;)</h4>
 <p>Inserts a Word field (such as page numbers, dates, or document properties) at the specified location.</p>
-<h4 id="10-insert-word-type-insertword">10. Insert Word (&quot;$type&quot;: &quot;InsertWord&quot;)</h4>
+<h4 id="10-insert-word-type-insertword---this-is-insert-text---need-to-amend">10. Insert Word (&quot;$type&quot;: &quot;InsertWord&quot;) - this is Insert Text - NEED TO AMEND</h4>
 <p>Inserts specified text at the cursor position or within a range. Can optionally prevent duplicate insertions.</p>
 <h3 id="custom-document-property-manipulation-commands">Custom Document Property Manipulation Commands</h3>
 <h4 id="11-set-the-value-of-a-custom-document-property-type-setcustomproperty">11. Set the value of a Custom Document Property (&quot;$type&quot;: &quot;SetCustomProperty&quot;)</h4>
 <p>Used to set the value of a Custom Document Property. These can be used to show or hide buttons for groups on the ribbon. Use in tandem with UnsetCustomProperty</p>
 <h4 id="12-delete-a-custom-document-property-type-deletecustomproperty">12. Delete a Custom Document Property (&quot;$type&quot;: &quot;DeleteCustomProperty&quot;)</h4>
 <p>Used to unset the value of a Custom Document Property. These can be used to show or hide buttons for groups on the ribbon. Use in tandem with SetCustomProperty</p>
+<h3 id="field-update-commands">Field Update Commands</h3>
+<h4 id="13-update-field-codes-type-updatefieldcodes">13. Update Field Codes (&quot;$type&quot;: &quot;UpdateFieldCodes&quot;)</h4>
+<p>Updates Word field codes across configurable areas of the document. This command refreshes fields such as page numbers, cross-references, dates, document properties, and tables of contents.</p>
+<p><strong>Options:</strong></p>
+<p><code>Options</code> contains a <code>Template</code> property that holds a dictionary keyed by template selector.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Options</code></td>
+<td>Object</td>
+<td>No</td>
+<td>Wrapper object containing template-based settings</td>
+</tr>
+<tr>
+<td><code>Options.Template</code></td>
+<td>Object (dictionary)</td>
+<td>No</td>
+<td>Selector-to-settings map. Keys can be exact template names (<code>Legal.dotx</code>) or glob selectors (<code>*.dotx</code>, <code>*.*</code>)</td>
+</tr>
+<tr>
+<td><code>Options.Template.&lt;selector&gt;.StoryGroups</code></td>
+<td>Array of strings</td>
+<td>No</td>
+<td>Which areas to update when selector matches. Values: <code>Body</code>, <code>Headers</code>, <code>Footers</code>, <code>Footnotes</code>, <code>Endnotes</code>, <code>Comments</code>, <code>TextBoxes</code>, <code>TOCs</code></td>
+</tr>
+</tbody>
+</table>
+<div class="NOTE">
+<h5>Note</h5>
+<p>This command does <strong>not</strong> use a <code>Range</code> property. Areas are controlled by <code>StoryGroups</code> in <code>Options</code>, not by the standard <code>Range</code>/<code>SubRange</code> mechanism used by other commands.</p>
+</div>
+<p><strong>Option Resolution (4-tier fallback):</strong></p>
+<p>When <code>Options</code> is <code>null</code> or no selector matches, settings resolve in this order:</p>
+<ol>
+<li><strong>Exact template match</strong> - for example <code>Legal.dotx</code></li>
+<li><strong>Most specific glob match</strong> - for example <code>*.dotx</code> beats <code>*.*</code></li>
+<li><strong>Catch-all default</strong> - <code>DefaultOptions</code>, then <code>*</code> or <code>*.*</code></li>
+<li><strong>Built-in fallback</strong> - all story groups are updated, including <code>TOCs</code></li>
+</ol>
+<p><strong>Behaviour:</strong></p>
+<ul>
+<li>Track changes is temporarily disabled during field updates and restored afterwards</li>
+<li>Protected documents cannot have their fields updated — the command returns an error</li>
+<li>Missing story types (e.g., no footnotes in the document) are silently skipped</li>
+<li><code>TOCs</code> is now treated as a <code>StoryGroup</code></li>
+</ul>
+<p><strong>Examples:</strong></p>
+<p>Update all fields using built-in fallback (all groups, including TOCs):</p>
+<pre><code class="lang-json">{
+  &quot;$type&quot;: &quot;UpdateFieldCodes&quot;,
+  &quot;Options&quot;: null
+}
+</code></pre>
+<p>Use selector-based rules (exact, glob, catch-all):</p>
+<pre><code class="lang-json">{
+  &quot;$type&quot;: &quot;UpdateFieldCodes&quot;,
+  &quot;Options&quot;: {
+    &quot;Template&quot;: {
+      &quot;Legal.dotx&quot;: {
+        &quot;StoryGroups&quot;: [&quot;Body&quot;, &quot;Headers&quot;, &quot;Footers&quot;, &quot;TOCs&quot;]
+      },
+      &quot;*.dotx&quot;: {
+        &quot;StoryGroups&quot;: [&quot;Headers&quot;]
+      },
+      &quot;*.*&quot;: {
+        &quot;StoryGroups&quot;: [&quot;Body&quot;, &quot;Headers&quot;, &quot;Footers&quot;, &quot;TOCs&quot;]
+      }
+    }
+  }
+}
+</code></pre>
 <h3 id="vba-macro-commands">VBA Macro Commands</h3>
-<h4 id="13-run-vba-macro-type-runmacro">13. Run VBA Macro (&quot;$type&quot;: &quot;RunMacro&quot;)</h4>
+<h4 id="14-run-vba-macro-type-runmacro">14. Run VBA Macro (&quot;$type&quot;: &quot;RunMacro&quot;)</h4>
 <p>Executes an existing VBA macro by name with optional parameters. This allows you to integrate existing VBA automation with your script configurations.</p>
 <p><strong>Use Cases:</strong></p>
 <ul>
@@ -455,7 +534,7 @@ Available on InsertText only</li>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.3.8-rc/docs/user/features/scripts.md/#L1" class="edit-link">Edit this page</a>
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.4.8-rc/docs/user/features/scripts.md/#L1" class="edit-link">Edit this page</a>
         </div>
 
         <div class="next-article d-print-none border-top" id="nextArticle"></div>
