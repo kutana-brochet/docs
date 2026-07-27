@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.4.24/docs/developer/docs/configuration.md/#L1">
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.4.26/docs/developer/docs/configuration.md/#L1">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -104,11 +104,60 @@
   }
 }
 </code></pre>
+<h3 id="using-environment-variables-instead">Using environment variables instead</h3>
+<p>Editing <code>appsettings.json</code> means writing inside the installation folder, which
+usually needs an administrator. The same two paths can be set with environment
+variables instead, which override whatever <code>appsettings.json</code> says:</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Overrides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>KUTANABROCHET_WORD_ConfigurationLocations__Shared</code></td>
+<td>Word's <code>ConfigurationLocations:Shared</code></td>
+</tr>
+<tr>
+<td><code>KUTANABROCHET_WORD_ConfigurationLocations__User</code></td>
+<td>Word's <code>ConfigurationLocations:User</code></td>
+</tr>
+<tr>
+<td><code>KUTANABROCHET_POWERPOINT_ConfigurationLocations__Shared</code></td>
+<td>PowerPoint's <code>ConfigurationLocations:Shared</code></td>
+</tr>
+<tr>
+<td><code>KUTANABROCHET_POWERPOINT_ConfigurationLocations__User</code></td>
+<td>PowerPoint's <code>ConfigurationLocations:User</code></td>
+</tr>
+</tbody>
+</table>
+<p>The double underscore (<code>__</code>) is how .NET separates nested configuration keys.
+<code>KUTANABROCHET_&lt;APP&gt;_</code> scopes the lookup two ways: it keeps unrelated variables
+in the user's environment out, and it keeps each add-in's folder separate. Every
+host binds the same configuration keys, so a shared prefix would repoint Word and
+PowerPoint at the same folder. A future Excel add-in reads
+<code>KUTANABROCHET_EXCEL_</code> with no code change.</p>
+<pre><code class="lang-powershell">setx KUTANABROCHET_WORD_ConfigurationLocations__Shared &quot;\\fileserver\kb\Word\Config&quot;
+</code></pre>
+<p>Note the app name belongs in the <strong>prefix</strong>, not the key. Appending it —
+<code>...ConfigurationLocations__Shared__Word</code> — makes <code>Shared</code> a section rather than
+a value, and the setting is then silently ignored.</p>
+<p>The values may themselves contain environment variables, so
+<code>%APPDATA%\kutana+brochet\Word\Config</code> works as a value.</p>
+<blockquote>
+<p><strong>Word or PowerPoint must be restarted for a change to take effect.</strong> Unlike
+<code>appsettings.json</code>, which is re-read while the add-in is running, environment
+variables are read once at startup — and Windows only passes new values to
+newly launched processes.</p>
+</blockquote>
 
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.4.24/docs/developer/docs/configuration.md/#L1" class="edit-link">Edit this page</a>
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.4.26/docs/developer/docs/configuration.md/#L1" class="edit-link">Edit this page</a>
         </div>
 
         <div class="next-article d-print-none border-top" id="nextArticle"></div>
