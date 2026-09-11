@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="">
       
       
-      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.5.114-rc/docs/developer/github-oidc-trusted-signing.md/#L1">
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.5.115-rc/docs/developer/github-oidc-trusted-signing.md/#L1">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -76,9 +76,18 @@
 <p><strong>Scope:</strong> GitHub Actions CI/CD only. For local development, see <a href="trusted-signing-service-principal-setup.html">trusted-signing-service-principal-setup.md</a>.</p>
 <p>This guide explains the steps to authenticate GitHub Actions to Azure Trusted Signing using OIDC federation (no client secret required).</p>
 <h2 id="goal">Goal</h2>
-<p>Use GitHub Actions to authenticate to Azure without storing <code>AZURE_CLIENT_SECRET</code>, while keeping <code>src/VSTO/WordAddIn/InstallerConfig.json</code> compatible with Azure Trusted Signing.</p>
-<h2 id="current-master-packager-configuration">Current Master Packager Configuration</h2>
-<p>Your <code>InstallerConfig.json</code> is already configured for OIDC federation:</p>
+<p>Use GitHub Actions to authenticate to Azure without storing <code>AZURE_CLIENT_SECRET</code>, while dynamically configuring <code>src/VSTO/WordAddIn/InstallerConfig.json</code> for Azure Trusted Signing during public release builds.</p>
+<h2 id="current-master-packager--workflow-configuration">Current Master Packager &amp; Workflow Configuration</h2>
+<p>By default, <code>InstallerConfig.json</code> is set to use local test signing (<code>GenerateTestCertificate</code>) so that local builds and non-public release candidate builds do not depend on Azure credentials:</p>
+<pre><code class="lang-json">&quot;digitalSignature&quot;: {
+  &quot;signWith&quot;: &quot;GenerateTestCertificate&quot;,
+  &quot;timestampServer&quot;: &quot;http://timestamp.comodoca.com/&quot;,
+  &quot;exclusions&quot;: [
+    &quot;\\\\(?!KutanaBrochet)[^\\\\/]+\\.dll$&quot;
+  ]
+}
+</code></pre>
+<p>During public releases (<code>public-release: true</code>), the <code>.github/actions/build-installer</code> composite action dynamically replaces <code>digitalSignature</code> in <code>InstallerConfig.json</code> before calling Master Packager:</p>
 <ul>
 <li><code>signWith: AzureTrustedSigning</code></li>
 <li><code>credentials: [&quot;WorkloadIdentityCredential&quot;]</code> (required for workload identity auth)</li>
@@ -86,7 +95,6 @@
 <li><code>codeSigningAccountName: KutanaBrochet</code></li>
 <li><code>certificateProfileName: KBCodeSigning</code></li>
 </ul>
-<p>No other OIDC-specific configuration is needed.</p>
 <h2 id="1-create-or-reuse-an-entra-application-and-service-principal">1) Create (or reuse) an Entra application and service principal</h2>
 <p>You need an app registration (client ID) that GitHub Actions will use via federation.</p>
 <h3 id="command-line">Command line</h3>
@@ -175,7 +183,7 @@ az ad app federated-credential create --id $appId --parameters &quot;@fedcred.js
 <li>If your policy requires it, you can store them as secrets.</li>
 </ul>
 <h2 id="5-update-github-actions-workflow">5) Update GitHub Actions workflow</h2>
-<p>Use OIDC login, then run your existing MSI task.</p>
+<p>Use OIDC login, then pass <code>public-release</code> to the <code>.github/actions/build-installer</code> composite action.</p>
 <h3 id="what-to-change-in-your-workflow">What to change in your workflow</h3>
 <ol>
 <li>Add this at workflow level so GitHub can mint an OIDC token for the job:
@@ -188,29 +196,7 @@ az ad app federated-credential create --id $appId --parameters &quot;@fedcred.js
 <li>Pass client/tenant/subscription IDs from repository variables.</li>
 <li>Keep <code>AZURE_TOKEN_CREDENTIALS=prod</code> so Azure SDK auth uses production credentials in CI.</li>
 </ol>
-<pre><code class="lang-yaml">name: Build Signed MSI
-
-on:
-  workflow_dispatch:
-  push:
-    branches: [ main ]
-
-permissions:
-  id-token: write
-  contents: read
-
-jobs:
-  build-msi:
-    runs-on: self-hosted
-    env:
-      AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
-      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
-      AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-      AZURE_TOKEN_CREDENTIALS: prod
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Create Azure federated token file
+<pre><code class="lang-yaml">      - name: Create Azure federated token file
         shell: pwsh
         run: |
           $audience = [Uri]::EscapeDataString('api://AzureADTokenExchange')
@@ -223,47 +209,49 @@ jobs:
           Set-Content -Path $tokenPath -Value $tokenResponse.value -NoNewline
           &quot;AZURE_FEDERATED_TOKEN_FILE=$tokenPath&quot; &gt;&gt; $env:GITHUB_ENV
 
-      - name: Install Task
-        uses: arduino/setup-task@v2
-
-      - name: Build signed MSI
-        shell: pwsh
-        run: task msi:word
+      - uses: ./.github/actions/build-installer
+        id: installer
+        with:
+          config-path: src/VSTO/WordAddIn/InstallerConfig.json
+          package-name: ${{ needs.build.outputs.public-release == 'true' &amp;&amp; 'Kutana+Brochet Word Add In' || 'Kutana+Brochet Word Add In (RC)' }}
+          primary-accent: ${{ needs.build.outputs.public-release == 'true' &amp;&amp; '#0F61FF' || '#B2214F' }}
+          version: ${{ needs.build.outputs.version }}
+          public-release: ${{ needs.build.outputs.public-release }}
+          master-packager-path: ${{ vars.MASTER_PACKAGER_PATH }}
 </code></pre>
 <h3 id="how-this-works-at-runtime">How this works at runtime</h3>
 <ol>
 <li>GitHub issues a short-lived OIDC token for the job (<code>id-token: write</code>).</li>
 <li>The workflow writes that token to <code>AZURE_FEDERATED_TOKEN_FILE</code>.</li>
-<li>Master Packager reads that token through Azure.Identity <code>WorkloadIdentityCredential</code>.</li>
-<li>The MSI build signs through Azure Trusted Signing without <code>AZURE_CLIENT_SECRET</code>.</li>
+<li>If <code>public-release</code> is <code>true</code>, <code>build-installer</code> overrides <code>digitalSignature</code> in <code>InstallerConfig.json</code> with Azure Trusted Signing parameters (<code>signWith: AzureTrustedSigning</code>, <code>credentials: [&quot;WorkloadIdentityCredential&quot;]</code>).</li>
+<li>Master Packager reads the OIDC token through Azure.Identity <code>WorkloadIdentityCredential</code> and signs the MSI through Azure Trusted Signing without <code>AZURE_CLIENT_SECRET</code>.</li>
 </ol>
 <p>Notes:</p>
 <ul>
-<li>Ensure <code>mpdev</code> is available on the runner. If not, use a self-hosted Windows runner with Master Packager preinstalled.</li>
+<li>Ensure <code>mpdev</code> (Master Packager) is available on the runner via <code>MASTER_PACKAGER_PATH</code>.</li>
 <li>Keep <code>AZURE_TOKEN_CREDENTIALS=prod</code> in CI to prefer workload/environment credentials.</li>
-<li>If your default branch is <code>master</code>, update both the workflow trigger branch and the federated credential subject to <code>master</code>.</li>
 </ul>
-<h2 id="6-integrate-with-installerconfigjson">6) Integrate with <code>InstallerConfig.json</code></h2>
+<h2 id="6-integrate-with-build-installer-action">6) Integrate with <code>build-installer</code> action</h2>
 <p>Master Packager defaults Azure Trusted Signing to <code>EnvironmentCredential</code>, so OIDC builds must explicitly select <code>WorkloadIdentityCredential</code>.</p>
-<p>Recommended checks:</p>
-<ol>
-<li>Keep Trusted Signing fields as currently configured.</li>
-<li>Include the workload identity credential selector:</li>
-</ol>
-<pre><code class="lang-json">&quot;digitalSignature&quot;: {
-  &quot;signWith&quot;: &quot;AzureTrustedSigning&quot;,
-  &quot;credentials&quot;: [
-    &quot;WorkloadIdentityCredential&quot;
-  ]
+<p>The <code>Configure Installer</code> step in <code>.github/actions/build-installer/action.yml</code> manages this dynamically:</p>
+<pre><code class="lang-powershell">if (&quot;${{ inputs.public-release }}&quot; -eq &quot;true&quot;) {
+  $exclusions = $config.digitalSignature.exclusions
+  $config.digitalSignature = @{
+    signWith               = &quot;AzureTrustedSigning&quot;
+    credentials            = @(&quot;WorkloadIdentityCredential&quot;)
+    endpoint               = &quot;https://weu.codesigning.azure.net&quot;
+    codeSigningAccountName = &quot;KutanaBrochet&quot;
+    certificateProfileName = &quot;KBCodeSigning&quot;
+    exclusions             = $exclusions
+  }
 }
 </code></pre>
-<ol start="3">
-<li>Keep account/profile names exact (<code>KutanaBrochet</code>, <code>KBCodeSigning</code>).</li>
-<li>Ensure signing exclusions remain intentional:
-<ul>
-<li>Current exclusion signs only files matching <code>KutanaBrochet*.dll</code> and excludes other DLLs.</li>
-</ul>
-</li>
+<p>Key points:</p>
+<ol>
+<li>Keeps local development and RC builds fast and independent of Azure credentials using <code>GenerateTestCertificate</code>.</li>
+<li>Includes <code>WorkloadIdentityCredential</code> for public release builds.</li>
+<li>Keeps account/profile names exact (<code>KutanaBrochet</code>, <code>KBCodeSigning</code>).</li>
+<li>Preserves exclusions (<code>\\\\(?!KutanaBrochet)[^\\\\/]+\\.dll$</code>) so only KutanaBrochet DLLs are signed.</li>
 <li>Prefer HTTPS timestamp endpoint if supported by your process:
 <ul>
 <li><code>https://timestamp.acs.microsoft.com</code></li>
@@ -310,7 +298,7 @@ jobs:
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.5.114-rc/docs/developer/github-oidc-trusted-signing.md/#L1" class="edit-link">Edit this page</a>
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.5.115-rc/docs/developer/github-oidc-trusted-signing.md/#L1" class="edit-link">Edit this page</a>
         </div>
 
         <div class="next-article d-print-none border-top" id="nextArticle"></div>
