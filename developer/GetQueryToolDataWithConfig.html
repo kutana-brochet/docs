@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>GetQueryToolDataWithConfig COM Operation | Developer Docs </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="GetQueryToolDataWithConfig COM Operation | Developer Docs ">
+      
+      
+      <link rel="icon" href="favicon.ico">
+      <link rel="stylesheet" href="public/docfx.min.css">
+      <link rel="stylesheet" href="public/main.css">
+      <meta name="docfx:navrel" content="toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.5.114-rc/docs/developer/GetQueryToolDataWithConfig.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="index.html">
+            <img id="logo" class="svg" src="logo.svg" alt="K+B Office Add-ins">
+            K+B Office Add-ins
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+
+      <div class="content">
+        <div class="actionbar">
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="getquerytooldatawithconfig-com-operation">GetQueryToolDataWithConfig COM Operation</h1>
+
+<h2 id="overview">Overview</h2>
+<p>A new COM operation <code>GetQueryToolDataWithConfig</code> that extends <code>GetQueryToolData</code> by allowing runtime configuration overrides. You can override <strong>any provider setting</strong> (Query, Filename, Timeout, FieldAliasOrder, etc.) without modifying the base configuration.</p>
+<h2 id="purpose">Purpose</h2>
+<p>This operation allows you to:</p>
+<ol>
+<li>Use an existing external data configuration by ID</li>
+<li>Override ANY provider setting at runtime via JSON</li>
+<li>Dynamically change queries, file paths, timeouts, and field mappings</li>
+<li>Apply configuration variations without creating multiple config entries</li>
+</ol>
+<h2 id="usage">Usage</h2>
+<h3 id="vba-example---override-excel-query">VBA Example - Override Excel Query</h3>
+<pre><code class="lang-vba">Dim result As String
+Dim configOverrides As String
+
+' Override the SQL query for an Excel provider
+configOverrides = &quot;{&quot;&quot;Query&quot;&quot;:&quot;&quot;SELECT * FROM [Sheet1$] WHERE Status='Active'&quot;&quot;}&quot;
+
+result = ComAddIn.Object.RunOperation(&quot;GetQueryToolDataWithConfig&quot;, &quot;myExcelDataset&quot;, &quot;JSON&quot;, configOverrides)
+</code></pre>
+<h3 id="vba-example---override-field-aliases">VBA Example - Override Field Aliases</h3>
+<pre><code class="lang-vba">Dim result As String
+Dim configOverrides As String
+
+' Override column display names
+configOverrides = &quot;{&quot;&quot;FieldAliasOrder&quot;&quot;:{&quot;&quot;FirstName&quot;&quot;:&quot;&quot;Given Name&quot;&quot;,&quot;&quot;LastName&quot;&quot;:&quot;&quot;Family Name&quot;&quot;}}&quot;
+
+result = ComAddIn.Object.RunOperation(&quot;GetQueryToolDataWithConfig&quot;, &quot;myDatasetId&quot;, &quot;CSV&quot;, configOverrides)
+</code></pre>
+<h3 id="vba-example---override-multiple-settings">VBA Example - Override Multiple Settings</h3>
+<pre><code class="lang-vba">Dim result As String
+Dim configOverrides As String
+
+' Override query, timeout, and field aliases
+configOverrides = &quot;{&quot;&quot;Query&quot;&quot;:&quot;&quot;SELECT TOP 100 * FROM [Data$]&quot;&quot;,&quot;&quot;Timeout&quot;&quot;:30000,&quot;&quot;FieldAliasOrder&quot;&quot;:{&quot;&quot;Email&quot;&quot;:&quot;&quot;Email Address&quot;&quot;}}&quot;
+
+result = ComAddIn.Object.RunOperation(&quot;GetQueryToolDataWithConfig&quot;, &quot;myDatasetId&quot;, &quot;JSON&quot;, configOverrides)
+</code></pre>
+<h3 id="vba-example---override-json-file-path">VBA Example - Override JSON File Path</h3>
+<pre><code class="lang-vba">Dim result As String
+Dim configOverrides As String
+
+' Use a different JSON file
+configOverrides = &quot;{&quot;&quot;Filename&quot;&quot;:&quot;&quot;C:\\Data\\AlternativeData.json&quot;&quot;}&quot;
+
+result = ComAddIn.Object.RunOperation(&quot;GetQueryToolDataWithConfig&quot;, &quot;myJsonDataset&quot;, &quot;JSON&quot;, configOverrides)
+</code></pre>
+<h3 id="parameters">Parameters</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>datasetId</code></td>
+<td>String</td>
+<td>The ID of the configured external data source</td>
+</tr>
+<tr>
+<td><code>format</code></td>
+<td>String</td>
+<td>Output format: &quot;JSON&quot; or &quot;CSV&quot;</td>
+</tr>
+<tr>
+<td><code>configOverridesJson</code></td>
+<td>String</td>
+<td>JSON object with properties to override</td>
+</tr>
+</tbody>
+</table>
+<h2 id="overridable-settings-by-provider-type">Overridable Settings by Provider Type</h2>
+<h3 id="excel-provider-exceldto">Excel Provider (<code>ExcelDto</code>)</h3>
+<pre><code class="lang-json">{
+  &quot;Query&quot;: &quot;SELECT * FROM [Sheet1$] WHERE Active=1&quot;,
+  &quot;ConnectionSettings&quot;: &quot;Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\\data.xlsx;Extended Properties=\&quot;Excel 12.0;HDR=YES\&quot;&quot;,
+  &quot;Timeout&quot;: 30000,
+  &quot;RemoveEmptyRows&quot;: true,
+  &quot;FieldAliasOrder&quot;: {
+    &quot;ColumnA&quot;: &quot;Display Name A&quot;,
+    &quot;ColumnB&quot;: &quot;Display Name B&quot;
+  }
+}
+</code></pre>
+<h3 id="json-provider-jsondto">JSON Provider (<code>JsonDto</code>)</h3>
+<pre><code class="lang-json">{
+  &quot;Filename&quot;: &quot;C:\\Data\\alternate.json&quot;,
+  &quot;Timeout&quot;: 20000,
+  &quot;SheetList&quot;: [&quot;Sheet1&quot;, &quot;Sheet2&quot;],
+  &quot;ShowHideSheetList&quot;: &quot;Show&quot;,
+  &quot;RemoveEmptyRows&quot;: false,
+  &quot;FieldAliasOrder&quot;: {
+    &quot;id&quot;: &quot;ID&quot;,
+    &quot;name&quot;: &quot;Full Name&quot;
+  }
+}
+</code></pre>
+<h3 id="outlook-provider-outlookdto">Outlook Provider (<code>OutlookDto</code>)</h3>
+<pre><code class="lang-json">{
+  &quot;RemoveEmptyRows&quot;: true,
+  &quot;FieldAliasOrder&quot;: {
+    &quot;Email1Address&quot;: &quot;Primary Email&quot;,
+    &quot;MobileTelephoneNumber&quot;: &quot;Mobile&quot;
+  }
+}
+</code></pre>
+<h2 id="configuration-override-rules">Configuration Override Rules</h2>
+<ol>
+<li><strong>Merge Strategy</strong>: Overrides are merged with base configuration (overrides take precedence)</li>
+<li><strong>Null/Empty Handling</strong>: Empty string or null JSON means no overrides (uses base config)</li>
+<li><strong>Invalid JSON</strong>: Returns <code>DomainErrors.ExternalData.InvalidConfigOverrides</code> error</li>
+<li><strong>Timing</strong>: Overrides are applied BEFORE dataset generation</li>
+<li><strong>Type Safety</strong>: JSON is deserialized to the correct provider DTO type</li>
+<li><strong>Partial Overrides</strong>: You only need to specify properties you want to override</li>
+</ol>
+<h2 id="common-use-cases">Common Use Cases</h2>
+<h3 id="dynamic-filtering">Dynamic Filtering</h3>
+<p>Override the <code>Query</code> property to filter data based on runtime conditions:</p>
+<pre><code class="lang-vba">Dim safeDept As String
+' Escape single quotes to reduce SQL injection risk; also validate userDept against allowed values where possible.
+safeDept = Replace(userDept, &quot;'&quot;, &quot;''&quot;)
+
+configOverrides = &quot;{&quot;&quot;Query&quot;&quot;:&quot;&quot;SELECT * FROM [Data$] WHERE Department='&quot; &amp; safeDept &amp; &quot;'&quot;&quot;}&quot;
+</code></pre>
+<h3 id="environment-specific-paths">Environment-Specific Paths</h3>
+<p>Use different file paths for dev/test/prod:</p>
+<pre><code class="lang-vba">If environment = &quot;Production&quot; Then
+    configOverrides = &quot;{&quot;&quot;Filename&quot;&quot;:&quot;&quot;\\\\prod-server\\data.json&quot;&quot;}&quot;
+Else
+    configOverrides = &quot;{&quot;&quot;Filename&quot;&quot;:&quot;&quot;C:\\dev\\test-data.json&quot;&quot;}&quot;
+End If
+</code></pre>
+<h3 id="user-specific-field-names">User-Specific Field Names</h3>
+<p>Customize column names based on user preferences:</p>
+<pre><code class="lang-vba">configOverrides = &quot;{&quot;&quot;FieldAliasOrder&quot;&quot;:{&quot;&quot;DOB&quot;&quot;:&quot;&quot;Date of Birth&quot;&quot;,&quot;&quot;SSN&quot;&quot;:&quot;&quot;Social Security Number&quot;&quot;}}&quot;
+</code></pre>
+<h3 id="performance-tuning">Performance Tuning</h3>
+<p>Adjust timeout for slow data sources:</p>
+<pre><code class="lang-vba">configOverrides = &quot;{&quot;&quot;Timeout&quot;&quot;:60000}&quot;  ' 60 seconds
+</code></pre>
+<h2 id="implementation-details">Implementation Details</h2>
+<h3 id="architecture">Architecture</h3>
+<p>The implementation follows Clean Architecture and DDD patterns:</p>
+<ol>
+<li><strong>COM Interface</strong> (<code>ComInterface.cs</code>): Maps COM operation to application layer</li>
+<li><strong>Application Layer</strong> (<code>QueryToolComOperations.cs</code>): Dispatches query with config JSON</li>
+<li><strong>Query Handler</strong> (<code>GetQueryToolStringWithConfig.cs</code>): Passes config to repository</li>
+<li><strong>Repository Layer</strong> (<code>ExternalDataRepository.cs</code>):
+<ul>
+<li>Retrieves base provider configuration</li>
+<li>Parses JSON overrides</li>
+<li>Merges overrides with base config (JSON merge)</li>
+<li>Creates provider with merged configuration</li>
+<li>Generates dataset using merged settings</li>
+</ul>
+</li>
+</ol>
+<h3 id="merge-process">Merge Process</h3>
+<pre><code>Base Config (from appsettings.json)
+         ↓
+    Parse to JSON
+         ↓
+Merge with configOverridesJson → Override properties take precedence
+         ↓
+Deserialize to ProviderDto (JsonDto/ExcelDto/OutlookDto)
+         ↓
+Create Provider with merged config
+         ↓
+Generate Dataset
+</code></pre>
+<h3 id="error-handling">Error Handling</h3>
+<p>Domain errors:</p>
+<ul>
+<li><code>DomainErrors.ExternalData.InvalidConfigOverrides</code>: JSON parsing failed</li>
+<li><code>DomainErrors.ExternalData.MissingDatasetIdConfiguration</code>: Dataset ID not found</li>
+<li><code>DomainErrors.ExternalData.FailedToLoad</code>: Dataset generation failed</li>
+<li><code>DomainErrors.ExternalData.FailedToCreateProvider</code>: Provider creation failed</li>
+</ul>
+<h3 id="logging">Logging</h3>
+<ul>
+<li>Configuration override application (info level)</li>
+<li>Property merging details (debug level)</li>
+<li>JSON parsing errors (error level)</li>
+<li>Provider creation (info level)</li>
+</ul>
+<h2 id="security-considerations">Security Considerations</h2>
+<p>When using <code>GetQueryToolDataWithConfig</code> to override provider settings at runtime, treat all external input as untrusted and apply standard hardening practices:</p>
+<ul>
+<li><strong>SQL injection</strong>: If you override the <code>Query</code> setting, do not concatenate raw user input into SQL strings. Use parameterized queries or restrict user input to validated, whitelisted values (for example, fixed column names, sort orders, or filter options) before applying it to the query.</li>
+<li><strong>File/path traversal</strong>: If you override <code>Filename</code> or any file path–related setting, validate the path against an allowed base directory, reject paths containing <code>..</code>, and avoid accepting arbitrary absolute paths from untrusted sources.</li>
+<li><strong>General validation</strong>: Validate and sanitize all JSON override values before applying them, especially anything that influences data access, file system access, or execution of external tools.</li>
+</ul>
+<h2 id="key-benefits">Key Benefits</h2>
+<ol>
+<li><strong>Flexibility</strong>: Override any provider setting without config file changes</li>
+<li><strong>Dynamic Queries</strong>: Adjust SQL queries at runtime via configuration overrides (ensure user input is handled safely; see Security Considerations)</li>
+<li><strong>Environment Agnostic</strong>: Same config ID works across environments with path overrides</li>
+<li><strong>User Preferences</strong>: Customize field names per user without multiple configs</li>
+<li><strong>Testing</strong>: Easy to test different configurations programmatically</li>
+<li><strong>No Config Pollution</strong>: Avoid creating many similar config entries</li>
+<li><strong>Type Safety</strong>: Full DTO validation and type checking</li>
+</ol>
+<h2 id="backward-compatibility">Backward Compatibility</h2>
+<ul>
+<li>Base <code>GetQueryToolData</code> operation still works unchanged</li>
+<li>Empty/null <code>configOverridesJson</code> behaves identically to base operation</li>
+<li>Existing configurations are not affected</li>
+</ul>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.5.114-rc/docs/developer/GetQueryToolDataWithConfig.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>GitHub OIDC Federation for Azure Trusted Signing (Master Packager) | Developer Docs </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="GitHub OIDC Federation for Azure Trusted Signing (Master Packager) | Developer Docs ">
+      
+      
+      <link rel="icon" href="favicon.ico">
+      <link rel="stylesheet" href="public/docfx.min.css">
+      <link rel="stylesheet" href="public/main.css">
+      <meta name="docfx:navrel" content="toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.5.114-rc/docs/developer/github-oidc-trusted-signing.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="index.html">
+            <img id="logo" class="svg" src="logo.svg" alt="K+B Office Add-ins">
+            K+B Office Add-ins
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+
+      <div class="content">
+        <div class="actionbar">
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="github-oidc-federation-for-azure-trusted-signing-master-packager">GitHub OIDC Federation for Azure Trusted Signing (Master Packager)</h1>
+
+<p><strong>Scope:</strong> GitHub Actions CI/CD only. For local development, see <a href="trusted-signing-service-principal-setup.html">trusted-signing-service-principal-setup.md</a>.</p>
+<p>This guide explains the steps to authenticate GitHub Actions to Azure Trusted Signing using OIDC federation (no client secret required).</p>
+<h2 id="goal">Goal</h2>
+<p>Use GitHub Actions to authenticate to Azure without storing <code>AZURE_CLIENT_SECRET</code>, while keeping <code>src/VSTO/WordAddIn/InstallerConfig.json</code> compatible with Azure Trusted Signing.</p>
+<h2 id="current-master-packager-configuration">Current Master Packager Configuration</h2>
+<p>Your <code>InstallerConfig.json</code> is already configured for OIDC federation:</p>
+<ul>
+<li><code>signWith: AzureTrustedSigning</code></li>
+<li><code>credentials: [&quot;WorkloadIdentityCredential&quot;]</code> (required for workload identity auth)</li>
+<li><code>endpoint: https://weu.codesigning.azure.net</code></li>
+<li><code>codeSigningAccountName: KutanaBrochet</code></li>
+<li><code>certificateProfileName: KBCodeSigning</code></li>
+</ul>
+<p>No other OIDC-specific configuration is needed.</p>
+<h2 id="1-create-or-reuse-an-entra-application-and-service-principal">1) Create (or reuse) an Entra application and service principal</h2>
+<p>You need an app registration (client ID) that GitHub Actions will use via federation.</p>
+<h3 id="command-line">Command line</h3>
+<pre><code class="lang-powershell">$tenantId = &quot;861f4c18-46fb-469e-84ba-832f4dc43d46&quot;
+$subId = &quot;384be71e-d194-46cd-9a6b-d9bd71e91e0a&quot;
+$appName = &quot;kb-wordaddins-trustedsigning-oidc&quot;
+
+az login --tenant $tenantId
+az account set --subscription $subId
+
+$appId = az ad app create --display-name $appName --query appId -o tsv
+az ad sp create --id $appId | Out-Null
+$spObjectId = az ad sp show --id $appId --query id -o tsv
+</code></pre>
+<h3 id="gui-alternative">GUI alternative</h3>
+<ol>
+<li>Azure Portal -&gt; <strong>Microsoft Entra ID</strong> -&gt; <strong>App registrations</strong> -&gt; <strong>New registration</strong>.</li>
+<li>Create the app (single tenant is typical).</li>
+<li>Open the app -&gt; <strong>Overview</strong> and copy:
+<ul>
+<li><strong>Application (client) ID</strong></li>
+<li><strong>Directory (tenant) ID</strong></li>
+</ul>
+</li>
+<li>Go to <strong>Enterprise applications</strong>, find the app, and note the service principal object ID if needed.</li>
+</ol>
+<h2 id="2-assign-azure-trusted-signing-roles">2) Assign Azure Trusted Signing roles</h2>
+<p>Assign roles at the correct scope.</p>
+<ul>
+<li>Code signing account scope:
+<code>/subscriptions/384be71e-d194-46cd-9a6b-d9bd71e91e0a/resourceGroups/Code_Signing/providers/Microsoft.CodeSigning/codeSigningAccounts/KutanaBrochet</code></li>
+<li>Certificate profile scope:
+<code>.../codeSigningAccounts/KutanaBrochet/certificateProfiles/KBCodeSigning</code></li>
+</ul>
+<h3 id="command-line-1">Command line</h3>
+<pre><code class="lang-powershell">$accountResourceId = &quot;/subscriptions/384be71e-d194-46cd-9a6b-d9bd71e91e0a/resourceGroups/Code_Signing/providers/Microsoft.CodeSigning/codeSigningAccounts/KutanaBrochet&quot;
+$profileScope = &quot;$accountResourceId/certificateProfiles/KBCodeSigning&quot;
+
+az role assignment create --assignee-object-id $spObjectId --assignee-principal-type ServicePrincipal --role &quot;Artifact Signing Certificate Profile Signer&quot; --scope &quot;$profileScope&quot; --subscription $subId
+az role assignment create --assignee-object-id $spObjectId --assignee-principal-type ServicePrincipal --role &quot;Artifact Signing Identity Verifier&quot; --scope &quot;$accountResourceId&quot; --subscription $subId
+</code></pre>
+<h3 id="gui-alternative-1">GUI alternative</h3>
+<ol>
+<li>Azure Portal -&gt; <strong>Code Signing Accounts</strong> -&gt; <strong>KutanaBrochet</strong>.</li>
+<li>Open <strong>Certificate profiles</strong> -&gt; <strong>KBCodeSigning</strong> -&gt; <strong>Access control (IAM)</strong>.</li>
+<li>Add role assignment: <strong>Artifact Signing Certificate Profile Signer</strong>.</li>
+<li>Go back to the account-level <strong>Access control (IAM)</strong> and add:
+<strong>Artifact Signing Identity Verifier</strong>.</li>
+</ol>
+<h2 id="3-add-a-federated-credential-for-github">3) Add a federated credential for GitHub</h2>
+<p>This is the OIDC trust between GitHub and Entra.</p>
+<h3 id="command-line-2">Command line</h3>
+<pre><code class="lang-powershell"># Example: trust only main branch
+$subject='repo:kutana-brochet/office-addins:ref:refs/heads/main'; $body=[ordered]@{name='github-main';issuer='https://token.actions.githubusercontent.com';subject=$subject;audiences=@('api://AzureADTokenExchange')}; $json=$body | ConvertTo-Json -Depth 3 -Compress
+Set-Content -Path .\fedcred.json -Value $json -Encoding utf8
+az ad app federated-credential create --id $appId --parameters &quot;@fedcred.json&quot;
+</code></pre>
+<p>If your default branch is <code>master</code>, use:
+<code>$subject='repo:kutana-brochet/office-addins:ref:refs/heads/master'</code></p>
+<h3 id="gui-alternative-2">GUI alternative</h3>
+<ol>
+<li>Azure Portal -&gt; <strong>Entra ID</strong> -&gt; <strong>App registrations</strong> -&gt; your app.</li>
+<li>Open <strong>Certificates &amp; secrets</strong> -&gt; <strong>Federated credentials</strong> -&gt; <strong>Add credential</strong>.</li>
+<li>Choose <strong>GitHub Actions deploying Azure resources</strong>.</li>
+<li>Set:
+<ul>
+<li>Organization: <code>kutana-brochet</code></li>
+<li>Repository: <code>office-addins</code></li>
+<li>Entity type: Branch (or Environment)</li>
+<li>Branch: <code>main</code> or <code>master</code></li>
+</ul>
+</li>
+<li>Audience: <code>api://AzureADTokenExchange</code>.</li>
+</ol>
+<h2 id="4-configure-github-repository-settings">4) Configure GitHub repository settings</h2>
+<p>Store non-secret IDs in Variables or Secrets; no client secret is needed for OIDC.</p>
+<ul>
+<li><code>AZURE_CLIENT_ID</code> (app/client ID)</li>
+<li><code>AZURE_TENANT_ID</code></li>
+<li><code>AZURE_SUBSCRIPTION_ID</code></li>
+</ul>
+<h3 id="gui">GUI</h3>
+<p>GitHub -&gt; repository -&gt; <strong>Settings</strong> -&gt; <strong>Secrets and variables</strong> -&gt; <strong>Actions</strong>.</p>
+<ul>
+<li>Add as <strong>Repository variables</strong> (or <strong>Environment variables</strong> if using protected environments).</li>
+<li>If your policy requires it, you can store them as secrets.</li>
+</ul>
+<h2 id="5-update-github-actions-workflow">5) Update GitHub Actions workflow</h2>
+<p>Use OIDC login, then run your existing MSI task.</p>
+<h3 id="what-to-change-in-your-workflow">What to change in your workflow</h3>
+<ol>
+<li>Add this at workflow level so GitHub can mint an OIDC token for the job:
+<ul>
+<li><code>permissions.id-token: write</code></li>
+</ul>
+</li>
+<li>Keep <code>contents: read</code> so checkout can read repository contents.</li>
+<li>Create a GitHub OIDC token file and export <code>AZURE_FEDERATED_TOKEN_FILE</code> before signing/build steps.</li>
+<li>Pass client/tenant/subscription IDs from repository variables.</li>
+<li>Keep <code>AZURE_TOKEN_CREDENTIALS=prod</code> so Azure SDK auth uses production credentials in CI.</li>
+</ol>
+<pre><code class="lang-yaml">name: Build Signed MSI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-msi:
+    runs-on: self-hosted
+    env:
+      AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      AZURE_TOKEN_CREDENTIALS: prod
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create Azure federated token file
+        shell: pwsh
+        run: |
+          $audience = [Uri]::EscapeDataString('api://AzureADTokenExchange')
+          $tokenRequestUri = &quot;$env:ACTIONS_ID_TOKEN_REQUEST_URL&amp;audience=$audience&quot;
+          $tokenResponse = Invoke-RestMethod `
+            -Headers @{ Authorization = &quot;bearer $env:ACTIONS_ID_TOKEN_REQUEST_TOKEN&quot; } `
+            -Uri $tokenRequestUri
+
+          $tokenPath = Join-Path $env:RUNNER_TEMP 'github-oidc-token.jwt'
+          Set-Content -Path $tokenPath -Value $tokenResponse.value -NoNewline
+          &quot;AZURE_FEDERATED_TOKEN_FILE=$tokenPath&quot; &gt;&gt; $env:GITHUB_ENV
+
+      - name: Install Task
+        uses: arduino/setup-task@v2
+
+      - name: Build signed MSI
+        shell: pwsh
+        run: task msi:word
+</code></pre>
+<h3 id="how-this-works-at-runtime">How this works at runtime</h3>
+<ol>
+<li>GitHub issues a short-lived OIDC token for the job (<code>id-token: write</code>).</li>
+<li>The workflow writes that token to <code>AZURE_FEDERATED_TOKEN_FILE</code>.</li>
+<li>Master Packager reads that token through Azure.Identity <code>WorkloadIdentityCredential</code>.</li>
+<li>The MSI build signs through Azure Trusted Signing without <code>AZURE_CLIENT_SECRET</code>.</li>
+</ol>
+<p>Notes:</p>
+<ul>
+<li>Ensure <code>mpdev</code> is available on the runner. If not, use a self-hosted Windows runner with Master Packager preinstalled.</li>
+<li>Keep <code>AZURE_TOKEN_CREDENTIALS=prod</code> in CI to prefer workload/environment credentials.</li>
+<li>If your default branch is <code>master</code>, update both the workflow trigger branch and the federated credential subject to <code>master</code>.</li>
+</ul>
+<h2 id="6-integrate-with-installerconfigjson">6) Integrate with <code>InstallerConfig.json</code></h2>
+<p>Master Packager defaults Azure Trusted Signing to <code>EnvironmentCredential</code>, so OIDC builds must explicitly select <code>WorkloadIdentityCredential</code>.</p>
+<p>Recommended checks:</p>
+<ol>
+<li>Keep Trusted Signing fields as currently configured.</li>
+<li>Include the workload identity credential selector:</li>
+</ol>
+<pre><code class="lang-json">&quot;digitalSignature&quot;: {
+  &quot;signWith&quot;: &quot;AzureTrustedSigning&quot;,
+  &quot;credentials&quot;: [
+    &quot;WorkloadIdentityCredential&quot;
+  ]
+}
+</code></pre>
+<ol start="3">
+<li>Keep account/profile names exact (<code>KutanaBrochet</code>, <code>KBCodeSigning</code>).</li>
+<li>Ensure signing exclusions remain intentional:
+<ul>
+<li>Current exclusion signs only files matching <code>KutanaBrochet*.dll</code> and excludes other DLLs.</li>
+</ul>
+</li>
+<li>Prefer HTTPS timestamp endpoint if supported by your process:
+<ul>
+<li><code>https://timestamp.acs.microsoft.com</code></li>
+</ul>
+</li>
+</ol>
+<h2 id="7-validation-checklist">7) Validation checklist</h2>
+<ol>
+<li>Azure role assignments are visible for the service principal.</li>
+<li>Federated credential subject matches your workflow branch/environment.</li>
+<li>Workflow has <code>permissions: id-token: write</code>.</li>
+<li>The workflow creates <code>AZURE_FEDERATED_TOKEN_FILE</code>.</li>
+<li><code>task msi:word</code> produces signed output in <code>Installers/</code>.</li>
+</ol>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<ul>
+<li><p><code>DefaultAzureCredential failed to retrieve a token</code></p>
+<ul>
+<li>Confirm <code>AZURE_FEDERATED_TOKEN_FILE</code> is created before signing.</li>
+<li>Confirm <code>$.digitalSignature.credentials</code> contains <code>WorkloadIdentityCredential</code>.</li>
+<li>Confirm <code>AZURE_TOKEN_CREDENTIALS=prod</code> in CI.</li>
+<li>Confirm no stale <code>AZURE_CLIENT_SECRET</code> from runner machine scope if moving to OIDC-only.</li>
+</ul>
+</li>
+<li><p><code>403 Forbidden</code></p>
+<ul>
+<li>Role assignment missing at account/profile scope.</li>
+<li>Role propagation delay; retry after a few minutes.</li>
+</ul>
+</li>
+<li><p><code>MissingSubscription</code></p>
+<ul>
+<li>Invalid or truncated scope path; must begin with <code>/subscriptions/...</code>.</li>
+</ul>
+</li>
+<li><p>Signing runs locally but fails in Actions</p>
+<ul>
+<li>Federated credential subject mismatch (branch/environment/repo mismatch).</li>
+<li><code>mpdev</code> not installed on runner.</li>
+</ul>
+</li>
+</ul>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.5.114-rc/docs/developer/github-oidc-trusted-signing.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

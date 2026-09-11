@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Azure Trusted Signing Setup (Service Principal + Environment Variables) | Developer Docs </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Azure Trusted Signing Setup (Service Principal + Environment Variables) | Developer Docs ">
+      
+      
+      <link rel="icon" href="favicon.ico">
+      <link rel="stylesheet" href="public/docfx.min.css">
+      <link rel="stylesheet" href="public/main.css">
+      <meta name="docfx:navrel" content="toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.5.114-rc/docs/developer/trusted-signing-service-principal-setup.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="index.html">
+            <img id="logo" class="svg" src="logo.svg" alt="K+B Office Add-ins">
+            K+B Office Add-ins
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+
+      <div class="content">
+        <div class="actionbar">
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="azure-trusted-signing-setup-service-principal--environment-variables">Azure Trusted Signing Setup (Service Principal + Environment Variables)</h1>
+
+<p><strong>Scope:</strong> Local development only. For GitHub Actions CI/CD, see <a href="github-oidc-trusted-signing.html">github-oidc-trusted-signing.md</a>.</p>
+<p>This guide documents the repeatable setup for building signed MSI packages locally with Master Packager (<code>mpdev</code>).</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>Azure subscription: <code>384be71e-d194-46cd-9a6b-d9bd71e91e0a</code></li>
+<li>Tenant: <code>861f4c18-46fb-469e-84ba-832f4dc43d46</code></li>
+<li>Code Signing account: <code>KutanaBrochet</code></li>
+<li>Certificate profile: <code>KBCodeSigning</code></li>
+<li>Local tools installed: <code>az</code>, <code>task</code>, <code>mpdev</code></li>
+</ul>
+<h2 id="1-create-service-principal-one-time">1) Create service principal (one-time)</h2>
+<pre><code class="lang-powershell">$subId = &quot;384be71e-d194-46cd-9a6b-d9bd71e91e0a&quot;
+$tenantId = &quot;861f4c18-46fb-469e-84ba-832f4dc43d46&quot;
+$accountResourceId = &quot;/subscriptions/$subId/resourceGroups/Code_Signing/providers/Microsoft.CodeSigning/codeSigningAccounts/KutanaBrochet&quot;
+$profileScope = &quot;$accountResourceId/certificateProfiles/KBCodeSigning&quot;
+$appName = &quot;kb-wordaddins-trustedsigning&quot;
+
+az login --tenant $tenantId
+az account set --subscription $subId
+
+$appId = az ad app create --display-name $appName --query appId -o tsv
+az ad sp create --id $appId | Out-Null
+$clientSecret = az ad app credential reset --id $appId --append --display-name &quot;mpdev-signing&quot; --years 1 --query password -o tsv
+$spObjectId = az ad sp show --id $appId --query id -o tsv
+</code></pre>
+<h2 id="2-assign-required-roles">2) Assign required roles</h2>
+<pre><code class="lang-powershell">az role assignment create --assignee-object-id $spObjectId --assignee-principal-type ServicePrincipal --role &quot;Artifact Signing Certificate Profile Signer&quot; --scope &quot;$profileScope&quot; --subscription $subId
+az role assignment create --assignee-object-id $spObjectId --assignee-principal-type ServicePrincipal --role &quot;Artifact Signing Identity Verifier&quot; --scope &quot;$accountResourceId&quot; --subscription $subId
+</code></pre>
+<h2 id="3-persist-user-level-environment-variables">3) Persist user-level environment variables</h2>
+<pre><code class="lang-powershell">[Environment]::SetEnvironmentVariable(&quot;AZURE_TENANT_ID&quot;, $tenantId, &quot;User&quot;)
+[Environment]::SetEnvironmentVariable(&quot;AZURE_CLIENT_ID&quot;, $appId, &quot;User&quot;)
+[Environment]::SetEnvironmentVariable(&quot;AZURE_CLIENT_SECRET&quot;, $clientSecret, &quot;User&quot;)
+[Environment]::SetEnvironmentVariable(&quot;AZURE_TOKEN_CREDENTIALS&quot;, &quot;prod&quot;, &quot;User&quot;)
+</code></pre>
+<p>Close and reopen PowerShell after setting user-level variables.</p>
+<h2 id="4-verify-environment-variables">4) Verify environment variables</h2>
+<pre><code class="lang-powershell">Get-ChildItem Env:AZURE_* | Sort-Object Name
+</code></pre>
+<p>Expected entries:</p>
+<ul>
+<li><code>AZURE_TENANT_ID</code></li>
+<li><code>AZURE_CLIENT_ID</code></li>
+<li><code>AZURE_CLIENT_SECRET</code></li>
+<li><code>AZURE_TOKEN_CREDENTIALS=prod</code></li>
+</ul>
+<h2 id="5-build-msi">5) Build MSI</h2>
+<pre><code class="lang-powershell">task msi:word
+</code></pre>
+<h2 id="6-build-server-setup">6) Build server setup</h2>
+<p>Set the same four values in the build server secret store:</p>
+<ul>
+<li><code>AZURE_TENANT_ID</code></li>
+<li><code>AZURE_CLIENT_ID</code></li>
+<li><code>AZURE_CLIENT_SECRET</code></li>
+<li><code>AZURE_TOKEN_CREDENTIALS=prod</code></li>
+</ul>
+<p>Then run <code>task msi:word</code> in the build job.</p>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<ul>
+<li><code>MissingSubscription</code>: ensure <code>--scope</code> is a full resource path starting with <code>/subscriptions/...</code>.</li>
+<li><code>DefaultAzureCredential failed to retrieve a token</code>: confirm all four environment variables are present in the process.</li>
+<li><code>403 Forbidden</code>: role assignment is missing or not yet propagated. Wait a few minutes and retry.</li>
+<li>Use verbose output for diagnostics:</li>
+</ul>
+<pre><code class="lang-powershell">mpdev build src/VSTO/WordAddIn/InstallerConfig.json --properties $.version=7.5.74 --verbose
+</code></pre>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.5.114-rc/docs/developer/trusted-signing-service-principal-setup.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

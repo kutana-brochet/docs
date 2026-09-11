@@ -12,6 +12,16 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "GetQueryToolDataWithConfig.md",
+      "output": {
+        ".html": {
+          "relative_path": "GetQueryToolDataWithConfig.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "definition_of_done.md",
       "output": {
         ".html": {
@@ -145,6 +155,16 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "github-oidc-trusted-signing.md",
+      "output": {
+        ".html": {
+          "relative_path": "github-oidc-trusted-signing.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "index.md",
       "output": {
         ".html": {
@@ -182,6 +202,16 @@
         },
         ".json": {
           "relative_path": "toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "trusted-signing-service-principal-setup.md",
+      "output": {
+        ".html": {
+          "relative_path": "trusted-signing-service-principal-setup.html"
         }
       },
       "version": ""
