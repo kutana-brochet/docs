@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="">
       
       
-      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.5.115-rc/docs/developer/github-oidc-trusted-signing.md/#L1">
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.5.223-rc/docs/developer/github-oidc-trusted-signing.md/#L1">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -228,22 +228,17 @@ az ad app federated-credential create --id $appId --parameters &quot;@fedcred.js
 </ol>
 <p>Notes:</p>
 <ul>
-<li>Ensure <code>mpdev</code> (Master Packager) is available on the runner via <code>MASTER_PACKAGER_PATH</code>.</li>
+<li>Ensure <code>mpdev</code> is available on the runner. If not, use a self-hosted Windows runner with Master Packager preinstalled.</li>
 <li>Keep <code>AZURE_TOKEN_CREDENTIALS=prod</code> in CI to prefer workload/environment credentials.</li>
 </ul>
 <h2 id="6-integrate-with-build-installer-action">6) Integrate with <code>build-installer</code> action</h2>
 <p>Master Packager defaults Azure Trusted Signing to <code>EnvironmentCredential</code>, so OIDC builds must explicitly select <code>WorkloadIdentityCredential</code>.</p>
 <p>The <code>Configure Installer</code> step in <code>.github/actions/build-installer/action.yml</code> manages this dynamically:</p>
-<pre><code class="lang-powershell">if (&quot;${{ inputs.public-release }}&quot; -eq &quot;true&quot;) {
-  $exclusions = $config.digitalSignature.exclusions
-  $config.digitalSignature = @{
-    signWith               = &quot;AzureTrustedSigning&quot;
-    credentials            = @(&quot;WorkloadIdentityCredential&quot;)
-    endpoint               = &quot;https://weu.codesigning.azure.net&quot;
-    codeSigningAccountName = &quot;KutanaBrochet&quot;
-    certificateProfileName = &quot;KBCodeSigning&quot;
-    exclusions             = $exclusions
-  }
+<pre><code class="lang-json">&quot;digitalSignature&quot;: {
+  &quot;signWith&quot;: &quot;AzureTrustedSigning&quot;,
+  &quot;credentials&quot;: [
+    &quot;WorkloadIdentityCredential&quot;
+  ]
 }
 </code></pre>
 <p>Key points:</p>
@@ -298,7 +293,7 @@ az ad app federated-credential create --id $appId --parameters &quot;@fedcred.js
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.5.115-rc/docs/developer/github-oidc-trusted-signing.md/#L1" class="edit-link">Edit this page</a>
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.5.223-rc/docs/developer/github-oidc-trusted-signing.md/#L1" class="edit-link">Edit this page</a>
         </div>
 
         <div class="next-article d-print-none border-top" id="nextArticle"></div>

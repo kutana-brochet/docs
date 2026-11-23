@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.5.115-rc/docs/developer/docs/square-brackets.md/#L1">
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.5.223-rc/docs/developer/docs/square-brackets.md/#L1">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -90,7 +90,7 @@
 <p>Technical implementation guide for the Square Brackets feature. This feature provides tools for working with bracket pairs <code>[...]</code> in legal documents through navigation, addition, and deletion commands.</p>
 <h2 id="architecture-overview">Architecture Overview</h2>
 <p>The Square Brackets feature follows Clean Architecture patterns with clear separation of concerns:</p>
-<pre><code>WordAddIn (Presentation)
+<pre><code class="lang-text">WordAddIn (Presentation)
   └─&gt; ProductRibbon.cs - Ribbon button handlers
   
 Core.Application (Use Cases)
@@ -191,7 +191,7 @@ Infrastructure.Persistence (Data)
 <li><code>Result.Failure&lt;Unit, Error&gt;</code> - Document modification failed</li>
 </ul>
 <p><strong>Entitlements:</strong> WordStandardTools</p>
-<p><strong>Decorators:</strong> [DocumentRequired]</p>
+<p><strong>Policy:</strong> <code>IRequiresDocument</code></p>
 <h4 id="deletesquarebrackets-command">DeleteSquareBrackets Command</h4>
 <p>Removes brackets and/or content using configurable deletion strategies.</p>
 <p><strong>Command Definition:</strong></p>
@@ -230,7 +230,7 @@ Infrastructure.Persistence (Data)
 <li><code>Result.Failure&lt;Unit, Error&gt;</code> - Document modification failed</li>
 </ul>
 <p><strong>Entitlements:</strong> WordStandardTools</p>
-<p><strong>Decorators:</strong> [DocumentRequired]</p>
+<p><strong>Policy:</strong> <code>IRequiresDocument</code></p>
 <h4 id="insertblob-command">InsertBlob Command</h4>
 <p>Replaces the current selection with a formatted marker between delimiters.</p>
 <p><strong>Command Definition:</strong></p>
@@ -262,7 +262,7 @@ Infrastructure.Persistence (Data)
 <li><code>Result.Failure&lt;Unit, Error&gt;</code> - Document modification failed</li>
 </ul>
 <p><strong>Entitlements:</strong> WordStandardTools</p>
-<p><strong>Decorators:</strong> [DocumentRequired]</p>
+<p><strong>Policy:</strong> <code>IRequiresDocument</code></p>
 <h4 id="blob-value-object">Blob Value Object</h4>
 <p>Immutable value object representing blob insertion configuration.</p>
 <pre><code class="lang-csharp">public record Blob(string Text, string? FontName, double? FontSize)
@@ -476,10 +476,10 @@ public void InsertBlob(IRibbonControl _)
 <p>Integration tests verify end-to-end behaviour with Word interop layer.</p>
 <h3 id="running-tests">Running Tests</h3>
 <pre><code class="lang-bash"># Run all Square Brackets tests
-dotnet test --filter &quot;FullyQualifiedName~SquareBrackets&quot;
+dotnet test --solution OfficeAddins.slnx -c Release --no-build --filter-class &quot;*SquareBrackets*&quot; --ignore-exit-code 8
 
 # Run specific feature
-dotnet test --filter &quot;FullyQualifiedName~FindSquareBrackets&quot;
+dotnet test --solution OfficeAddins.slnx -c Release --no-build --filter-class &quot;*FindSquareBrackets*&quot; --ignore-exit-code 8
 </code></pre>
 <h3 id="test-patterns">Test Patterns</h3>
 <p>Step definitions use:</p>
@@ -650,7 +650,7 @@ catch (System.Runtime.InteropServices.COMException ex)
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.5.115-rc/docs/developer/docs/square-brackets.md/#L1" class="edit-link">Edit this page</a>
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.5.223-rc/docs/developer/docs/square-brackets.md/#L1" class="edit-link">Edit this page</a>
         </div>
 
         <div class="next-article d-print-none border-top" id="nextArticle"></div>

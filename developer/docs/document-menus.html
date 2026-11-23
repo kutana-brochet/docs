@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.5.115-rc/docs/developer/docs/document-menus.md/#L1">
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.5.223-rc/docs/developer/docs/document-menus.md/#L1">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -120,7 +120,7 @@
 </table>
 <h2 id="architecture-overview">Architecture Overview</h2>
 <p>The document menu subsystem implements a pipeline pattern: file discovery, menu formatting, XML rendering, and command dispatch.</p>
-<pre><code>Ribbon click (dynamicMenu getContent callback)
+<pre><code class="lang-text">Ribbon click (dynamicMenu getContent callback)
   |
   v
 GetDocumentMenuItems.Query --&gt; FileProviderRepository --&gt; FileDiscoveryService
@@ -252,7 +252,7 @@ public record DocumentMenuItem(string DisplayName, IDocumentSource Source, MenuA
 <li>DocumentPath.Create(sourcePath) - validate path</li>
 <li>IDocumentEditor.InsertFile(documentPath) - Word Selection.InsertFile()</li>
 </ol>
-<p><strong>Entitlements</strong>: WordStandardTools. <strong>Decorators</strong>: [DocumentRequired]</p>
+<p><strong>Entitlements</strong>: WordStandardTools. <strong>Policy</strong>: <code>IRequiresDocument</code></p>
 <h4 id="application-events">Application Events</h4>
 <ul>
 <li>DocumentCreatedFromTemplateEvent - raised after CreateDocument succeeds</li>
@@ -391,7 +391,7 @@ public void InsertSnippet(IRibbonControl control)             // dispatches Inse
 <p>Create a new command + handler in Core.Application following the existing patterns (CreateDocument.cs or InsertSnippet.cs).</p>
 <h2 id="starter-document-template-resolution">Starter Document Template Resolution</h2>
 <p>The starter document pipeline has an additional step: template resolution. When a user selects a starter document:</p>
-<pre><code>DocumentFileFactory.Create(path)
+<pre><code class="lang-text">DocumentFileFactory.Create(path)
   |
   v
 WordDocumentRepository.GetStarterDocument(documentFile)
@@ -472,7 +472,7 @@ comInterface.RunOperation(&quot;DMSNewDocumentFromStarterDocument&quot;, &quot;C
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.5.115-rc/docs/developer/docs/document-menus.md/#L1" class="edit-link">Edit this page</a>
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.5.223-rc/docs/developer/docs/document-menus.md/#L1" class="edit-link">Edit this page</a>
         </div>
 
         <div class="next-article d-print-none border-top" id="nextArticle"></div>

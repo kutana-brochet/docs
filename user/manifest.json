@@ -1,4 +1,5 @@
 {
+  "docfx_version": "2.81.0+ba844df625370a6bd7c1ecab0d0ec4d1d9128ac4",
   "source_base_path": "/github/workspace/docs/user",
   "xrefmap": "xrefmap.yml",
   "files": [
@@ -154,11 +155,11 @@
       "type": "Toc",
       "source_relative_path": "features/toc.yml",
       "output": {
-        ".html": {
-          "relative_path": "features/toc.html"
-        },
         ".json": {
           "relative_path": "features/toc.json"
+        },
+        ".html": {
+          "relative_path": "features/toc.html"
         }
       },
       "version": ""
@@ -207,11 +208,11 @@
       "type": "Toc",
       "source_relative_path": "licensing/toc.yml",
       "output": {
-        ".html": {
-          "relative_path": "licensing/toc.html"
-        },
         ".json": {
           "relative_path": "licensing/toc.json"
+        },
+        ".html": {
+          "relative_path": "licensing/toc.html"
         }
       },
       "version": ""
@@ -220,11 +221,11 @@
       "type": "Toc",
       "source_relative_path": "toc.yml",
       "output": {
-        ".html": {
-          "relative_path": "toc.html"
-        },
         ".json": {
           "relative_path": "toc.json"
+        },
+        ".html": {
+          "relative_path": "toc.html"
         }
       },
       "version": ""

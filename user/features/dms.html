@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.5.115-rc/docs/user/features/dms.md/#L1">
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.5.223-rc/docs/user/features/dms.md/#L1">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -106,7 +106,7 @@ Warning
   }
 }
 </code></pre>
-<p><strong>NB:</strong> <code>&quot;Provider&quot;</code> is the proptery for defining the DMS type</p>
+<p><strong>NB:</strong> <code>&quot;Provider&quot;</code> is the property for defining the DMS type</p>
 <h2 id="available-documentmanagement-properties">Available <code>DocumentManagement</code> properties</h2>
 <ul>
 <li><code>PreProfileTemplates</code>: (array) this holds the list of Templates to be pre-profiled (Front-end profiling).
@@ -128,14 +128,14 @@ Each item can have the following properties:
 <li><code>Provider</code>: <code>iManage</code>, <code>NetDocuments</code> and <code>None</code></li>
 </ul>
 <h3 id="preprofiletemplates-properties"><code>&quot;PreProfileTemplates&quot;</code> properties</h3>
-<p>This propery is used for listing the Word templates that are to be pre-profiled (Front-end profile).</p>
+<p>This property is used for listing the Word templates that are to be pre-profiled (Front-end profile).</p>
 <ul>
 <li><code>Filter</code>: (Mandatory) this hold the name of the templates to be pre-profiled. It uses regular expressions.</li>
 <li><code>CloseOnCancel</code>: <code>true</code> or <code>false</code>
 If set to true and the Cancel button is pressed on the DMS SaveAs screen then the initially created document is CLOSED. The default setting is <code>false</code>.</li>
 <li><code>DocType</code>: used to pass to the DMS the document type to be set in the DMS SaveAs screen (currently only works in iManage - known bug in netDocs that information cannot be set in the SaveAs screen).</li>
 </ul>
-<p>**Example: **
+<p><strong>Example:</strong>
 A template called Letter is pre-profiled and if the cancel button is pressed then the initial document is closed.
 Any template that starts with &quot;AB Company&quot; is pre-profiled and if the cancel button is pressed then the document is not closed and the rest of the process (Filesite-New) is continued.</p>
 <pre><code class="lang-Json">&quot;PreProfileTemplates&quot;: [
@@ -162,7 +162,7 @@ Any template that starts with &quot;AB Company&quot; is pre-profiled and if the 
   },  
 </code></pre>
 <p>There can be multiple DMSKeyNames with additional joining text. The DMSKeyNames can be formatted using SCRIBAN formatting (<a href="https://github.com/scriban/scriban">https://github.com/scriban/scriban</a>).</p>
-<p><strong>Example:</strong> makes the document version into a 2 digit number but firstly converting the version string into an integer and then formatting this inro a 2 digit decimal number.</p>
+<p><strong>Example:</strong> makes the document version into a 2 digit number but firstly converting the version string into an integer and then formatting this into a 2 digit decimal number.</p>
 <pre><code class="lang-Json">&quot;DMSOurRef&quot;: &quot;{{ profileInfo.identifier }}v{{ profileInfo.version | string.to_int | object.format \&quot;d2\&quot; }}&quot;
 </code></pre>
 <h4 id="case-sensitivity">Case sensitivity</h4>
@@ -243,19 +243,19 @@ Any template that starts with &quot;AB Company&quot; is pre-profiled and if the 
 <p>The Office Extension acquires the Keygen license status from the Word COMS add-in. It needs a valid Keygen license for any code to run.</p>
 <p>For the Office Extension to find the Kutana+Brochet COMs Addin it needs to know the name of the add-in. The default name it looks for is BrochetWordMainAddin (this was the name of the old Word Add-in).</p>
 <p>The new Word Add-in have been renamed to KutanaBrochet.WordAddIn and therefore the following registry key needs to be set with this new name:</p>
-<pre><code class="lang-xml"> 	Computer\HKEY_CURRENT_USER\SOFTWARE\Brochet\Word\AddinName
- 	value = KutanaBrochet.WordAddIn
+<pre><code class="lang-xml">    Computer\HKEY_CURRENT_USER\SOFTWARE\Brochet\Word\AddinName
+    value = KutanaBrochet.WordAddIn
 </code></pre>
 <p><strong>NB:</strong> This key is not being set by the Word msi install and needs to be set manually as part of the installation.</p>
 <h3 id="configuration-file-location">Configuration file location</h3>
 <p>The configuration files (DesktopExtensionConfig.json) can be saved into several different locations. The K+B iManage Office Extension will look for these files in the following places, in the order they are listed:</p>
 <p><strong>Location defined by a Registry setting</strong></p>
-<p>Key:	<code>Computer\HKEY_CURRENT_USER\SOFTWARE\Brochet\iManageDesktopExtension</code></p>
+<p>Key: <code>Computer\HKEY_CURRENT_USER\SOFTWARE\Brochet\iManageDesktopExtension</code></p>
 <p>Or</p>
-<p>Key:	<code>Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Brochet\iManageDesktopExtension</code></p>
-<p>Value:	<code>ConfigPath</code> {needs to hold the full path and file name – the filename can be changed from the default file name}</p>
+<p>Key: <code>Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Brochet\iManageDesktopExtension</code></p>
+<p>Value: <code>ConfigPath</code> {needs to hold the full path and file name – the filename can be changed from the default file name}</p>
 <p>or</p>
-<p>Value:	<code>ConfigFolder</code> {Path ONLY as a string – the file name must be the default file name DesktopExtensionConfig.json}</p>
+<p>Value: <code>ConfigFolder</code> {Path ONLY as a string – the file name must be the default file name DesktopExtensionConfig.json}</p>
 <p><strong>NB:</strong> First read from <code>HKEY_CURRENT_USER</code> then <code>HKEY_LOCAL_MACHINE</code>.</p>
 <p><strong>NB:</strong> First version (version 36) of the iCloud K+B iManage Office Extension ONLY looks in the Registry for the configuration file ie it doesn't look for the file in the alternative location.</p>
 <p><strong>NB:</strong> First version (version 36) of the iCloud K+B iManage Office Extension Also will not expand <code>%appdata%</code> or <code>%username%</code>.</p>
@@ -289,7 +289,7 @@ The other properties depend on how NetDocs is setup as will vary between differe
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.5.115-rc/docs/user/features/dms.md/#L1" class="edit-link">Edit this page</a>
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.5.223-rc/docs/user/features/dms.md/#L1" class="edit-link">Edit this page</a>
         </div>
 
         <div class="next-article d-print-none border-top" id="nextArticle"></div>

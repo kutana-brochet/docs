@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="">
       
       
-      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.5.115-rc/docs/developer/definition_of_done.md/#L1">
+      <meta name="docfx:docurl" content="https://github.com/kutana-brochet/office-addins/blob/v7.5.223-rc/docs/developer/definition_of_done.md/#L1">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -108,10 +108,10 @@ Efficiency is key. We rely on <strong>Automated Checks</strong> to be the primar
 <h2 id="3-implementation-correctness-manual-checklist">3. Implementation Correctness (Manual Checklist)</h2>
 <h3 id="handlers--logic">Handlers &amp; Logic</h3>
 <ul>
-<li>[ ] <strong>Attributes Correctly Applied</strong>:
+<li>[ ] <strong>Policy Declared on the Command or Query</strong>:
 <ul>
-<li>[ ] <code>[RequireEntitlement(EntitlementType.WordStandardTools)]</code> (if feature requires license).</li>
-<li>[ ] <code>[DocumentRequired]</code> (if handler operates on an active document).</li>
+<li>[ ] <code>[RequireEntitlement(EntitlementType.WordStandardTools)]</code>, or <code>EntitlementType.NoneRequired</code> if the feature needs no licence.</li>
+<li>[ ] <code>IRequiresDocument</code> (if it operates on an active document).</li>
 </ul>
 </li>
 <li>[ ] <strong>Return Values</strong>:
@@ -173,7 +173,7 @@ As a small team, we don't have a dedicated QA department. This Definition of Don
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.5.115-rc/docs/developer/definition_of_done.md/#L1" class="edit-link">Edit this page</a>
+          <a href="https://github.com/kutana-brochet/office-addins/blob/v7.5.223-rc/docs/developer/definition_of_done.md/#L1" class="edit-link">Edit this page</a>
         </div>
 
         <div class="next-article d-print-none border-top" id="nextArticle"></div>
